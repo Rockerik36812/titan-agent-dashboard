@@ -542,7 +542,40 @@ footer a:hover {
 }
 .alert-close:hover { opacity: 1; }
 
-/* Version Badge */
+/* Connection Status */
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+}
+.conn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+.conn-dot.live {
+    background: var(--accent-green);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: connPulse 2s ease-in-out infinite;
+}
+.conn-dot.dead {
+    background: var(--accent-red);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    animation: connPulse 1s ease-in-out infinite;
+}
+@keyframes connPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.conn-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
 .version-badge {
     font-size: 0.65rem;
     padding: 0.15rem 0.4rem;

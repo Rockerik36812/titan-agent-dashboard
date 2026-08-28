@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         els.modalOverlay.classList.add('hidden');
         document.body.style.overflow = '';
     }
+    window.closeAgentModal = closeAgentModal;
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {

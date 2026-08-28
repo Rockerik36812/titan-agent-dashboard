@@ -4,132 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Titan Dashboard — Agentes</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="bg-grid"></div>
-    
     <header>
         <div class="header-content">
             <div class="logo">
                 <span class="logo-icon">⚡</span>
-                <h1>Titan<span>Dashboard</span></h1>
+                <h1>Titan Dashboard</h1>
             </div>
-            <div class="header-status" id="headerStatus">
-                <span class="dot pulse"></span>
-                <span>En vivo</span>
+            <div class="header-stats">
+                <div class="header-stat" id="onlineCount">
+                    <span class="stat-value">0</span>
+                    <span class="stat-label">En línea</span>
+                </div>
+                <div class="header-stat" id="totalRamDisplay">
+                    <span class="stat-value">0 B</span>
+                    <span class="stat-label">RAM Total</span>
+                </div>
+                <div class="header-stat">
+                    <span class="stat-value" id="lastUpdate">--</span>
+                    <span class="stat-label">Actualizado</span>
+                </div>
             </div>
         </div>
-        <p class="subtitle">Monitoreo en tiempo real de tus agentes Hermes</p>
     </header>
 
     <main>
-        <div class="stats-row">
-            <div class="stat-card" id="totalAgents">
-                <div class="stat-value">3</div>
-                <div class="stat-label">Agentes</div>
+        <!-- OpenRouter Credits Widget -->
+        <section id="credits-section" class="section fade-in">
+            <div class="section-header">
+                <h2>💰 OpenRouter</h2>
+                <span class="section-badge">Créditos</span>
             </div>
-            <div class="stat-card" id="onlineAgents">
-                <div class="stat-value" id="onlineCount">0</div>
-                <div class="stat-label">En línea</div>
-            </div>
-            <div class="stat-card" id="systemMemory">
-                <div class="stat-value" id="memValue">-</div>
-                <div class="stat-label">RAM Total</div>
-            </div>
-            <div class="stat-card" id="lastUpdate">
-                <div class="stat-value" id="lastUpdateValue">-</div>
-                <div class="stat-label">Última actualización</div>
-            </div>
-        </div>
-
-        <div class="agents-grid" id="agentsGrid">
-            <div class="agent-card loading" id="card-titan">
-                <div class="card-header">
-                    <div class="agent-icon">🚀</div>
-                    <h2>Titán</h2>
-                    <span class="status-badge status-unknown">⏳</span>
+            <div id="credits-grid" class="credits-grid">
+                <div class="credit-card total">
+                    <span class="credit-label">Total</span>
+                    <span class="credit-value" id="credits-total">$0.00</span>
                 </div>
-                <div class="card-body">
-                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
-                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
-                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
+                <div class="credit-card used">
+                    <span class="credit-label">Usado</span>
+                    <span class="credit-value" id="credits-used">$0.00</span>
                 </div>
-                <div class="card-footer">
-                    <span class="container-id">-</span>
+                <div class="credit-card remaining">
+                    <span class="credit-label">Restante</span>
+                    <span class="credit-value" id="credits-remaining">$0.00</span>
                 </div>
-            </div>
-
-            <div class="agent-card loading" id="card-hermes">
-                <div class="card-header">
-                    <div class="agent-icon">🤖</div>
-                    <h2>Hermes</h2>
-                    <span class="status-badge status-unknown">⏳</span>
-                </div>
-                <div class="card-body">
-                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
-                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
-                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
-                </div>
-                <div class="card-footer">
-                    <span class="container-id">-</span>
-                </div>
-            </div>
-
-            <div class="agent-card loading" id="card-hermina">
-                <div class="card-header">
-                    <div class="agent-icon">💜</div>
-                    <h2>Hermina</h2>
-                    <span class="status-badge status-unknown">⏳</span>
-                </div>
-                <div class="card-body">
-                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
-                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
-                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
-                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
-                </div>
-                <div class="card-footer">
-                    <span class="container-id">-</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="system-section">
-            <h3>📊 Recursos del Sistema</h3>
-            <div class="sys-stats" id="sysStats">
-                <div class="sys-bar">
-                    <div class="sys-bar-label">
-                        <span>CPU Total</span>
-                        <span id="cpuTotalValue">-</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill cpu-fill" id="cpuBar" style="width:0%"></div>
-                    </div>
-                </div>
-                <div class="sys-bar">
-                    <div class="sys-bar-label">
-                        <span>RAM Total</span>
-                        <span id="ramTotalValue">-</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill ram-fill" id="ramBar" style="width:0%"></div>
+                <div class="credit-bar-wrapper">
+                    <div class="credit-bar-label">Consumido <span id="credits-pct">0%</span></div>
+                    <div class="credit-bar">
+                        <div class="credit-bar-fill" id="credits-bar" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Agent Cards -->
+        <section id="agents-section" class="section fade-in">
+            <div class="section-header">
+                <h2>🤖 Agentes</h2>
+                <span class="section-badge" id="agents-badge">3 en línea</span>
+            </div>
+            <div id="agentsGrid" class="agents-grid">
+                <!-- Cards generated by JS -->
+            </div>
+        </section>
+
+        <!-- Session History Timeline -->
+        <section id="history-section" class="section fade-in">
+            <div class="section-header">
+                <h2>📜 Historial de Sesiones</h2>
+                <span class="section-badge">Últimas actividades</span>
+            </div>
+            <div id="history-content" class="history-content">
+                <div class="history-loading">Cargando historial...</div>
+            </div>
+        </section>
     </main>
 
     <footer>
-        <p>Titan Dashboard · <span id="footerTime">-</span> · Hecho con 🔥 por Titán</p>
+        <p>Titan Dashboard v1.1 · <span id="footer-time">--</span> · <a href="https://github.com/Rockerik36812/titan-agent-dashboard" target="_blank" rel="noopener">GitHub</a></p>
     </footer>
 
-    <script src="/static/app.js"></script>
+    <script src="/app.js"></script>
 </body>
 </html>

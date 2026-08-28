@@ -1,0 +1,9 @@
+services:
+  agent-dashboard:
+    image: 'ghcr.io/rockerik36812/titan-dashboard:latest'
+    ports:
+      - '8000:8000'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - SERVICE_URL_DASHBOARD_8000

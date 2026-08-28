@@ -1,186 +1,222 @@
 document.addEventListener('DOMContentLoaded', () => {
     const agentsGrid = document.getElementById('agentsGrid');
     const onlineCount = document.getElementById('onlineCount');
-    const lastUpdateValue = document.getElementById('lastUpdateValue');
-    const footerTime = document.getElementById('footerTime');
-    const memValue = document.getElementById('memValue');
+    const totalRamDisplay = document.getElementById('totalRamDisplay');
+    const lastUpdate = document.getElementById('lastUpdate');
+    const footerTime = document.getElementById('footer-time');
+    const creditsTotal = document.getElementById('credits-total');
+    const creditsUsed = document.getElementById('credits-used');
+    const creditsRemaining = document.getElementById('credits-remaining');
+    const creditsPct = document.getElementById('credits-pct');
+    const creditsBar = document.getElementById('credits-bar');
+    const historyContent = document.getElementById('history-content');
+    const agentsBadge = document.getElementById('agents-badge');
 
-    // Agent card field mapping
-    const agentFields = {
-        gateway: 0,
-        uptime: 1,
-        cpu: 2,
-        mem: 3,
-        session: 4,
-    };
+    function fmtBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+    }
 
-    function updateAgentCard(agent) {
-        const card = document.getElementById(`card-${agent.id}`);
-        if (!card) return;
-
-        card.classList.remove('loading');
-
-        // Status badge
-        const badge = card.querySelector('.status-badge');
-        if (agent.online) {
-            badge.className = 'status-badge status-online';
-            badge.textContent = 'Online';
-        } else {
-            badge.className = 'status-badge status-offline';
-            badge.textContent = 'Offline';
+    function timeAgo(timestamp) {
+        if (!timestamp) return 'desconocido';
+        const now = Date.now() / 1000;
+        let diff = now - timestamp;
+        if (diff < 0 && typeof timestamp === 'number' && timestamp > 1e15) {
+            diff = now - (timestamp / 1000);
         }
+        if (diff < 0) diff = 0;
+        if (diff < 60) return 'hace un momento';
+        if (diff < 3600) return `hace ${Math.floor(diff / 60)}m`;
+        if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`;
+        return `hace ${Math.floor(diff / 86400)}d`;
+    }
 
-        // Card border tint
-        const borderColor = agent.online ? agent.color : '#ef4444';
-        card.style.borderColor = agent.online ? (agent.color + '40') : 'rgba(239,68,68,0.3)';
+    function fmtDate(timestamp) {
+        if (!timestamp) return '—';
+        const d = new Date(timestamp * 1000);
+        return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
 
-        // Stats rows
-        const rows = card.querySelectorAll('.stat-row .value');
-        if (rows.length >= 5) {
-            rows[0].textContent = agent.gateway && agent.gateway.includes('up') ? '✅ Activo' : (agent.gateway || '❌ Inactivo');
-            rows[1].textContent = agent.uptime || '-';
-            
-            // CPU with mini bar
-            const cpuVal = agent.cpu || 0;
-            const cpuColor = cpuVal > 80 ? '#ef4444' : cpuVal > 50 ? '#eab308' : '#22c55e';
-            rows[2].innerHTML = `${cpuVal.toFixed(1)}% <span class="cpu-bar-track"><span class="cpu-bar-fill" style="width:${Math.min(cpuVal,100)}%;background:${cpuColor}"></span></span>`;
-            
-            // RAM
-            const memPct = agent.mem_pct || 0;
-            rows[3].textContent = `${agent.mem_used || '-'}`;
-            if (agent.mem_pct) {
-                rows[3].innerHTML = `${agent.mem_used} / ${agent.mem_limit} <span class="mem-bar-track"><span class="mem-bar-fill" style="width:${memPct}%"></span></span>`;
+    function fmtDuration(start, end) {
+        if (!start) return '—';
+        const now = Date.now() / 1000;
+        const endTs = end || now;
+        const diff = endTs - start;
+        if (diff < 0) return '—';
+        if (diff < 60) return `${Math.floor(diff)}s`;
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ${Math.floor(diff % 60)}s`;
+        return `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`;
+    }
+
+    // Render agent card HTML
+    function renderAgentCard(agent) {
+        const memPct = agent.mem_pct || 0;
+        const memUsed = fmtBytes(agent.mem_usage || 0);
+        const memTotal = fmtBytes(agent.mem_limit || 0);
+
+        return `
+            <div class="agent-card ${agent.online ? 'online' : ''}" style="--color: ${agent.color}">
+                <div class="agent-card-header">
+                    <div class="agent-name">
+                        <span class="agent-emoji">${agent.emoji}</span>
+                        ${agent.name}
+                    </div>
+                    <div class="status-dot ${agent.online ? 'online' : 'offline'}"></div>
+                </div>
+                <div class="agent-stats">
+                    <div class="stat-row">
+                        <span class="stat-label-inline">CPU</span>
+                        <span class="stat-value-inline">${agent.cpu}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${Math.min(agent.cpu, 100)}%; background: ${agent.online ? agent.color : 'var(--text-muted)'}"></div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label-inline">RAM</span>
+                        <span class="stat-value-inline">${memUsed} / ${memTotal} (${memPct}%)</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${Math.min(memPct, 100)}%; background: ${memPct > 80 ? 'var(--accent-red)' : agent.online ? agent.color : 'var(--text-muted)'}"></div>
+                    </div>
+                </div>
+                <div class="agent-detail">
+                    <span class="agent-uptime">${agent.uptime || '—'}</span>
+                    <span class="agent-gateway" title="${agent.gateway}">${agent.online ? '✅ up' : '❌ down'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Fetch and render agents
+    async function fetchAgents() {
+        try {
+            const resp = await fetch('/api/agents');
+            const data = await resp.json();
+
+            agentsGrid.innerHTML = data.agents.map(renderAgentCard).join('');
+            onlineCount.querySelector('.stat-value').textContent = `${data.totals.online}/${data.totals.total}`;
+            totalRamDisplay.querySelector('.stat-value').textContent = fmtBytes(data.totals.used_ram || 0);
+            agentsBadge.textContent = `${data.totals.online} en línea`;
+            lastUpdate.textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } catch (e) {
+            agentsGrid.innerHTML = '<div class="agent-card" style="grid-column:1/-1;text-align:center;padding:2rem">❌ Error al cargar agentes</div>';
+        }
+    }
+
+    // Fetch credits
+    async function fetchCredits() {
+        try {
+            const resp = await fetch('/api/credits');
+            const data = await resp.json();
+
+            creditsTotal.textContent = `$${data.total.toFixed(2)}`;
+            creditsUsed.textContent = `$${data.used.toFixed(2)}`;
+            creditsRemaining.textContent = `$${data.remaining.toFixed(2)}`;
+
+            const pct = data.percent_used || 0;
+            creditsPct.textContent = `${pct}%`;
+            creditsBar.style.width = `${Math.min(pct, 100)}%`;
+
+            // Color the bar based on consumption
+            const barColor = pct > 75 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-orange)' : 'linear-gradient(90deg, var(--accent-green), var(--accent-orange))';
+            creditsBar.style.background = barColor;
+        } catch (e) {
+            creditsTotal.textContent = '—';
+            creditsUsed.textContent = '—';
+            creditsRemaining.textContent = '—';
+        }
+    }
+
+    // Fetch history
+    async function fetchHistory() {
+        try {
+            const resp = await fetch('/api/history?limit=8');
+            const data = await resp.json();
+
+            let html = '';
+
+            for (const [agentId, agentData] of Object.entries(data)) {
+                const sessions = agentData.sessions || [];
+
+                html += `<div class="agent-timeline">`;
+                html += `<div class="timeline-header" style="color: ${agentData.color}">${agentData.emoji} ${agentData.name}</div>`;
+
+                if (sessions.length === 0) {
+                    html += `<div class="timeline-items"><div class="timeline-empty">Sin sesiones registradas</div></div>`;
+                } else {
+                    html += `<div class="timeline-items">`;
+                    for (const s of sessions) {
+                        const cost = s.cost_usd ? `$${s.cost_usd.toFixed(4)}` : '—';
+                        html += `
+                            <div class="timeline-item">
+                                <div class="timeline-item-header">
+                                    <span class="timeline-title">${s.title || 'Sin título'}</span>
+                                    <span class="timeline-cost">${cost}</span>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span>📅 ${fmtDate(s.started_at)}</span>
+                                    <span>⏱ ${fmtDuration(s.started_at, s.ended_at)}</span>
+                                    ${s.message_count ? `<span>💬 ${s.message_count} msgs</span>` : ''}
+                                    ${s.tool_call_count ? `<span>🔧 ${s.tool_call_count} tools</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+                html += `</div>`;
             }
-            
-            // Last session
-            const sessionStarted = agent.last_active && agent.last_active !== '-' ? agent.last_active : 'Sin actividad';
-            rows[4].textContent = sessionStarted;
-        }
 
-        // Container ID in footer
-        const footer = card.querySelector('.container-id');
-        if (footer && agent.container_id) {
-            footer.textContent = `📦 ${agent.container_id}`;
+            historyContent.innerHTML = html;
+        } catch (e) {
+            historyContent.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem">❌ Error al cargar historial</div>';
         }
-
-        // Animate entry
-        card.style.animation = 'none';
-        card.offsetHeight; // reflow
-        card.style.animation = 'cardFadeIn 0.4s ease';
     }
 
-    function updateStatsBar(data) {
-        let online = 0;
-        let totalCpu = 0;
-        let totalMem = 0;
-
-        data.agents.forEach(a => {
-            if (a.online) online++;
-            totalCpu += a.cpu || 0;
-            totalMem += a.mem_pct || 0;
+    // Update footer time
+    function updateFooterTime() {
+        footerTime.textContent = new Date().toLocaleString('es-MX', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
-
-        onlineCount.textContent = `${online}/${data.agents.length}`;
-        onlineCount.style.color = online > 0 ? '#22c55e' : '#ef4444';
-
-        // System bars
-        const avgCpu = totalCpu / data.agents.length;
-        const avgMem = totalMem / data.agents.length;
-
-        document.getElementById('cpuBar').style.width = `${Math.min(avgCpu, 100)}%`;
-        document.getElementById('cpuTotalValue').textContent = `${avgCpu.toFixed(1)}%`;
-        document.getElementById('ramBar').style.width = `${Math.min(avgMem, 100)}%`;
-        document.getElementById('ramTotalValue').textContent = `${avgMem.toFixed(1)}%`;
-
-        // Last update time
-        const now = new Date();
-        lastUpdateValue.textContent = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    // SSE connection for real-time updates
-    let eventSource = null;
+    // Initial fetch
+    fetchAgents();
+    fetchCredits();
+    fetchHistory();
+    updateFooterTime();
+
+    // SSE stream for agent data
+    let eventSource;
 
     function connectSSE() {
-        if (eventSource) {
-            eventSource.close();
-        }
-
+        if (eventSource) eventSource.close();
         eventSource = new EventSource('/api/agents/stream');
 
         eventSource.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                data.agents.forEach(updateAgentCard);
-                updateStatsBar(data);
-            } catch (e) {
-                console.error('SSE parse error:', e);
-            }
+                agentsGrid.innerHTML = data.agents.map(renderAgentCard).join('');
+                onlineCount.querySelector('.stat-value').textContent = `${data.totals.online}/${data.totals.total}`;
+                totalRamDisplay.querySelector('.stat-value').textContent = fmtBytes(data.totals.used_ram || 0);
+                agentsBadge.textContent = `${data.totals.online} en línea`;
+                lastUpdate.textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            } catch (e) { /* ignore parse errors during reconnect */ }
         };
 
         eventSource.onerror = () => {
-            console.log('SSE connection error, reconnecting in 3s...');
+            eventSource.close();
             setTimeout(connectSSE, 3000);
         };
     }
 
-    // Initial fetch (in case SSE fails)
-    function fetchInitial() {
-        fetch('/api/agents')
-            .then(r => r.json())
-            .then(data => {
-                data.agents.forEach(updateAgentCard);
-                updateStatsBar(data);
-            })
-            .catch(() => {
-                // Fallback: show agents as loading
-                document.querySelectorAll('.status-badge').forEach(b => {
-                    b.className = 'status-badge status-offline';
-                    b.textContent = 'Sin conexión';
-                });
-            });
-
-        // Also fetch memory
-        fetch('/api/memory')
-            .then(r => r.json())
-            .then(m => {
-                memValue.textContent = `${m.total} GB`;
-            })
-            .catch(() => {});
-    }
-
-    // Inject animation styles
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes cardFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Start
-    fetchInitial();
     connectSSE();
 
-    // Footer clock
-    function updateClock() {
-        const now = new Date();
-        footerTime.textContent = now.toLocaleString('es-MX', {
-            weekday: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZone: 'America/Mexico_City'
-        });
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    // Reconnect SSE on visibility change
-    document.addEventListener('visibilitychange', () => {
-        if (document.visible) {
-            connectSSE();
-            fetchInitial();
-        }
-    });
+    // Periodic refresh for credits and history (every 30s)
+    setInterval(fetchCredits, 30000);
+    setInterval(fetchHistory, 30000);
+    setInterval(updateFooterTime, 1000);
 });

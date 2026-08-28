@@ -1,274 +1,155 @@
 import asyncio
 import json
 import time
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
 import docker
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-app = FastAPI(title="Agent Dashboard")
+app = FastAPI(title="Titan Agent Dashboard")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Docker client
-try:
-    docker_client = docker.from_env()
-except Exception:
-    docker_client = None
-
-AGENTS = [
-    {
-        "id": "titan",
+# Agent definitions
+AGENTS = {
+    "titan": {
         "name": "Titán",
         "emoji": "🚀",
-        "color": "#f97316",
         "container": "hermes-agent-gludih2hknhumvx9ufx0bdql",
-        "is_self": True,
+        "color": "#00d4ff",
+        "bg": "rgba(0, 212, 255, 0.1)",
     },
-    {
-        "id": "hermes",
+    "hermes": {
         "name": "Hermes",
         "emoji": "🤖",
-        "color": "#3b82f6",
         "container": "hermes-agent-v6y8md5qijrltg1rm34e90tj",
-        "is_self": False,
+        "color": "#a855f7",
+        "bg": "rgba(168, 85, 247, 0.1)",
     },
-    {
-        "id": "hermina",
+    "hermina": {
         "name": "Hermina",
         "emoji": "💜",
-        "color": "#a855f7",
         "container": "hermes-agent-kqzoxrig0pspua7pymgdlaon",
-        "is_self": False,
+        "color": "#ec4899",
+        "bg": "rgba(236, 72, 153, 0.1)",
     },
-]
+}
+
+OPENROUTER_MGMT_KEY = None
 
 
-def format_uptime(seconds):
-    days, remainder = divmod(int(seconds), 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes, secs = divmod(remainder, 60)
-    parts = []
-    if days: parts.append(f"{days}d")
-    if hours: parts.append(f"{hours}h")
-    if minutes: parts.append(f"{minutes}m")
-    if secs: parts.append(f"{secs}s")
-    return " ".join(parts) if parts else "< 1s"
-
-
-def get_container_stats(container_name):
-    """Get container stats using Docker SDK."""
+def load_env():
+    """Load .env file and extract OpenRouter management key."""
+    global OPENROUTER_MGMT_KEY
     try:
-        if not docker_client:
-            return {"online": False, "error": "no docker"}
+        with open("/app/.env", "r") if Path("/app/.env").exists() else open("/home/hermes/.hermes/.env", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("OPENROUTER_MANAGEMENT_KEY="):
+                    OPENROUTER_MGMT_KEY = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    except Exception:
+        OPENROUTER_MGMT_KEY = None
 
-        try:
-            container = docker_client.containers.get(container_name)
-        except docker.errors.NotFound:
-            return {"online": False, "error": "not found"}
 
-        if container.status != "running":
-            return {"online": False, "error": f"status: {container.status}"}
+async def exec_in_container(container_name: str, cmd: str) -> str:
+    """Execute a command inside a Docker container and return stdout."""
+    client = docker.from_env()
+    try:
+        container = client.containers.get(container_name)
+        result = container.exec_run(cmd, user="hermes")
+        return result.output.decode() if result.output else ""
+    except Exception as e:
+        return f"ERROR: {e}"
 
-        # Container info
-        attrs = container.attrs
-        started_at = attrs["State"].get("StartedAt", "")
-        if started_at:
-            try:
-                started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
-                uptime_seconds = (datetime.now(timezone.utc) - started).total_seconds()
-            except Exception:
-                uptime_seconds = 0
-        else:
-            uptime_seconds = 0
 
-        image = attrs["Config"].get("Image", "?")[:40]
-        container_id = container.short_id
+async def get_agent_stats(agent_id: str, info: dict) -> dict:
+    """Get stats for a single agent."""
+    container_name = info["container"]
+    client = docker.from_env()
 
-        # Live stats
-        cpu = 0.0
-        mem_used_str = "-"
-        mem_limit_str = "-"
-        mem_pct = 0.0
+    try:
+        container = client.containers.get(container_name)
+        stats = container.stats(stream=False)
 
-        try:
-            stats = container.stats(stream=False)
-            # CPU calculation
-            cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - stats["precpu_stats"]["cpu_usage"]["total_usage"]
-            system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
-            num_cpus = stats["cpu_stats"].get("online_cpus", 1)
-            if system_delta > 0 and cpu_delta > 0:
-                cpu = (cpu_delta / system_delta) * num_cpus * 100.0
+        cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - stats["precpu_stats"]["cpu_usage"]["total_usage"]
+        system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
+        num_cpus = stats["cpu_stats"]["online_cpus"]
+        cpu_pct = (cpu_delta / system_delta) * num_cpus * 100 if system_delta > 0 else 0
 
-            # Memory
-            mem_usage = stats["memory_stats"].get("usage", 0)
-            mem_limit = stats["memory_stats"].get("limit", 1)
-            if mem_limit > 0:
-                mem_pct = (mem_usage / mem_limit) * 100.0
+        mem_usage = stats["memory_stats"]["usage"]
+        mem_limit = stats["memory_stats"]["limit"]
+        mem_pct = (mem_usage / mem_limit) * 100 if mem_limit > 0 else 0
 
-            # Format memory
-            def fmt_bytes(b):
-                b = int(b)
-                if b >= 1073741824:
-                    return f"{b/1073741824:.1f}GiB"
-                elif b >= 1048576:
-                    return f"{b/1048576:.1f}MiB"
-                elif b >= 1024:
-                    return f"{b/1024:.1f}KiB"
-                return f"{b}B"
+        created = container.attrs["Created"]
+        status = container.status
+        uptime = ""
+        if status == "running":
+            created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            delta = datetime.now(timezone.utc) - created_dt
+            hours, remainder = divmod(int(delta.total_seconds()), 3600)
+            minutes = remainder // 60
+            uptime = f"{hours}h {minutes}m"
 
-            mem_used_str = fmt_bytes(mem_usage)
-            mem_limit_str = fmt_bytes(mem_limit)
-        except Exception as e:
-            pass
+        # Gateway status
+        gateway = await exec_in_container(container_name,
+            "cat /run/service/gateway-default/supervise/stat 2>/dev/null || "
+            "s6-svstat /run/service/gateway-default 2>/dev/null || echo 'unknown'")
 
         return {
-            "online": True,
-            "container_id": container_id,
-            "image": image,
-            "uptime": format_uptime(uptime_seconds),
-            "uptime_seconds": int(uptime_seconds),
-            "cpu": round(cpu, 1),
-            "mem_used": mem_used_str,
-            "mem_limit": mem_limit_str,
+            "id": agent_id,
+            "name": info["name"],
+            "emoji": info["emoji"],
+            "color": info["color"],
+            "online": status == "running",
+            "cpu": round(cpu_pct, 1),
+            "mem_usage": mem_usage,
+            "mem_limit": mem_limit,
             "mem_pct": round(mem_pct, 1),
-            "status": container.status,
+            "uptime": uptime,
+            "gateway": gateway.strip()[:80],
+            "container": container_name[:20],
         }
     except Exception as e:
-        return {"online": False, "error": str(e)}
-
-
-def get_gateway_status(container_name):
-    """Get gateway status via Docker exec."""
-    try:
-        if not docker_client:
-            return {"gateway": "unknown", "online": False}
-        container = docker_client.containers.get(container_name)
-        if container.status != "running":
-            return {"gateway": "offline", "online": False}
-        result = container.exec_run(["/command/s6-svstat", "/run/service/gateway-default"])
-        if result.exit_code == 0:
-            output = result.output.decode().strip()
-            return {"gateway": output, "online": True}
-        return {"gateway": "unknown", "online": False}
-    except Exception:
-        return {"gateway": "unknown", "online": False}
-
-
-def get_last_session(container_name):
-    """Get last session info via Docker exec."""
-    try:
-        if not docker_client:
-            return {}
-        container = docker_client.containers.get(container_name)
-        if container.status != "running":
-            return {}
-
-        script = """
-import json, datetime
-from pathlib import Path
-p = Path('/home/hermes/.hermes/sessions/sessions.json')
-if p.exists():
-    data = json.loads(p.read_text())
-    sessions = data.get('sessions', {})
-    if sessions:
-        newest_id = max(sessions.keys(), key=lambda k: sessions[k].get('started_at', 0))
-        s = sessions[newest_id]
-        started = s.get('started_at', 0)
-        platform = s.get('platform', 'unknown')
-        model = s.get('model', 'unknown')
-        ended = s.get('ended_at', 0)
-        started_str = datetime.datetime.fromtimestamp(started).strftime('%H:%M %d/%m') if started else 'unknown'
-        status = 'En curso' if not ended else 'Completado'
-        print(json.dumps({'session_id': newest_id[:16], 'started': started_str, 'platform': platform, 'model': model, 'status': status}))
-"""
-        result = container.exec_run(["python3", "-c", script])
-        if result.exit_code == 0:
-            out = result.output.decode().strip()
-            if out:
-                return json.loads(out)
-        return {}
-    except Exception:
-        return {}
-
-
-def get_agent_state(agent):
-    """Get full state for a single agent."""
-    container = agent["container"]
-    stats = get_container_stats(container)
-
-    if not stats.get("online"):
         return {
-            "id": agent["id"],
-            "name": agent["name"],
-            "emoji": agent["emoji"],
-            "color": agent["color"],
+            "id": agent_id,
+            "name": info["name"],
+            "emoji": info["emoji"],
+            "color": info["color"],
             "online": False,
-            "uptime": "-",
             "cpu": 0,
-            "mem_used": "-",
-            "mem_limit": "-",
+            "mem_usage": 0,
+            "mem_limit": 0,
             "mem_pct": 0,
-            "gateway": "offline",
-            "last_session": {},
-            "last_active": "-",
+            "uptime": "offline",
+            "gateway": "unknown",
+            "container": container_name[:20],
         }
 
-    gateway = get_gateway_status(container)
-    session = get_last_session(container)
 
-    return {
-        "id": agent["id"],
-        "name": agent["name"],
-        "emoji": agent["emoji"],
-        "color": agent["color"],
-        "online": True,
-        "uptime": stats.get("uptime", "-"),
-        "uptime_seconds": stats.get("uptime_seconds", 0),
-        "cpu": stats.get("cpu", 0),
-        "mem_used": stats.get("mem_used", "-"),
-        "mem_limit": stats.get("mem_limit", "-"),
-        "mem_pct": stats.get("mem_pct", 0),
-        "gateway": gateway.get("gateway", "unknown"),
-        "container_id": stats.get("container_id", ""),
-        "image": stats.get("image", ""),
-        "last_session": session,
-        "last_active": session.get("started", "-"),
-    }
+async def get_session_history(agent_id: str, container_name: str, limit: int = 10) -> list:
+    """Get session history from agent's state.db."""
+    try:
+        code = (
+            "import sqlite3, json\n"
+            "db = sqlite3.connect('/home/hermes/.hermes/state.db')\n"
+            f"rows = db.execute('SELECT id, title, started_at, ended_at, end_reason, message_count, tool_call_count, estimated_cost_usd, last_activity_description FROM sessions WHERE title IS NOT NULL AND title != ? ORDER BY started_at DESC LIMIT {limit}', ('',)).fetchall()\n"
+            "db.close()\n"
+            "print(json.dumps([{'id': r[0], 'title': r[1], 'started_at': r[2], 'ended_at': r[3], 'end_reason': r[4], 'message_count': r[5], 'tool_call_count': r[6], 'cost_usd': r[7], 'last_activity': r[8]} for r in rows]))\n"
+        )
+        result = await exec_in_container(container_name, f'python3 -c "{code}"')
+        data = json.loads(result)
+        return data
+    except Exception as e:
+        return []
 
 
-@app.get("/api/agents")
-async def get_agents():
-    results = []
-    for agent in AGENTS:
-        results.append(get_agent_state(agent))
-    return {"agents": results}
-
-
-async def generate_agent_events():
-    while True:
-        results = []
-        for agent in AGENTS:
-            results.append(get_agent_state(agent))
-        data = json.dumps({"agents": results})
-        yield f"data: {data}\n\n"
-        await asyncio.sleep(3)
-
-
-@app.get("/api/agents/stream")
-async def stream_agents():
-    return StreamingResponse(
-        generate_agent_events(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-        },
-    )
+@app.on_event("startup")
+async def startup():
+    load_env()
 
 
 @app.get("/health")
@@ -276,19 +157,90 @@ async def health():
     return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat(), "agents": len(AGENTS)}
 
 
-@app.get("/api/memory")
-async def memory():
-    import psutil
-    mem = psutil.virtual_memory()
+@app.get("/api/agents")
+async def api_agents():
+    tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
+    results = await asyncio.gather(*tasks)
+    total_ram = sum(a["mem_limit"] for a in results if a["online"])
+    used_ram = sum(a["mem_usage"] for a in results if a["online"])
     return {
-        "total": round(mem.total / (1024**3), 1),
-        "used": round(mem.used / (1024**3), 1),
-        "free": round(mem.available / (1024**3), 1),
-        "percent": mem.percent,
+        "agents": results,
+        "totals": {
+            "online": sum(1 for a in results if a["online"]),
+            "total": len(results),
+            "total_ram": total_ram,
+            "used_ram": used_ram,
+        }
     }
 
 
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    html = Path("static/index.html").read_text()
-    return HTMLResponse(html)
+@app.get("/api/credits")
+async def api_credits():
+    """Fetch OpenRouter credits from management API."""
+    if not OPENROUTER_MGMT_KEY:
+        return {"error": "No management key configured", "total": 0, "used": 0, "remaining": 0}
+
+    try:
+        req = urllib.request.Request(
+            "https://openrouter.ai/api/v1/credits",
+            headers={"Authorization": f"Bearer {OPENROUTER_MGMT_KEY}"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+            total = float(data.get("data", {}).get("total_credits", 0))
+            usage = float(data.get("data", {}).get("total_usage", 0))
+            return {
+                "total": round(total, 2),
+                "used": round(usage, 2),
+                "remaining": round(total - usage, 2),
+                "percent_used": round((usage / total) * 100, 1) if total > 0 else 0,
+            }
+    except Exception as e:
+        return {"error": str(e), "total": 0, "used": 0, "remaining": 0}
+
+
+@app.get("/api/history")
+async def api_history(limit: int = 8):
+    """Get session history from all agents."""
+    tasks = [get_session_history(aid, info["container"], limit) for aid, info in AGENTS.items()]
+    results = await asyncio.gather(*tasks)
+
+    output = {}
+    for i, (aid, info) in enumerate(AGENTS.items()):
+        output[aid] = {
+            "name": info["name"],
+            "emoji": info["emoji"],
+            "color": info["color"],
+            "sessions": results[i],
+        }
+    return output
+
+
+@app.get("/api/agents/stream")
+async def stream_agents(request: Request):
+    """SSE stream for real-time agent updates."""
+    async def event_generator():
+        while True:
+            if await request.is_disconnected():
+                break
+            tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
+            results = await asyncio.gather(*tasks)
+            total_ram = sum(a["mem_limit"] for a in results if a["online"])
+            used_ram = sum(a["mem_usage"] for a in results if a["online"])
+            data = {
+                "agents": results,
+                "totals": {
+                    "online": sum(1 for a in results if a["online"]),
+                    "total": len(results),
+                    "total_ram": total_ram,
+                    "used_ram": used_ram,
+                }
+            }
+            yield f"data: {json.dumps(data)}\n\n"
+            await asyncio.sleep(3)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+# Serve static files
+app.mount("/", StaticFiles(directory="/app/static", html=True), name="static")

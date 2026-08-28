@@ -65,7 +65,7 @@ async def exec_in_container(container_name: str, cmd: str) -> str:
     client = docker.from_env()
     try:
         container = client.containers.get(container_name)
-        result = container.exec_run(cmd, user="hermes")
+        result = container.exec_run(["sh", "-c", cmd], user="hermes")
         return result.output.decode() if result.output else ""
     except Exception as e:
         return f"ERROR: {e}"

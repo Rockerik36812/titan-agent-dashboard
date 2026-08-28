@@ -824,14 +824,190 @@ footer a:hover {
     text-transform: uppercase;
 }
 
-/* Responsive additions */
-@media (max-width: 900px) {
-    .epic-grid { grid-template-columns: repeat(2, 1fr); }
-    .charts-grid { grid-template-columns: 1fr; }
-    .gateway-grid { grid-template-columns: 1fr; }
-    .tools-grid { grid-template-columns: 1fr; }
-    .epic-value { font-size: 1.3rem; }
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Mobile First
+   ═══════════════════════════════════════════════════════ */
+
+/* Base: PHONES (< 480px) — everything stacks 1-col */
+@media (max-width: 480px) {
+    header { padding: 0.65rem 1rem; }
+    .header-content { flex-direction: column; gap: 0.5rem; }
+    .logo h1 { font-size: 1.1rem; }
+    .logo-icon { font-size: 1.1rem; }
+    .header-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.25rem;
+        width: 100%;
+    }
+    .header-stat .stat-value { font-size: 0.85rem; }
+    .header-stat .stat-label { font-size: 0.6rem; }
+
+    main { padding: 0.75rem 0.75rem; }
+    .section { margin-bottom: 1.25rem; }
+    .section-header { flex-wrap: wrap; }
+    .section-header h2 { font-size: 1rem; }
+
+    /* Credits */
+    .credits-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    .credit-card { padding: 0.6rem; }
+    .credit-value { font-size: 1.1rem; }
+
+    /* Epic stats */
+    .epic-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .epic-card { padding: 0.75rem; }
+    .epic-value { font-size: 1.2rem; }
+    .epic-label { font-size: 0.6rem; }
+
+    /* Agent cards */
+    .agents-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .agent-card { padding: 1rem; }
+    .agent-name { font-size: 0.95rem; }
+    .agent-detail { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+
+    /* Charts */
+    .charts-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .chart-card { padding: 0.75rem; }
+    .chart-card canvas { height: 160px !important; max-height: 160px !important; }
+    .chart-title { font-size: 0.8rem; margin-bottom: 0.5rem; }
+
+    /* Gateway */
+    .gateway-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+    .gateway-content { padding: 1rem; }
+    .gateway-card { padding: 0.75rem; }
+
+    /* Activity */
+    .activity-content { padding: 0.75rem; max-height: 300px; }
+    .activity-item { padding: 0.5rem; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Tools */
+    .tools-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+    .tool-card { padding: 0.75rem; }
+
+    /* History */
+    .history-content { padding: 0.75rem; }
+    .timeline-items { padding-left: 0.5rem; gap: 0.35rem; }
+    .timeline-item { padding: 0.5rem; }
+    .timeline-item-header { flex-direction: column; gap: 0.25rem; }
+    .timeline-title { font-size: 0.8rem; }
+    .timeline-cost { align-self: flex-start; }
+    .timeline-meta { flex-wrap: wrap; gap: 0.5rem; }
+
+    /* Version badge */
+    .version-badge { font-size: 0.55rem; }
+
+    /* Alert */
+    .alert-banner { padding: 0.5rem 1rem; font-size: 0.8rem; flex-wrap: wrap; }
+
+    /* Footer */
+    footer { padding: 1rem; font-size: 0.7rem; }
+
+    /* Platform errors in gateway */
+    .gateway-platform .platform-error { max-width: 100px; }
+
+    /* Agent gateway name */
+    .agent-gateway { max-width: 100px; }
 }
-@media (max-width: 600px) {
-    .epic-grid { grid-template-columns: 1fr; }
+
+/* SMALL TABLETS (480 – 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    header { padding: 0.75rem 1.5rem; }
+    .header-content { gap: 0.75rem; }
+    .logo h1 { font-size: 1.25rem; }
+    .header-stats { gap: 1rem; }
+    .header-stat .stat-value { font-size: 0.95rem; }
+
+    main { padding: 1rem 1.25rem; }
+
+    .credits-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; padding: 1rem; }
+    .credit-value { font-size: 1.2rem; }
+
+    .epic-grid { grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
+    .epic-card { padding: 1rem; }
+    .epic-value { font-size: 1.4rem; }
+
+    .agents-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+
+    .charts-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .chart-card canvas { height: 180px !important; max-height: 180px !important; }
+
+    .gateway-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .gateway-content { padding: 1.25rem; }
+
+    .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+
+    .history-content { padding: 1rem; }
+    .timeline-items { padding-left: 0.75rem; }
+
+    .activity-content { max-height: 350px; }
+}
+
+/* LARGE TABLETS / SMALL LAPTOPS (768 – 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    main { padding: 1.25rem 1.5rem; }
+
+    .epic-grid { gap: 0.75rem; }
+    .epic-card { padding: 1rem; }
+    .epic-value { font-size: 1.5rem; }
+
+    .agents-grid { gap: 0.75rem; }
+
+    .gateway-grid { gap: 0.75rem; }
+
+    .tools-grid { gap: 0.75rem; }
+}
+
+/* LANDSCAPE PHONES — same as small tablets */
+@media (max-height: 480px) and (orientation: landscape) {
+    header { padding: 0.4rem 1rem; }
+    .header-stats { gap: 0.75rem; }
+    .header-stat .stat-value { font-size: 0.8rem; }
+    .header-stat .stat-label { font-size: 0.55rem; }
+
+    main { padding: 0.5rem 1rem; }
+    .section { margin-bottom: 0.75rem; }
+
+    .epic-grid { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+    .epic-card { padding: 0.5rem; }
+    .epic-value { font-size: 1rem; }
+    .epic-label { font-size: 0.55rem; }
+
+    .agents-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .agent-card { padding: 0.6rem; }
+    .agent-name { font-size: 0.8rem; }
+
+    .credits-grid { padding: 0.75rem; }
+
+    .activity-content { max-height: 200px; }
+
+    footer { padding: 0.5rem; }
+}
+
+/* Touch-friendly: larger tap targets on mobile */
+@media (hover: none) and (pointer: coarse) {
+    .agent-card { cursor: default; }
+    .epic-card { cursor: default; }
+    .gateway-card { cursor: default; }
+    .timeline-item { cursor: default; }
+    .activity-item { cursor: default; }
+    .tool-card { cursor: default; }
+
+    .agent-card:hover { transform: none; box-shadow: none; background: var(--bg-card); }
+    .epic-card:hover { transform: none; box-shadow: none; }
+    .gateway-card:hover { transform: none; box-shadow: none; }
+    .timeline-item:hover { transform: none; }
+    .activity-item:hover { transform: none; }
+}
+
+/* Print styles — clean layout for reports */
+@media print {
+    header { position: static; backdrop-filter: none; }
+    .alert-banner { display: none !important; }
+    .agent-card { break-inside: avoid; }
+    .epic-card { break-inside: avoid; }
+    footer { break-inside: avoid; }
 }

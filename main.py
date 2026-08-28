@@ -42,8 +42,13 @@ OPENROUTER_MGMT_KEY = None
 
 
 def load_env():
-    """Load .env file and extract OpenRouter management key."""
+    """Load OpenRouter management key from env var or .env file."""
     global OPENROUTER_MGMT_KEY
+    import os
+    env_key = os.environ.get("OPENROUTER_MANAGEMENT_KEY")
+    if env_key:
+        OPENROUTER_MGMT_KEY = env_key
+        return
     try:
         with open("/app/.env", "r") if Path("/app/.env").exists() else open("/home/hermes/.hermes/.env", "r") as f:
             for line in f:

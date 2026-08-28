@@ -1,6 +1,5 @@
 import asyncio
 import json
-import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Agent Dashboard")
 
-# Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Docker client
@@ -28,7 +26,6 @@ AGENTS = [
         "emoji": "🚀",
         "color": "#f97316",
         "container": "hermes-agent-gludih2hknhumvx9ufx0bdql",
-        "network": "gludih2hknhumvx9ufx0bdql",
         "is_self": True,
     },
     {
@@ -37,7 +34,6 @@ AGENTS = [
         "emoji": "🤖",
         "color": "#3b82f6",
         "container": "hermes-agent-v6y8md5qijrltg1rm34e90tj",
-        "network": "v6y8md5qijrltg1rm34e90tj",
         "is_self": False,
     },
     {
@@ -46,117 +42,116 @@ AGENTS = [
         "emoji": "💜",
         "color": "#a855f7",
         "container": "hermes-agent-kqzoxrig0pspua7pymgdlaon",
-        "network": "kqzoxrig0pspua7pymgdlaon",
         "is_self": False,
     },
 ]
 
 
 def format_uptime(seconds):
-    """Format seconds into human-readable uptime."""
     days, remainder = divmod(int(seconds), 86400)
     hours, remainder = divmod(remainder, 3600)
     minutes, secs = divmod(remainder, 60)
     parts = []
-    if days:
-        parts.append(f"{days}d")
-    if hours:
-        parts.append(f"{hours}h")
-    if minutes:
-        parts.append(f"{minutes}m")
-    if secs:
-        parts.append(f"{secs}s")
+    if days: parts.append(f"{days}d")
+    if hours: parts.append(f"{hours}h")
+    if minutes: parts.append(f"{minutes}m")
+    if secs: parts.append(f"{secs}s")
     return " ".join(parts) if parts else "< 1s"
 
 
 def get_container_stats(container_name):
-    """Get Docker container stats via docker ps + docker stats."""
+    """Get container stats using Docker SDK."""
     try:
-        # Basic info
-        result = subprocess.run(
-            ["docker", "ps", "--filter", f"name={container_name}",
-             "--format", "{{.Status}}|{{.CreatedAt}}|{{.Image}}|{{.ID}}|{{.Names}}"],
-            capture_output=True, text=True, timeout=5
-        )
-        parts = result.stdout.strip().split("|")
-        if len(parts) < 5 or not parts[0]:
-            return {"online": False}
+        if not docker_client:
+            return {"online": False, "error": "no docker"}
 
-        status_str = parts[0]
-        created_at = parts[1]
-        image = parts[2][:40]
-        container_id = parts[3]
+        try:
+            container = docker_client.containers.get(container_name)
+        except docker.errors.NotFound:
+            return {"online": False, "error": "not found"}
 
-        # Parse uptime from status
-        uptime_seconds = 0
-        if "up" in status_str.lower():
-            # Try to get uptime via docker inspect
-            inspect = subprocess.run(
-                ["docker", "inspect", container_id, "--format", "{{.State.StartedAt}}"],
-                capture_output=True, text=True, timeout=5
-            )
-            started_str = inspect.stdout.strip()
-            if started_str:
-                try:
-                    started = datetime.fromisoformat(started_str.replace("Z", "+00:00"))
-                    uptime_seconds = (datetime.now(timezone.utc) - started).total_seconds()
-                except Exception:
-                    pass
+        if container.status != "running":
+            return {"online": False, "error": f"status: {container.status}"}
 
-        # Get live stats
+        # Container info
+        attrs = container.attrs
+        started_at = attrs["State"].get("StartedAt", "")
+        if started_at:
+            try:
+                started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+                uptime_seconds = (datetime.now(timezone.utc) - started).total_seconds()
+            except Exception:
+                uptime_seconds = 0
+        else:
+            uptime_seconds = 0
+
+        image = attrs["Config"].get("Image", "?")[:40]
+        container_id = container.short_id
+
+        # Live stats
         cpu = 0.0
-        mem_used = 0
-        mem_limit = 0
+        mem_used_str = "-"
+        mem_limit_str = "-"
         mem_pct = 0.0
 
-        stats_result = subprocess.run(
-            ["docker", "stats", "--no-stream", "--format",
-             "{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}", container_id],
-            capture_output=True, text=True, timeout=5
-        )
-        stats_line = stats_result.stdout.strip()
-        if stats_line and "|" in stats_line:
-            parts = stats_line.split("|")
-            cpu_str = parts[0].replace("%", "").strip()
-            cpu = float(cpu_str) if cpu_str else 0.0
-            mem_usage = parts[1] if len(parts) > 1 else ""
-            mem_pct_str = parts[2].replace("%", "").strip() if len(parts) > 2 else "0"
-            mem_pct = float(mem_pct_str) if mem_pct_str else 0.0
+        try:
+            stats = container.stats(stream=False)
+            # CPU calculation
+            cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - stats["precpu_stats"]["cpu_usage"]["total_usage"]
+            system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
+            num_cpus = stats["cpu_stats"].get("online_cpus", 1)
+            if system_delta > 0 and cpu_delta > 0:
+                cpu = (cpu_delta / system_delta) * num_cpus * 100.0
 
-            # Parse mem usage string like "125.4MiB / 7.731GiB"
-            if "/" in mem_usage:
-                mem_parts = mem_usage.split("/")
-                mem_used = mem_parts[0].strip()
-                mem_limit = mem_parts[1].strip()
+            # Memory
+            mem_usage = stats["memory_stats"].get("usage", 0)
+            mem_limit = stats["memory_stats"].get("limit", 1)
+            if mem_limit > 0:
+                mem_pct = (mem_usage / mem_limit) * 100.0
+
+            # Format memory
+            def fmt_bytes(b):
+                b = int(b)
+                if b >= 1073741824:
+                    return f"{b/1073741824:.1f}GiB"
+                elif b >= 1048576:
+                    return f"{b/1048576:.1f}MiB"
+                elif b >= 1024:
+                    return f"{b/1024:.1f}KiB"
+                return f"{b}B"
+
+            mem_used_str = fmt_bytes(mem_usage)
+            mem_limit_str = fmt_bytes(mem_limit)
+        except Exception as e:
+            pass
 
         return {
             "online": True,
-            "container_id": container_id[:12],
+            "container_id": container_id,
             "image": image,
             "uptime": format_uptime(uptime_seconds),
             "uptime_seconds": int(uptime_seconds),
             "cpu": round(cpu, 1),
-            "mem_used": mem_used,
-            "mem_limit": mem_limit,
+            "mem_used": mem_used_str,
+            "mem_limit": mem_limit_str,
             "mem_pct": round(mem_pct, 1),
-            "status": status_str[:50],
+            "status": container.status,
         }
-    except subprocess.TimeoutExpired:
-        return {"online": False, "error": "timeout"}
     except Exception as e:
         return {"online": False, "error": str(e)}
 
 
 def get_gateway_status(container_name):
-    """Get gateway status and session info via docker exec."""
+    """Get gateway status via Docker exec."""
     try:
-        result = subprocess.run(
-            ["docker", "exec", container_name,
-             "/command/s6-svstat", "/run/service/gateway-default"],
-            capture_output=True, text=True, timeout=5
-        )
-        if result.returncode == 0:
-            output = result.stdout.strip()
+        if not docker_client:
+            return {"gateway": "unknown", "online": False}
+        container = docker_client.containers.get(container_name)
+        if container.status != "running":
+            return {"gateway": "offline", "online": False}
+        result = container.exec_run(["/command/s6-svstat", "/run/service/gateway-default"])
+        if result.exit_code == 0:
+            output = result.output.decode().strip()
             return {"gateway": output, "online": True}
         return {"gateway": "unknown", "online": False}
     except Exception:
@@ -164,40 +159,37 @@ def get_gateway_status(container_name):
 
 
 def get_last_session(container_name):
-    """Get last session activity via docker exec."""
+    """Get last session info via Docker exec."""
     try:
-        # Try to get the last session
-        result = subprocess.run(
-            ["docker", "exec", container_name,
-             "python3", "-c", """
-import json
-from pathlib import Path
+        if not docker_client:
+            return {}
+        container = docker_client.containers.get(container_name)
+        if container.status != "running":
+            return {}
 
-sessions_path = Path('/home/hermes/.hermes/sessions/sessions.json')
-if sessions_path.exists():
-    data = json.loads(sessions_path.read_text())
+        script = """
+import json, datetime
+from pathlib import Path
+p = Path('/home/hermes/.hermes/sessions/sessions.json')
+if p.exists():
+    data = json.loads(p.read_text())
     sessions = data.get('sessions', {})
     if sessions:
-        # Find most recent
         newest_id = max(sessions.keys(), key=lambda k: sessions[k].get('started_at', 0))
         s = sessions[newest_id]
         started = s.get('started_at', 0)
-        ended = s.get('ended_at', 0)
         platform = s.get('platform', 'unknown')
         model = s.get('model', 'unknown')
-        import datetime
+        ended = s.get('ended_at', 0)
         started_str = datetime.datetime.fromtimestamp(started).strftime('%H:%M %d/%m') if started else 'unknown'
-        print(f'{{\\"session_id\\": \\"{newest_id[:16]}\\", \\"started\\": \\"{started_str}\\", \\"platform\\": \\"{platform}\\", \\"model\\": \\"{model}\\"}}')
-    else:
-        print('{}')
-else:
-    print('{}')
-"""],
-            capture_output=True, text=True, timeout=5
-        )
-        out = result.stdout.strip()
-        if out:
-            return json.loads(out)
+        status = 'En curso' if not ended else 'Completado'
+        print(json.dumps({'session_id': newest_id[:16], 'started': started_str, 'platform': platform, 'model': model, 'status': status}))
+"""
+        result = container.exec_run(["python3", "-c", script])
+        if result.exit_code == 0:
+            out = result.output.decode().strip()
+            if out:
+                return json.loads(out)
         return {}
     except Exception:
         return {}
@@ -250,7 +242,6 @@ def get_agent_state(agent):
 
 @app.get("/api/agents")
 async def get_agents():
-    """Get all agents' current state."""
     results = []
     for agent in AGENTS:
         results.append(get_agent_state(agent))
@@ -258,7 +249,6 @@ async def get_agents():
 
 
 async def generate_agent_events():
-    """SSE generator for real-time updates."""
     while True:
         results = []
         for agent in AGENTS:
@@ -270,7 +260,6 @@ async def generate_agent_events():
 
 @app.get("/api/agents/stream")
 async def stream_agents():
-    """SSE endpoint for real-time streaming."""
     return StreamingResponse(
         generate_agent_events(),
         media_type="text/event-stream",
@@ -284,13 +273,11 @@ async def stream_agents():
 
 @app.get("/health")
 async def health():
-    """Health check."""
     return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat(), "agents": len(AGENTS)}
 
 
 @app.get("/api/memory")
 async def memory():
-    """System memory info."""
     import psutil
     mem = psutil.virtual_memory()
     return {
@@ -303,6 +290,5 @@ async def memory():
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    """Serve the dashboard."""
     html = Path("static/index.html").read_text()
     return HTMLResponse(html)

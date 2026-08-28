@@ -175,7 +175,7 @@ db = sqlite3.connect('/home/hermes/.hermes/state.db')
 # Cost per day (last 30 days)
 daily = db.execute(
     "SELECT date(started_at, 'unixepoch') as d, COALESCE(SUM(estimated_cost_usd), 0) "
-    "FROM sessions WHERE started_at > strftime('%%s', 'now', '-30 days') AND estimated_cost_usd > 0 "
+    "FROM sessions WHERE started_at > strftime('%s', 'now', '-30 days') AND estimated_cost_usd > 0 "
     "GROUP BY d ORDER BY d"
 ).fetchall()
 
@@ -196,7 +196,7 @@ totals = db.execute(
 # Last 7 days cost
 week = db.execute(
     "SELECT COALESCE(SUM(estimated_cost_usd), 0) FROM sessions "
-    "WHERE started_at > strftime('%%s', 'now', '-7 days') AND estimated_cost_usd > 0"
+    "WHERE started_at > strftime('%s', 'now', '-7 days') AND estimated_cost_usd > 0"
 ).fetchone()[0]
 
 db.close()
@@ -369,7 +369,7 @@ s = db.execute("SELECT COUNT(*), COALESCE(SUM(message_count),0), COALESCE(SUM(to
     "COALESCE(MIN(started_at),0), COALESCE(MAX(started_at),0) FROM sessions").fetchone()
 
 # Last 24h activity
-day = db.execute("SELECT COUNT(*) FROM sessions WHERE started_at > strftime('%%s', 'now', '-1 day')").fetchone()[0]
+day = db.execute("SELECT COUNT(*) FROM sessions WHERE started_at > strftime('%s', 'now', '-1 day')").fetchone()[0]
 
 db.close()
 

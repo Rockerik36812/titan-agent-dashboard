@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan Dashboard — Agentes</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>Titan<span>Dashboard</span></h1>
+            </div>
+            <div class="header-status" id="headerStatus">
+                <span class="dot pulse"></span>
+                <span>En vivo</span>
+            </div>
+        </div>
+        <p class="subtitle">Monitoreo en tiempo real de tus agentes Hermes</p>
+    </header>
+
+    <main>
+        <div class="stats-row">
+            <div class="stat-card" id="totalAgents">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Agentes</div>
+            </div>
+            <div class="stat-card" id="onlineAgents">
+                <div class="stat-value" id="onlineCount">0</div>
+                <div class="stat-label">En línea</div>
+            </div>
+            <div class="stat-card" id="systemMemory">
+                <div class="stat-value" id="memValue">-</div>
+                <div class="stat-label">RAM Total</div>
+            </div>
+            <div class="stat-card" id="lastUpdate">
+                <div class="stat-value" id="lastUpdateValue">-</div>
+                <div class="stat-label">Última actualización</div>
+            </div>
+        </div>
+
+        <div class="agents-grid" id="agentsGrid">
+            <div class="agent-card loading" id="card-titan">
+                <div class="card-header">
+                    <div class="agent-icon">🚀</div>
+                    <h2>Titán</h2>
+                    <span class="status-badge status-unknown">⏳</span>
+                </div>
+                <div class="card-body">
+                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
+                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
+                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="container-id">-</span>
+                </div>
+            </div>
+
+            <div class="agent-card loading" id="card-hermes">
+                <div class="card-header">
+                    <div class="agent-icon">🤖</div>
+                    <h2>Hermes</h2>
+                    <span class="status-badge status-unknown">⏳</span>
+                </div>
+                <div class="card-body">
+                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
+                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
+                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="container-id">-</span>
+                </div>
+            </div>
+
+            <div class="agent-card loading" id="card-hermina">
+                <div class="card-header">
+                    <div class="agent-icon">💜</div>
+                    <h2>Hermina</h2>
+                    <span class="status-badge status-unknown">⏳</span>
+                </div>
+                <div class="card-body">
+                    <div class="stat-row"><span class="label">Gateway</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">Uptime</span><span class="value">-</span></div>
+                    <div class="stat-row"><span class="label">CPU</span><span class="value cpu-value">-</span></div>
+                    <div class="stat-row"><span class="label">RAM</span><span class="value mem-value">-</span></div>
+                    <div class="stat-row"><span class="label">Última sesión</span><span class="value">-</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="container-id">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-section">
+            <h3>📊 Recursos del Sistema</h3>
+            <div class="sys-stats" id="sysStats">
+                <div class="sys-bar">
+                    <div class="sys-bar-label">
+                        <span>CPU Total</span>
+                        <span id="cpuTotalValue">-</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill cpu-fill" id="cpuBar" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="sys-bar">
+                    <div class="sys-bar-label">
+                        <span>RAM Total</span>
+                        <span id="ramTotalValue">-</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill ram-fill" id="ramBar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Titan Dashboard · <span id="footerTime">-</span> · Hecho con 🔥 por Titán</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

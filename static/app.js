@@ -384,39 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
             els.gatewayContent.innerHTML = html;
         }
 
-        // ── History ──
+        // ── History (cache for modal) ──
         if (data.history) {
             cachedHistory = data.history;
-            let html = '';
-            for (const [agentId, agentData] of Object.entries(data.history)) {
-                const sessions = agentData.sessions || [];
-                html += `<div class="agent-timeline">`;
-                html += `<div class="timeline-header" style="color: ${agentData.color}">${agentData.emoji} ${agentData.name}</div>`;
-                if (sessions.length === 0) {
-                    html += `<div class="timeline-items"><div class="timeline-empty">Sin sesiones</div></div>`;
-                } else {
-                    html += `<div class="timeline-items">`;
-                    for (const s of sessions) {
-                        const cost = s.cost_usd ? `$${s.cost_usd.toFixed(4)}` : '—';
-                        html += `
-                            <div class="timeline-item">
-                                <div class="timeline-item-header">
-                                    <span class="timeline-title">${s.title || 'Sin título'}</span>
-                                    <span class="timeline-cost">${cost}</span>
-                                </div>
-                                <div class="timeline-meta">
-                                    <span>📅 ${fmtDate(s.started_at)}</span>
-                                    <span>⏱ ${fmtDuration(s.started_at, s.ended_at)}</span>
-                                    ${s.message_count ? `<span>💬 ${s.message_count} msgs</span>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            }
-            els.historyContent.innerHTML = html;
         }
     }
 

@@ -72,10 +72,10 @@ async def exec_in_container(container_name: str, cmd: str) -> str:
 
 
 async def exec_script(container_name: str, script: str) -> str:
-    """Write a Python script via base64 to avoid quoting issues, then execute."""
+    """Write a Python script via base64 + echo (safe quoting), then execute."""
     import base64
     b64 = base64.b64encode(script.encode()).decode()
-    write_cmd = f"python3 -c \"import base64; open('/tmp/_dash_script.py','w').write(base64.b64decode('{b64}').decode())\""
+    write_cmd = f"echo '{b64}' | base64 -d > /tmp/_dash_script.py"
     write_result = await exec_in_container(container_name, write_cmd)
     if write_result and "ERROR" in write_result:
         return write_result

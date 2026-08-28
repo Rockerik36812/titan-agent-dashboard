@@ -406,9 +406,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // ─── Footer time (local clock, never reloads) ────────────
+    // ─── Footer + Header clock (local time, never reloads) ──
     function tickClock() {
         const now = new Date();
+        const timeStr = now.toLocaleTimeString('es-MX', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+        els.lastUpdate.textContent = timeStr;
         els.footerTime.textContent = now.toLocaleString('es-MX', {
             day: '2-digit', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'

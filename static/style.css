@@ -272,6 +272,13 @@ main {
     box-shadow: var(--shadow);
 }
 
+.agent-card.clickable {
+    cursor: pointer;
+}
+.agent-card.clickable:hover {
+    border-color: var(--color, var(--accent));
+}
+
 .agent-card::before {
     content: '';
     position: absolute;
@@ -608,6 +615,86 @@ footer a:hover {
     color: var(--text-muted);
     font-size: 0.9rem;
     font-weight: 500;
+}
+
+/* Agent History Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+.modal-overlay.hidden {
+    display: none;
+}
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease-out;
+}
+@keyframes modalIn {
+    from { transform: scale(0.95) translateY(10px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+.modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+.modal-close:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+}
+.modal-body {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+}
+.modal-loading {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+.modal-body .timeline-header {
+    display: none; /* hide the header since we show it in modal-title */
+}
+.modal-body .timeline-empty {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+.modal-body .timeline-item:last-child {
+    border-bottom: none;
 }
 
 .version-badge {

@@ -200,6 +200,19 @@
         Hecho con ❤️ por Titán</p>
     </footer>
 
+    <!-- Agent History Modal -->
+    <div id="agentModal" class="modal-overlay hidden" onclick="closeAgentModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">🤖 Agente</span>
+                <button class="modal-close" onclick="closeAgentModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="modal-loading">Cargando historial...</div>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/app.js"></script>
 </body>
 </html>

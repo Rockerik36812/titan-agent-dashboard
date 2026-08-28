@@ -28,12 +28,66 @@ document.addEventListener('DOMContentLoaded', () => {
         toolsGrid: document.getElementById('toolsGrid'),
         connDot: document.getElementById('connDot'),
         connLabel: document.getElementById('connLabel'),
+        modalOverlay: document.getElementById('agentModal'),
+        modalTitle: document.getElementById('modalTitle'),
+        modalBody: document.getElementById('modalBody'),
     };
 
     let dailyChart = null;
     let modelChart = null;
     let lastOfflineAlert = 0;
-    let hasData = false; // true after first SSE push
+    let hasData = false;
+    let cachedHistory = {};
+    let cachedAgents = {};
+
+    // ─── Modal ────────────────────────────────────────────────────
+    function openAgentModal(agentId) {
+        const agent = cachedAgents[agentId];
+        const hist = cachedHistory[agentId];
+        if (!agent) return;
+
+        els.modalTitle.textContent = `${agent.emoji} ${agent.name} — Historial de Sesiones`;
+        els.modalTitle.style.color = agent.color;
+
+        const sessions = hist?.sessions || [];
+        if (sessions.length === 0) {
+            els.modalBody.innerHTML = '<div class="timeline-empty">Sin sesiones registradas</div>';
+        } else {
+            els.modalBody.innerHTML = '<div class="timeline-items">' + sessions.map(s => {
+                const cost = s.cost_usd ? `$${s.cost_usd.toFixed(4)}` : '—';
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-item-header">
+                            <span class="timeline-title">${s.title || 'Sin título'}</span>
+                            <span class="timeline-cost">${cost}</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span>📅 ${fmtDate(s.started_at)}</span>
+                            <span>⏱ ${fmtDuration(s.started_at, s.ended_at)}</span>
+                            ${s.message_count ? `<span>💬 ${s.message_count} msgs</span>` : ''}
+                            ${s.tool_call_count ? `<span>🔧 ${s.tool_call_count} tools</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('') + '</div>';
+        }
+
+        els.modalOverlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAgentModal(event) {
+        if (event && event.target !== els.modalOverlay) return;
+        els.modalOverlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            els.modalOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    });
 
     // ─── Helpers ─────────────────────────────────────────────
     function fmtBytes(bytes) {
@@ -100,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const memUsed = fmtBytes(agent.mem_usage || 0);
         const memTotal = fmtBytes(agent.mem_limit || 0);
         return `
-            <div class="agent-card ${agent.online ? 'online' : ''}" style="--color: ${agent.color}">
+            <div class="agent-card clickable ${agent.online ? 'online' : ''}" data-agent-id="${agent.id}" style="--color: ${agent.color}">
                 <div class="agent-card-header">
                     <div class="agent-name">
                         <span class="agent-emoji">${agent.emoji}</span>
@@ -142,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ── Agents ──
         if (data.agents) {
+            data.agents.forEach(a => { cachedAgents[a.id] = a; });
             els.agentsGrid.innerHTML = data.agents.map(renderAgentCard).join('');
             const online = data.totals?.online ?? data.agents.filter(a => a.online).length;
             const total = data.totals?.total ?? data.agents.length;
@@ -157,6 +212,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     lastOfflineAlert = now;
                     showAlert(`⚠️ ${a.name} está fuera de línea`, 'danger');
                 }
+            });
+
+            // Click delegation for agent cards
+            els.agentsGrid.querySelectorAll('.agent-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    openAgentModal(card.dataset.agentId);
+                });
             });
         }
 
@@ -324,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ── History ──
         if (data.history) {
+            cachedHistory = data.history;
             let html = '';
             for (const [agentId, agentData] of Object.entries(data.history)) {
                 const sessions = agentData.sessions || [];

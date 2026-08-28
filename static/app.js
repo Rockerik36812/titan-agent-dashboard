@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activityContent: document.getElementById('activity-content'),
         gatewayContent: document.getElementById('gateway-content'),
         toolsGrid: document.getElementById('toolsGrid'),
-        // Connection indicator
         connDot: document.getElementById('connDot'),
         connLabel: document.getElementById('connLabel'),
     };
@@ -34,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let dailyChart = null;
     let modelChart = null;
     let lastOfflineAlert = 0;
+    let hasData = false; // true after first SSE push
 
     // ─── Helpers ─────────────────────────────────────────────
     function fmtBytes(bytes) {
@@ -85,6 +85,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ─── Loading overlay ─────────────────────────────────────
+    function removeLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.classList.add('fade-out');
+            setTimeout(() => overlay.remove(), 500);
+        }
+    }
+
     // ─── Render functions ────────────────────────────────────
     function renderAgentCard(agent) {
         const memPct = agent.mem_pct || 0;
@@ -102,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="agent-stats">
                     <div class="stat-row">
                         <span class="stat-label-inline">CPU</span>
-                        <span class="stat-value-inline" data-live="cpu-${agent.id}">${agent.cpu}%</span>
+                        <span class="stat-value-inline">${agent.cpu}%</span>
                     </div>
                     <div class="bar-container">
                         <div class="bar-fill" style="width: ${Math.min(agent.cpu, 100)}%; background: ${agent.online ? agent.color : 'var(--text-muted)'}"></div>
@@ -117,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="agent-detail">
                     <span class="agent-uptime">${agent.uptime || '—'}</span>
-                    <span class="agent-gateway" title="${agent.gateway}">${agent.online ? '✅ up' : '❌ down'}</span>
+                    <span class="agent-gateway">${agent.online ? '✅ up' : '❌ down'}</span>
                 </div>
             </div>
         `;
@@ -126,7 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAll(data) {
         // ── Timestamp ──
         if (data.ts) {
-            els.lastUpdate.textContent = new Date(data.ts * 1000).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            els.lastUpdate.textContent = new Date(data.ts * 1000).toLocaleTimeString('es-MX', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
         }
 
         // ── Agents ──
@@ -134,11 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
             els.agentsGrid.innerHTML = data.agents.map(renderAgentCard).join('');
             const online = data.totals?.online ?? data.agents.filter(a => a.online).length;
             const total = data.totals?.total ?? data.agents.length;
-            els.onlineCount.querySelector('.stat-value').textContent = `${online}/${total}`;
-            els.totalRamDisplay.querySelector('.stat-value').textContent = fmtBytes(data.totals?.used_ram || 0);
+            const onlineEl = els.onlineCount.querySelector('.stat-value');
+            if (onlineEl) onlineEl.textContent = `${online}/${total}`;
+            const ramEl = els.totalRamDisplay.querySelector('.stat-value');
+            if (ramEl) ramEl.textContent = fmtBytes(data.totals?.used_ram || 0);
             els.agentsBadge.textContent = `${online} en línea`;
 
-            // Alert if agent offline (once per agent per minute)
             const now = Date.now();
             data.agents.forEach(a => {
                 if (!a.online && now - lastOfflineAlert > 60000) {
@@ -157,10 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const pct = c.percent_used || 0;
             els.creditsPct.textContent = `${pct}%`;
             els.creditsBar.style.width = `${Math.min(pct, 100)}%`;
-            const barColor = pct > 75 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-orange)' : 'linear-gradient(90deg, var(--accent-green), var(--accent-orange))';
-            els.creditsBar.style.background = barColor;
+            els.creditsBar.style.background = pct > 75 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-orange)' : 'linear-gradient(90deg, var(--accent-green), var(--accent-orange))';
 
-            // Low credits alert
             if (c.remaining < 5 && c.remaining > 0) {
                 showAlert(`⚠️ OpenRouter bajo: $${c.remaining.toFixed(2)} restantes`, 'warning');
             }
@@ -175,20 +185,18 @@ document.addEventListener('DOMContentLoaded', () => {
             els.epicCost.textContent = `$${s.cost.toFixed(2)}`;
             els.epicDays.textContent = s.days_active;
             els.epicScore.textContent = s.titan_score || 0;
-            els.last24hDisplay.querySelector('.stat-value').textContent = s.sessions_24h;
+            const l24 = els.last24hDisplay.querySelector('.stat-value');
+            if (l24) l24.textContent = s.sessions_24h;
         }
 
         // ── Analytics (Charts) ──
         if (data.analytics && data.analytics.daily_cost) {
             const d = data.analytics;
-
-            // Week cost badge
             if (d.week_cost > 0) {
                 els.weekCostBadge.textContent = `📅 ${d.total_sessions} sesiones · $${d.week_cost.toFixed(2)}/semana`;
                 els.weekCostBadge.style.display = 'inline-block';
             }
 
-            // ── Daily Cost Chart ──
             const dailyCtx = document.getElementById('dailyCostChart');
             if (dailyCtx && d.daily_cost && d.daily_cost.length > 0) {
                 const days = d.daily_cost.map(x => x.day.slice(5));
@@ -205,8 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         data: {
                             labels: days,
                             datasets: [{
-                                label: 'Costo ($)',
-                                data: costs,
+                                label: 'Costo ($)', data: costs,
                                 backgroundColor: costs.map(c => c > 0.5 ? 'rgba(239, 68, 68, 0.6)' : c > 0.1 ? 'rgba(245, 158, 11, 0.6)' : 'rgba(34, 197, 94, 0.6)'),
                                 borderColor: costs.map(c => c > 0.5 ? '#ef4444' : c > 0.1 ? '#f59e0b' : '#22c55e'),
                                 borderWidth: 1, borderRadius: 3,
@@ -224,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // ── Model Chart ──
             const modelCtx = document.getElementById('modelChart');
             if (modelCtx && d.models && d.models.length > 0) {
                 const colors = ['#00d4ff', '#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#ef4444'];
@@ -265,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.activity.length === 0) {
                 els.activityContent.innerHTML = '<div class="activity-empty">Sin actividad reciente</div>';
             } else {
-                els.activityContent.innerHTML = data.activity.map(a => `
+                els.activityContent.innerHTML = data.activity.slice(0, 10).map(a => `
                     <div class="activity-item">
                         <div class="activity-emoji">${a.emoji}</div>
                         <div class="activity-body">
@@ -358,39 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => els.alertBanner.classList.add('hidden'), 8000);
     }
 
-    // ─── Initial Load (REST) ─────────────────────────────────
-    async function initialLoad() {
-        try {
-            const [agents, credits, stats, analytics, activity, gateway, history] = await Promise.all([
-                fetch('/api/agents').then(r => r.json()),
-                fetch('/api/credits').then(r => r.json()),
-                fetch('/api/stats').then(r => r.json()),
-                fetch('/api/analytics').then(r => r.json()),
-                fetch('/api/activity?limit=10').then(r => r.json()),
-                fetch('/api/gateway').then(r => r.json()),
-                fetch('/api/history?limit=5').then(r => r.json()),
-            ]);
-            updateAll({
-                agents: agents.agents,
-                totals: agents.totals,
-                credits,
-                stats,
-                analytics,
-                activity,
-                gateways: gateway,
-                history,
-                ts: Date.now() / 1000,
-            });
-        } catch (e) {
-            console.warn('Initial REST load failed, waiting for WebSocket', e);
-        }
-    }
-
     // ─── SSE Stream (real-time) ───────────────────────────────
     let eventSource = null;
+    let reconnectTimer = null;
 
     function connectSSE() {
-        if (eventSource) eventSource.close();
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
 
         eventSource = new EventSource('/api/stream');
 
@@ -401,6 +387,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('SSE error:', data.error);
                     return;
                 }
+                if (!hasData) {
+                    hasData = true;
+                    removeLoading();
+                }
                 setConnStatus(true);
                 updateAll(data);
             } catch (e) { /* ignore parse errors */ }
@@ -408,22 +398,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         eventSource.onerror = () => {
             setConnStatus(false);
-            eventSource.close();
-            setTimeout(connectSSE, 3000);
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            reconnectTimer = setTimeout(connectSSE, 2000);
         };
     }
 
-    // ─── Footer time ─────────────────────────────────────────
-    function updateFooterTime() {
-        els.footerTime.textContent = new Date().toLocaleString('es-MX', {
+    // ─── Footer time (local clock, never reloads) ────────────
+    function tickClock() {
+        const now = new Date();
+        els.footerTime.textContent = now.toLocaleString('es-MX', {
             day: '2-digit', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
+        requestAnimationFrame(() => setTimeout(tickClock, 1000));
     }
 
     // ─── Bootstrap ───────────────────────────────────────────
-    initialLoad();
     connectSSE();
-    updateFooterTime();
-    setInterval(updateFooterTime, 1000);
+    tickClock();
 });

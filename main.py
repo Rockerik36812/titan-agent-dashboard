@@ -504,9 +504,13 @@ async def api_history(limit: int = 8):
 async def stream_all(request: Request):
     """SSE stream that pushes ALL dashboard data every 3 seconds."""
     async def event_generator():
+        first = True
         while True:
             if await request.is_disconnected():
                 break
+            if not first:
+                await asyncio.sleep(3)
+            first = False
             try:
                 # ── Agent stats ──
                 agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]

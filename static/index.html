@@ -14,6 +14,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
+    <!-- Loading Overlay (fades out on first SSE data) -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Conectando con los agentes...</div>
+    </div>
+
     <!-- Alert Banner -->
     <div id="alertBanner" class="alert-banner hidden">
         <span id="alertMessage"></span>

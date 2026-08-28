@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Titan Dashboard — Agentes</title>
+    <title>Titan Dashboard — Bien Perro 🔥</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
+    <!-- Alert Banner -->
+    <div id="alertBanner" class="alert-banner hidden">
+        <span id="alertMessage"></span>
+        <button class="alert-close" onclick="this.parentElement.classList.add('hidden')">✕</button>
+    </div>
+
     <header>
         <div class="header-content">
             <div class="logo">
                 <span class="logo-icon">⚡</span>
                 <h1>Titan Dashboard</h1>
+                <span class="version-badge">v2.0</span>
             </div>
             <div class="header-stats">
                 <div class="header-stat" id="onlineCount">
@@ -25,6 +33,10 @@
                     <span class="stat-value">0 B</span>
                     <span class="stat-label">RAM Total</span>
                 </div>
+                <div class="header-stat" id="last24hDisplay">
+                    <span class="stat-value">0</span>
+                    <span class="stat-label">Sesiones 24h</span>
+                </div>
                 <div class="header-stat">
                     <span class="stat-value" id="lastUpdate">--</span>
                     <span class="stat-label">Actualizado</span>
@@ -34,11 +46,64 @@
     </header>
 
     <main>
-        <!-- OpenRouter Credits Widget -->
+        <!-- 🏆 Epic Stats -->
+        <section id="epic-section" class="section fade-in">
+            <div class="section-header">
+                <h2>🏆 Estadísticas Épicas</h2>
+                <span class="section-badge">Global</span>
+            </div>
+            <div class="epic-grid" id="epicGrid">
+                <div class="epic-card total-sessions">
+                    <span class="epic-value" id="epic-sessions">0</span>
+                    <span class="epic-label">Sesiones totales</span>
+                </div>
+                <div class="epic-card total-messages">
+                    <span class="epic-value" id="epic-messages">0</span>
+                    <span class="epic-label">Mensajes</span>
+                </div>
+                <div class="epic-card total-tokens">
+                    <span class="epic-value" id="epic-tokens">0</span>
+                    <span class="epic-label">Tokens procesados</span>
+                </div>
+                <div class="epic-card total-cost">
+                    <span class="epic-value" id="epic-cost">$0</span>
+                    <span class="epic-label">Gastado en total</span>
+                </div>
+                <div class="epic-card days-active">
+                    <span class="epic-value" id="epic-days">0</span>
+                    <span class="epic-label">Días activo</span>
+                </div>
+                <div class="epic-card titan-score">
+                    <span class="epic-value" id="epic-score">0</span>
+                    <span class="epic-label">⚡ Titan Score</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📊 Analytics Charts -->
+        <section id="analytics-section" class="section fade-in">
+            <div class="section-header">
+                <h2>📊 Analíticas</h2>
+                <span class="section-badge">Costos & Modelos</span>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Costo por Día (últimos 30 días)</div>
+                    <canvas id="dailyCostChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Uso por Modelo</div>
+                    <canvas id="modelChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 💰 OpenRouter Credits -->
         <section id="credits-section" class="section fade-in">
             <div class="section-header">
                 <h2>💰 OpenRouter</h2>
                 <span class="section-badge">Créditos</span>
+                <span class="week-cost-badge" id="weekCostBadge"></span>
             </div>
             <div id="credits-grid" class="credits-grid">
                 <div class="credit-card total">
@@ -62,18 +127,38 @@
             </div>
         </section>
 
-        <!-- Agent Cards -->
+        <!-- 🤖 Agent Cards -->
         <section id="agents-section" class="section fade-in">
             <div class="section-header">
                 <h2>🤖 Agentes</h2>
                 <span class="section-badge" id="agents-badge">3 en línea</span>
             </div>
-            <div id="agentsGrid" class="agents-grid">
-                <!-- Cards generated by JS -->
+            <div id="agentsGrid" class="agents-grid"></div>
+        </section>
+
+        <!-- 💬 Actividad Reciente -->
+        <section id="activity-section" class="section fade-in">
+            <div class="section-header">
+                <h2>💬 Actividad Reciente</h2>
+                <span class="section-badge">En vivo</span>
+            </div>
+            <div id="activity-content" class="activity-content">
+                <div class="activity-loading">Cargando actividad...</div>
             </div>
         </section>
 
-        <!-- Session History Timeline -->
+        <!-- 🔴 Gateway Health -->
+        <section id="gateway-section" class="section fade-in">
+            <div class="section-header">
+                <h2>🔴 Gateways</h2>
+                <span class="section-badge">Salud de conexiones</span>
+            </div>
+            <div id="gateway-content" class="gateway-content">
+                <div class="gateway-loading">Cargando gateways...</div>
+            </div>
+        </section>
+
+        <!-- 📜 Historial de Sesiones -->
         <section id="history-section" class="section fade-in">
             <div class="section-header">
                 <h2>📜 Historial de Sesiones</h2>
@@ -83,10 +168,23 @@
                 <div class="history-loading">Cargando historial...</div>
             </div>
         </section>
+
+        <!-- 🔧 Tool Usage -->
+        <section id="tools-section" class="section fade-in">
+            <div class="section-header">
+                <h2>🔧 Uso de Herramientas</h2>
+                <span class="section-badge">Tool calls</span>
+            </div>
+            <div id="tools-content" class="tools-content">
+                <div class="tools-grid" id="toolsGrid"></div>
+            </div>
+        </section>
     </main>
 
     <footer>
-        <p>Titan Dashboard v1.1 · <span id="footer-time">--</span> · <a href="https://github.com/Rockerik36812/titan-agent-dashboard" target="_blank" rel="noopener">GitHub</a></p>
+        <p>Titan Dashboard v2.0 · <span id="footer-time">--</span> · 
+        <a href="https://github.com/Rockerik36812/titan-agent-dashboard" target="_blank" rel="noopener">GitHub</a> · 
+        Hecho con ❤️ por Titán</p>
     </footer>
 
     <script src="/app.js"></script>

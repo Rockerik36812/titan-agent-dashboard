@@ -551,12 +551,32 @@ async def push_unsubscribe(request: Request):
 @app.post("/api/push/test")
 async def push_test():
     """Send a test notification to all subscribers."""
-    await _send_push_notification(
-        title="🔔 Panel de Agentes",
-        body="Notificación de prueba — funciona!",
-        tag="test",
-    )
-    return {"status": "sent"}
+    from pywebpush import webpush, WebPushException
+    from fastapi import HTTPException
+    vapid = _ensure_vapid()
+    subs = _load_subscribers()
+    if not subs:
+        raise HTTPException(400, "No subscribers. Click 🔔 first.")
+    result = {"sent": 0, "errors": 0, "details": []}
+    payload = _json.dumps({
+        "title": "🔔 Panel de Agentes",
+        "body": "Notificación de prueba — funciona!",
+        "tag": "test", "url": "/"
+    })
+    for i, sub in enumerate(subs):
+        try:
+            resp = webpush(subscription_info=sub, data=payload,
+                          vapid_private_key=vapid.private_key, vapid_claims=VAPID_CLAIMS)
+            result["sent"] += 1
+            result["details"].append({"idx": i, "status": resp.status_code})
+        except WebPushException as ex:
+            status = ex.response.status_code if ex.response else 0
+            result["errors"] += 1
+            result["details"].append({"idx": i, "error": str(ex), "status": status})
+            if status in (410, 404):
+                subs.remove(sub)
+                _save_subscribers(subs)
+    return result
 
 @app.on_event("startup")
 async def startup():

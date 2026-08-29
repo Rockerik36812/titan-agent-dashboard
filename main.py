@@ -339,8 +339,8 @@ async def api_gateway():
         g = results[i]
         uptime = ""
         if g.get("start_time") and int(g["start_time"]) > 0:
-            secs = time.time() - int(g["start_time"])
-            hours, rem = divmod(int(secs), 3600)
+            secs = int(g["start_time"])
+            hours, rem = divmod(secs, 3600)
             mins = rem // 60
             uptime = f"{hours}h {mins}m"
 
@@ -600,8 +600,8 @@ async def stream_all(request: Request):
                     g = gw_results[i]
                     uptime = ""
                     if g.get("start_time") and int(g["start_time"]) > 0:
-                        secs = time.time() - int(g["start_time"])
-                        hours, rem = divmod(int(secs), 3600)
+                        secs = int(g["start_time"])
+                        hours, rem = divmod(secs, 3600)
                         mins = rem // 60
                         uptime = f"{hours}h {mins}m"
                     gateways[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"],

@@ -533,6 +533,7 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
                     data=payload,
                     vapid_private_key=priv_b64,
                     vapid_claims=VAPID_CLAIMS,
+                    ttl=86400,
                 )
             except WebPushException as ex:
                 if ex.response and ex.response.status_code in (410, 404):
@@ -593,7 +594,7 @@ async def push_test():
     for i, sub in enumerate(subs):
         try:
             resp = webpush(subscription_info=sub, data=payload,
-                          vapid_private_key=priv_b64, vapid_claims=VAPID_CLAIMS)
+                          vapid_private_key=priv_b64, vapid_claims=VAPID_CLAIMS, ttl=86400)
             result["sent"] += 1
             result["details"].append({"idx": i, "status": resp.status_code})
         except WebPushException as ex:

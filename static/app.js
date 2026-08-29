@@ -468,6 +468,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ─── Web Push ────────────────────────────────────────────
+    // Helper: base64url string → Uint8Array
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const output = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            output[i] = rawData.charCodeAt(i);
+        }
+        return output;
+    }
+
     let pushActive = false;
     let pushSubscription = null;
 
@@ -483,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            const reg = await navigator.serviceWorker.register('/static/sw.js');
+            const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             await navigator.serviceWorker.ready;
             return reg;
         } catch (e) {
@@ -495,9 +507,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const resp = await fetch('/api/push/vapid-key');
             const data = await resp.json();
+            // Convert base64url string to Uint8Array for browser
+            const keyBytes = urlBase64ToUint8Array(data.key);
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: data.key,
+                applicationServerKey: keyBytes,
             });
             pushSubscription = sub;
             await fetch('/api/push/subscribe', {

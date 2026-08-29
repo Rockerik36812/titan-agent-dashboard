@@ -797,3 +797,11 @@ app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 @app.get("/")
 async def serve_index():
     return FileResponse("/app/static/index.html")
+
+
+@app.get("/sw.js")
+async def serve_sw():
+    return FileResponse("/app/sw.js", media_type="application/javascript", headers={
+        "Service-Worker-Allowed": "/",
+        "Cache-Control": "no-cache",
+    })

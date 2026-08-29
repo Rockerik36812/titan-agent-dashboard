@@ -436,45 +436,39 @@ VAPID_CLAIMS = {"sub": "mailto:titan@erikn8nservices.click"}
 _SUBSCRIBERS_FILE = Path("/app/push_subscribers.json")
 
 # VAPID keys: generate once, persist to file
-_vapid_private = None
-_vapid_public = None
+_vapid_obj = None
 
 
-def _ensure_vapid_keys():
-    global _vapid_private, _vapid_public
-    if _vapid_private and _vapid_public:
-        return
+def _ensure_vapid():
+    """Get or create Vapid instance (persisted)."""
+    global _vapid_obj
+    if _vapid_obj is not None:
+        return _vapid_obj
 
     key_file = Path("/app/vapid_keys.json")
     if key_file.exists():
         try:
             saved = _json.loads(key_file.read_text())
-            _vapid_private = saved["private"]
-            _vapid_public = saved["public"]
-            return
+            from py_vapid import Vapid
+            _vapid_obj = Vapid.from_string(private_key=saved["private"])
+            # Verify public key matches
+            if _vapid_obj.public_key == saved.get("public"):
+                return _vapid_obj
         except Exception:
             pass
 
-    # Generate new keys
-    from cryptography.hazmat.primitives import serialization
-    from cryptography.hazmat.primitives.asymmetric import ec
-    from cryptography.hazmat.backends import default_backend
-
-    priv = ec.generate_private_key(ec.SECP256R1(), default_backend())
-    pub = priv.public_key()
-    _vapid_private = priv.private_bytes(
-        serialization.Encoding.PEM,
-        serialization.PrivateFormat.PKCS8,
-        serialization.NoEncryption(),
-    ).decode()
-    _vapid_public = base64.urlsafe_b64encode(
-        pub.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
-    ).rstrip(b"=").decode()
-
+    # Generate using py_vapid (correct format)
+    from py_vapid import Vapid
+    _vapid_obj = Vapid()
+    _vapid_obj.generate_keys()
     try:
-        key_file.write_text(_json.dumps({"private": _vapid_private, "public": _vapid_public}))
+        key_file.write_text(_json.dumps({
+            "private": _vapid_obj.private_key,
+            "public": _vapid_obj.public_key,
+        }))
     except Exception:
         pass
+    return _vapid_obj
 
 
 def _load_subscribers() -> list:
@@ -495,7 +489,7 @@ def _save_subscribers(subs: list):
 
 async def _send_push_notification(title: str, body: str, tag: str = "agent-alert", url: str = "/"):
     """Send a push notification to all subscribers."""
-    _ensure_vapid_keys()
+    vapid = _ensure_vapid()
     subs = _load_subscribers()
     if not subs:
         return
@@ -510,25 +504,24 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
                 webpush(
                     subscription_info=sub,
                     data=payload,
-                    vapid_private_key=_vapid_private,
+                    vapid_private_key=vapid.private_key,
                     vapid_claims=VAPID_CLAIMS,
                 )
             except WebPushException as ex:
-                # If subscription expired, remove it
                 if ex.response and ex.response.status_code in (410, 404):
                     subs.remove(sub)
                     _save_subscribers(subs)
             except Exception:
                 continue
     except ImportError:
-        pass  # pywebpush not installed
+        pass
 
 
 @app.get("/api/push/vapid-key")
 async def push_vapid_key():
     """Return the VAPID public key for push subscription."""
-    _ensure_vapid_keys()
-    return {"key": _vapid_public}
+    vapid = _ensure_vapid()
+    return {"key": vapid.public_key}
 
 
 @app.post("/api/push/subscribe")

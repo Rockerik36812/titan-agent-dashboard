@@ -1165,3 +1165,26 @@ footer a:hover {
     .epic-card { break-inside: avoid; }
     footer { break-inside: avoid; }
 }
+
+/* 🔔 Push Notification Button */
+.push-btn {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: all 0.3s;
+    filter: grayscale(1);
+    opacity: 0.5;
+    line-height: 1;
+}
+.push-btn.active {
+    filter: grayscale(0);
+    opacity: 1;
+    background: rgba(34, 197, 94, 0.15);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+.push-btn:hover {
+    opacity: 0.8;
+}

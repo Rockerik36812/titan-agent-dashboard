@@ -427,7 +427,143 @@ async def api_stats():
     return merged
 
 
-# ─── Existing Routes ─────────────────────────────────────────────────
+# ─── Web Push Notifications ──────────────────────────────────────────
+
+import os, base64, json as _json
+from pathlib import Path
+
+VAPID_CLAIMS = {"sub": "mailto:titan@erikn8nservices.click"}
+_SUBSCRIBERS_FILE = Path("/app/push_subscribers.json")
+
+# VAPID keys: generate once, persist to file
+_vapid_private = None
+_vapid_public = None
+
+
+def _ensure_vapid_keys():
+    global _vapid_private, _vapid_public
+    if _vapid_private and _vapid_public:
+        return
+
+    key_file = Path("/app/vapid_keys.json")
+    if key_file.exists():
+        try:
+            saved = _json.loads(key_file.read_text())
+            _vapid_private = saved["private"]
+            _vapid_public = saved["public"]
+            return
+        except Exception:
+            pass
+
+    # Generate new keys
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.backends import default_backend
+
+    priv = ec.generate_private_key(ec.SECP256R1(), default_backend())
+    pub = priv.public_key()
+    _vapid_private = priv.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    ).decode()
+    _vapid_public = base64.urlsafe_b64encode(
+        pub.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+    ).rstrip(b"=").decode()
+
+    try:
+        key_file.write_text(_json.dumps({"private": _vapid_private, "public": _vapid_public}))
+    except Exception:
+        pass
+
+
+def _load_subscribers() -> list:
+    if _SUBSCRIBERS_FILE.exists():
+        try:
+            return _json.loads(_SUBSCRIBERS_FILE.read_text())
+        except Exception:
+            return []
+    return []
+
+
+def _save_subscribers(subs: list):
+    try:
+        _SUBSCRIBERS_FILE.write_text(_json.dumps(subs))
+    except Exception:
+        pass
+
+
+async def _send_push_notification(title: str, body: str, tag: str = "agent-alert", url: str = "/"):
+    """Send a push notification to all subscribers."""
+    _ensure_vapid_keys()
+    subs = _load_subscribers()
+    if not subs:
+        return
+
+    payload = _json.dumps({"title": title, "body": body, "tag": tag, "url": url})
+
+    try:
+        from pywebpush import webpush, WebPushException
+
+        for sub in subs:
+            try:
+                webpush(
+                    subscription_info=sub,
+                    data=payload,
+                    vapid_private_key=_vapid_private,
+                    vapid_claims=VAPID_CLAIMS,
+                )
+            except WebPushException as ex:
+                # If subscription expired, remove it
+                if ex.response and ex.response.status_code in (410, 404):
+                    subs.remove(sub)
+                    _save_subscribers(subs)
+            except Exception:
+                continue
+    except ImportError:
+        pass  # pywebpush not installed
+
+
+@app.get("/api/push/vapid-key")
+async def push_vapid_key():
+    """Return the VAPID public key for push subscription."""
+    _ensure_vapid_keys()
+    return {"key": _vapid_public}
+
+
+@app.post("/api/push/subscribe")
+async def push_subscribe(request: Request):
+    """Save a push subscription from the browser."""
+    sub = await request.json()
+    subs = _load_subscribers()
+    # Avoid duplicates (same endpoint)
+    endpoint = sub.get("endpoint", "")
+    subs = [s for s in subs if s.get("endpoint") != endpoint]
+    subs.append(sub)
+    _save_subscribers(subs)
+    return {"status": "ok", "count": len(subs)}
+
+
+@app.post("/api/push/unsubscribe")
+async def push_unsubscribe(request: Request):
+    """Remove a push subscription."""
+    body = await request.json()
+    endpoint = body.get("endpoint", "")
+    subs = _load_subscribers()
+    subs = [s for s in subs if s.get("endpoint") != endpoint]
+    _save_subscribers(subs)
+    return {"status": "ok", "count": len(subs)}
+
+
+@app.post("/api/push/test")
+async def push_test():
+    """Send a test notification to all subscribers."""
+    await _send_push_notification(
+        title="🔔 Panel de Agentes",
+        body="Notificación de prueba — funciona!",
+        tag="test",
+    )
+    return {"status": "sent"}
 
 @app.on_event("startup")
 async def startup():
@@ -615,6 +751,29 @@ async def stream_all(request: Request):
                 history = {}
                 for i, (aid, info) in enumerate(AGENTS.items()):
                     history[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"], "sessions": hist_results[i]}
+
+                # ── Auto Notify (push) ──
+                _prev_state = getattr(event_generator, "_prev_online", {})
+                for a in agent_results:
+                    aid = a["id"]
+                    was_online = _prev_state.get(aid, True)
+                    if not a["online"] and was_online:
+                        asyncio.ensure_future(_send_push_notification(
+                            title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
+                            body=f"CPU: {a['cpu']}% · RAM: {a['mem_pct']}% · Gateway: {a['gateway']}",
+                            tag=f"offline-{aid}",
+                            url="/",
+                        ))
+                event_generator._prev_online = {a["id"]: a["online"] for a in agent_results}
+
+                # ── Credits low ──
+                if credits_data.get("remaining", 100) < 5 and credits_data.get("remaining", 0) > 0:
+                    asyncio.ensure_future(_send_push_notification(
+                        title="💰 OpenRouter bajo",
+                        body=f"${credits_data['remaining']:.2f} restantes de ${credits_data['total']:.2f}",
+                        tag="credits-low",
+                        url="/",
+                    ))
 
                 # ── Push ──
                 payload = json.dumps({

@@ -467,6 +467,95 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => setTimeout(tickClock, 1000));
     }
 
+    // ─── Web Push ────────────────────────────────────────────
+    let pushActive = false;
+    let pushSubscription = null;
+
+    // Check localStorage for push state
+    if (localStorage.getItem('pushActive') === 'true') {
+        pushActive = true;
+        document.getElementById('pushBtn')?.classList.add('active');
+    }
+
+    async function registerSW() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            console.log('Push not supported');
+            return;
+        }
+        try {
+            const reg = await navigator.serviceWorker.register('/static/sw.js');
+            await navigator.serviceWorker.ready;
+            return reg;
+        } catch (e) {
+            console.warn('SW registration failed:', e);
+        }
+    }
+
+    async function subscribePush(reg) {
+        try {
+            const resp = await fetch('/api/push/vapid-key');
+            const data = await resp.json();
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: data.key,
+            });
+            pushSubscription = sub;
+            await fetch('/api/push/subscribe', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(sub.toJSON()),
+            });
+            pushActive = true;
+            localStorage.setItem('pushActive', 'true');
+            document.getElementById('pushBtn')?.classList.add('active');
+        } catch (e) {
+            console.warn('Push subscribe failed:', e);
+        }
+    }
+
+    async function unsubscribePush() {
+        if (pushSubscription) {
+            try {
+                await pushSubscription.unsubscribe();
+                await fetch('/api/push/unsubscribe', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({endpoint: pushSubscription.endpoint}),
+                });
+            } catch (e) { /* ignore */ }
+        }
+        pushActive = false;
+        pushSubscription = null;
+        localStorage.removeItem('pushActive');
+        document.getElementById('pushBtn')?.classList.remove('active');
+    }
+
+    // Register SW on load
+    registerSW();
+
+    // Make togglePush global
+    window.togglePush = async function() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            alert('Las notificaciones push no son compatibles con este navegador.');
+            return;
+        }
+        if (pushActive) {
+            await unsubscribePush();
+            return;
+        }
+        try {
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                alert('Permiso denegado. Actívalo desde la configuración del navegador.');
+                return;
+            }
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) {
+                await subscribePush(reg);
+            }
+        } catch (e) {
+            console.warn('Push toggle failed:', e);
+        }
+    };
+
     // ─── Bootstrap ───────────────────────────────────────────
     connectSSE();
     tickClock();

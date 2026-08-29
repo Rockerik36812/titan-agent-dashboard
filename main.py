@@ -433,7 +433,7 @@ import os, base64, json as _json
 from pathlib import Path
 
 VAPID_CLAIMS = {"sub": "mailto:titan@erikn8nservices.click"}
-_SUBSCRIBERS_FILE = Path("/app/push_subscribers.json")
+_SUBSCRIBERS_FILE = Path("/app/data/push_subscribers.json")
 
 # Cached keys: private = base64url-encoded DER (pywebpush format), public = base64url uncompressed point
 _vapid_private_b64 = None
@@ -446,7 +446,7 @@ def _ensure_vapid():
     if _vapid_private_b64 and _vapid_public_b64:
         return _vapid_private_b64, _vapid_public_b64
 
-    key_file = Path("/app/vapid_keys.json")
+    key_file = Path("/app/data/push_vapid.json")
     if key_file.exists():
         try:
             saved = _json.loads(key_file.read_text())

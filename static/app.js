@@ -41,7 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let cachedAgents = {};
 
     // ─── Modal ────────────────────────────────────────────────────
-    function openAgentModal(agentId) {
+    let modalAgentId = null;
+
+    function renderModalBody(agentId) {
         const agent = cachedAgents[agentId];
         const hist = cachedHistory[agentId];
         if (!agent) return;
@@ -71,13 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }).join('') + '</div>';
         }
+    }
 
+    function openAgentModal(agentId) {
+        if (!cachedAgents[agentId]) return;
+        modalAgentId = agentId;
+        renderModalBody(agentId);
         els.modalOverlay.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
     function closeAgentModal(event) {
         if (event && event.target !== els.modalOverlay) return;
+        modalAgentId = null;
         els.modalOverlay.classList.add('hidden');
         document.body.style.overflow = '';
     }
@@ -85,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            modalAgentId = null;
             els.modalOverlay.classList.add('hidden');
             document.body.style.overflow = '';
         }
@@ -388,6 +397,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // ── History (cache for modal) ──
         if (data.history) {
             cachedHistory = data.history;
+            // Auto-refresh modal if open
+            if (modalAgentId && !els.modalOverlay.classList.contains('hidden')) {
+                renderModalBody(modalAgentId);
+            }
         }
     }
 

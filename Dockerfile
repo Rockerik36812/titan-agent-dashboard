@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app
 COPY main.py .
+COPY sw.js .
 COPY static/ ./static/
 
 EXPOSE 8999

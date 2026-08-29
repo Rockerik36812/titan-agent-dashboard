@@ -435,40 +435,61 @@ from pathlib import Path
 VAPID_CLAIMS = {"sub": "mailto:titan@erikn8nservices.click"}
 _SUBSCRIBERS_FILE = Path("/app/push_subscribers.json")
 
-# VAPID keys: generate once, persist to file
-_vapid_obj = None
+# Cached VAPID keys (base64url strings, ready for pywebpush)
+_vapid_private_b64 = None
+_vapid_public_b64 = None
 
 
 def _ensure_vapid():
-    """Get or create Vapid instance (persisted)."""
-    global _vapid_obj
-    if _vapid_obj is not None:
-        return _vapid_obj
+    """Load or generate VAPID keys. Returns (private_b64, public_b64)."""
+    global _vapid_private_b64, _vapid_public_b64
+    if _vapid_private_b64 and _vapid_public_b64:
+        return _vapid_private_b64, _vapid_public_b64
 
     key_file = Path("/app/vapid_keys.json")
     if key_file.exists():
         try:
             saved = _json.loads(key_file.read_text())
-            from py_vapid import Vapid
-            _vapid_obj = Vapid.from_string(private_key=saved["private"])
-            # Verify public key matches
-            if _vapid_obj.public_key == saved.get("public"):
-                return _vapid_obj
+            _vapid_private_b64 = saved["private"]
+            _vapid_public_b64 = saved["public"]
+            # Quick validation: try to decode
+            base64.urlsafe_b64decode(_vapid_private_b64 + "==")
+            return _vapid_private_b64, _vapid_public_b64
         except Exception:
             pass
 
-    # Generate using py_vapid (correct format)
-    from py_vapid import Vapid
-    _vapid_obj = Vapid()
-    _vapid_obj.generate_keys()
+    # Generate using cryptography → DER → base64url
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.backends import default_backend
+
+    priv = ec.generate_private_key(ec.SECP256R1(), default_backend())
+    pub = priv.public_key()
+
+    # Private key: DER format → base64url (no PEM headers)
+    priv_der = priv.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+    _vapid_private_b64 = base64.urlsafe_b64encode(priv_der).rstrip(b"=").decode()
+
+    # Public key: uncompressed point → base64url
+    pub_raw = pub.public_bytes(
+        serialization.Encoding.X962,
+        serialization.PublicFormat.UncompressedPoint,
+    )
+    _vapid_public_b64 = base64.urlsafe_b64encode(pub_raw).rstrip(b"=").decode()
+
     try:
         key_file.write_text(_json.dumps({
-            "private": _vapid_obj.private_key,
-            "public": _vapid_obj.public_key,
+            "private": _vapid_private_b64,
+            "public": _vapid_public_b64,
         }))
     except Exception:
         pass
-    return _vapid_obj
+
+    return _vapid_private_b64, _vapid_public_b64
 
 
 def _load_subscribers() -> list:
@@ -489,7 +510,7 @@ def _save_subscribers(subs: list):
 
 async def _send_push_notification(title: str, body: str, tag: str = "agent-alert", url: str = "/"):
     """Send a push notification to all subscribers."""
-    vapid = _ensure_vapid()
+    priv_b64, _ = _ensure_vapid()
     subs = _load_subscribers()
     if not subs:
         return
@@ -504,7 +525,7 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
                 webpush(
                     subscription_info=sub,
                     data=payload,
-                    vapid_private_key=vapid.private_key,
+                    vapid_private_key=priv_b64,
                     vapid_claims=VAPID_CLAIMS,
                 )
             except WebPushException as ex:
@@ -520,8 +541,8 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
 @app.get("/api/push/vapid-key")
 async def push_vapid_key():
     """Return the VAPID public key for push subscription."""
-    vapid = _ensure_vapid()
-    return {"key": vapid.public_key}
+    _, pub_b64 = _ensure_vapid()
+    return {"key": pub_b64}
 
 
 @app.post("/api/push/subscribe")
@@ -553,7 +574,7 @@ async def push_test():
     """Send a test notification to all subscribers."""
     from pywebpush import webpush, WebPushException
     from fastapi import HTTPException
-    vapid = _ensure_vapid()
+    priv_b64, _ = _ensure_vapid()
     subs = _load_subscribers()
     if not subs:
         raise HTTPException(400, "No subscribers. Click 🔔 first.")
@@ -566,7 +587,7 @@ async def push_test():
     for i, sub in enumerate(subs):
         try:
             resp = webpush(subscription_info=sub, data=payload,
-                          vapid_private_key=vapid.private_key, vapid_claims=VAPID_CLAIMS)
+                          vapid_private_key=priv_b64, vapid_claims=VAPID_CLAIMS)
             result["sent"] += 1
             result["details"].append({"idx": i, "status": resp.status_code})
         except WebPushException as ex:

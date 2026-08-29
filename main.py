@@ -151,9 +151,10 @@ async def api_credits():
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode())
         if "data" in data:
-            total = data["data"]["limits"].get("monthly_dollar_limit", 50)
-            used = data["data"]["usage"]
-            remaining = round(total - used, 2)
+            d = data["data"]
+            total = d.get("limit") or 100
+            used = d.get("usage_monthly", 0)
+            remaining = round(total - used, 2) if total else 0
             return {"total": total, "used": round(used, 2), "remaining": remaining}
         return {"error": "Unexpected response", "total": 0, "used": 0, "remaining": 0}
     except Exception as e:

@@ -155,7 +155,7 @@ async def api_credits():
             total = d.get("limit") or 100
             used = d.get("usage_monthly", 0)
             remaining = round(total - used, 2) if total else 0
-            return {"total": total, "used": round(used, 2), "remaining": remaining, "percent_used": round(used / total * 100, 1) if total else 0}
+            return {"total": total, "used": round(used, 2), "remaining": remaining}
         return {"error": "Unexpected response", "total": 0, "used": 0, "remaining": 0}
     except Exception as e:
         return {"error": str(e), "total": 0, "used": 0, "remaining": 0}
@@ -243,30 +243,19 @@ print(json.dumps({'total_sessions': total_sessions, 'total_cost': round(total_co
 async def api_stats():
     tasks = [get_epic_stats(info["container"]) for info in AGENTS.values()]
     results = await asyncio.gather(*tasks)
-    sessions = 0
-    cost = 0.0
-    messages = 0
+    total = {"sessions": 0, "cost": 0, "messages": 0, "first_date": ""}
     first_dates = []
-    for r in results:
-        sessions += r["total_sessions"]
-        cost += r["total_cost"]
-        messages += r["total_messages"]
-        if r["first_date"]:
-            first_dates.append(r["first_date"])
-    first_date = min(first_dates) if first_dates else ""
-    days_active = 0
-    if first_date:
-        try:
-            fd = datetime.strptime(first_date, "%Y-%m-%d")
-            days_active = (datetime.now() - fd).days
-        except:
-            days_active = 0
-
-    return {
-        "sessions": sessions, "messages": messages, "tokens": 0,
-        "cost": round(cost, 2), "days_active": days_active,
-        "sessions_24h": 0, "titan_score": 0
-    }
+    output = {}
+    for i, (aid, info) in enumerate(AGENTS.items()):
+        s = results[i]
+        output[aid] = s
+        total["sessions"] += s["total_sessions"]
+        total["cost"] += s["total_cost"]
+        total["messages"] += s["total_messages"]
+        if s["first_date"]:
+            first_dates.append(s["first_date"])
+    total["first_date"] = min(first_dates) if first_dates else ""
+    return {"agents": output, "total": total}
 
 
 # ─── API: Analytics ──────────────────────────────────────────────────
@@ -317,20 +306,15 @@ async def api_analytics():
             combined_models[name]["output_tokens"] += m["output_tokens"]
             combined_models[name]["cost"] += m["cost"]
 
-    daily_list = [{"day": d, "cost": round(c, 4)} for d, c in sorted(combined_daily.items())]
-    models_list = [{"model": m, **v} for m, v in sorted(combined_models.items(), key=lambda x: x[1]["calls"], reverse=True)]
+    daily_list = [{"date": d, "cost": round(c, 4)} for d, c in sorted(combined_daily.items())]
+    models_list = [{"name": n, **m} for n, m in sorted(combined_models.items(), key=lambda x: x[1]["calls"], reverse=True)]
 
     total_cost = sum(d["cost"] for d in daily_list)
     total_calls = sum(m["calls"] for m in models_list)
     days_active = len(daily_list)
-    week_cost = sum(d["cost"] for d in daily_list[-7:])
     titan_score = round((days_active * 10) + (total_calls * 0.5) + max(0, 100 - total_cost * 2), 0)
 
-    return {
-        "daily_cost": daily_list, "models": models_list,
-        "titan_score": titan_score, "week_cost": round(week_cost, 4),
-        "total_sessions": days_active,
-    }
+    return {"daily": daily_list, "models": models_list, "titan_score": titan_score}
 
 
 # ─── API: Activity Feed ──────────────────────────────────────────────
@@ -346,7 +330,7 @@ rows = db.execute(
 ).fetchall()
 db.close()
 print(json.dumps([
-    {{'session_id': r[0], 'title': r[1], 'description': r[2], 'timestamp': r[3], 'cost_usd': r[4], 'message_count': r[5], 'started_at': r[6]}}
+    {{'session_id': r[0], 'title': r[1], 'description': r[2], 'timestamp': r[3], 'cost': r[4], 'messages': r[5], 'started_at': r[6]}}
     for r in rows if r[3]]))
 """
     try:
@@ -405,7 +389,7 @@ async def api_stream():
                     "stats": asyncio.create_task(api_stats()),
                     "analytics": asyncio.create_task(api_analytics()),
                     "activity": asyncio.create_task(api_history()),
-                    "gateways": asyncio.create_task(api_gateway()),
+                    "gateway": asyncio.create_task(api_gateway()),
                 }
                 done, _ = await asyncio.wait(list(tasks.values()), timeout=4.0)
                 data = {}

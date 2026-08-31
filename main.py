@@ -766,7 +766,12 @@ async def stream_all(request: Request):
                 act_results = await asyncio.gather(*act_tasks)
                 feed = []
                 for i, (aid, info) in enumerate(AGENTS.items()):
-                    for entry in act_results[i]:
+                    entries = act_results[i]
+                    if not isinstance(entries, list):
+                        continue
+                    for entry in entries:
+                        if not isinstance(entry, dict):
+                            continue
                         entry["agent_id"] = aid; entry["agent_name"] = info["name"]; entry["emoji"] = info["emoji"]; entry["color"] = info["color"]
                         feed.append(entry)
                 feed.sort(key=lambda x: x.get("timestamp") or 0, reverse=True)

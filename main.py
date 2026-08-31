@@ -681,6 +681,8 @@ async def api_history(limit: int = 8):
 async def stream_all(request: Request):
     """SSE stream that pushes ALL dashboard data every 3 seconds."""
     async def event_generator():
+        # Send immediate "connected" event so frontend knows stream is alive
+        yield "data: {\"connected\": true}\n\n"
         first = True
         while True:
             if await request.is_disconnected():

@@ -434,6 +434,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('SSE error:', data.error);
                     return;
                 }
+                if (data.connected) {
+                    setConnStatus(true);
+                    return;
+                }
                 if (!hasData) {
                     hasData = true;
                     removeLoading();

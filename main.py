@@ -194,9 +194,10 @@ async def _update_cache():
                 aid = a["id"]
                 was_online = _PREV_ONLINE.get(aid, True)
                 if not a["online"] and was_online:
+                    body = f"Agente fuera de línea"
                     asyncio.ensure_future(_send_push_notification(
                         title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
-                        body=f"CPU: {a['cpu']}% · RAM: {a['mem_pct']}% · Gateway: {a['gateway']}",
+                        body=body,
                         tag=f"offline-{aid}",
                         url="/",
                     ))

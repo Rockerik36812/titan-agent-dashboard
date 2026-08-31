@@ -580,6 +580,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ─── Bootstrap ───────────────────────────────────────────
+    // Load initial data via REST while SSE connects
+    fetch('/api/agents').then(r => r.json()).then(data => {
+        if (data && data.agents) {
+            if (!hasData) { hasData = true; removeLoading(); }
+            setConnStatus(true);
+            updateAll(data);
+        }
+    }).catch(() => {});
+    fetch('/api/credits').then(r => r.json()).then(data => {
+        if (data && data.remaining !== undefined && !hasData) {
+            // updateAll will pick it up from SSE, just a warmup
+        }
+    }).catch(() => {});
     connectSSE();
     tickClock();
 });

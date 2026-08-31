@@ -73,6 +73,7 @@ _CACHE = {
 }
 _CACHE_READY = False
 _PREV_ONLINE = {}
+_PREV_LOW_CREDITS_SENT = False
 
 
 async def _update_cache():
@@ -204,13 +205,18 @@ async def _update_cache():
             _PREV_ONLINE = {a["id"]: a["online"] for a in agent_results}
 
             # ── Credits low ──
-            if credits_data.get("remaining", 100) < 5 and credits_data.get("remaining", 0) > 0:
+            global _PREV_LOW_CREDITS_SENT
+            is_low = credits_data.get("remaining", 100) < 5 and credits_data.get("remaining", 0) > 0
+            if is_low and not _PREV_LOW_CREDITS_SENT:
+                _PREV_LOW_CREDITS_SENT = True
                 asyncio.ensure_future(_send_push_notification(
                     title="💰 OpenRouter bajo",
                     body=f"${credits_data['remaining']:.2f} restantes de ${credits_data['total']:.2f}",
                     tag="credits-low",
                     url="/",
                 ))
+            elif not is_low:
+                _PREV_LOW_CREDITS_SENT = False
 
             # ── Update cache ──
             _CACHE = {

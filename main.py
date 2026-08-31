@@ -826,8 +826,10 @@ async def stream_all(request: Request):
                     "activity": feed[:10], "gateways": gateways, "history": history, "ts": time.time(),
                 })
                 yield f"data: {payload}\n\n"
-            except Exception:
-                yield f"data: {json.dumps({'error': 'stream error'})}\n\n"
+            except Exception as exc:
+                import logging
+                logging.getLogger().error(f"SSE stream error: {exc}", exc_info=True)
+                yield f"data: {json.dumps({'error': str(exc)})}\n\n"
             await asyncio.sleep(3)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

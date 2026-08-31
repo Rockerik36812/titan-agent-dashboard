@@ -846,3 +846,17 @@ async def serve_sw():
         "Service-Worker-Allowed": "/",
         "Cache-Control": "no-cache",
     })
+
+
+# Redirect old SW path so Brave doesn't register the stale one
+@app.get("/static/sw.js")
+async def old_sw_redirect():
+    return FileResponse("/app/sw.js", media_type="application/javascript", headers={
+        "Service-Worker-Allowed": "/",
+        "Cache-Control": "no-cache",
+    })
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("/app/static/favicon.svg")

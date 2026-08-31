@@ -683,15 +683,27 @@ async def stream_all(request: Request):
     async def event_generator():
         # Send immediate "connected" event so frontend knows stream is alive
         yield "data: {\"connected\": true}\n\n"
-        first = True
+
+        # ── Phase 1: Agents only (fast, 2-3s) ──
+        try:
+            agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
+            agent_results = await asyncio.gather(*agent_tasks)
+            total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
+            used_ram = sum(a["mem_usage"] for a in agent_results if a["online"])
+            quick_payload = json.dumps({
+                "agents": agent_results,
+                "totals": {"online": sum(1 for a in agent_results if a["online"]), "total": len(agent_results), "total_ram": total_ram, "used_ram": used_ram},
+                "ts": time.time(),
+            })
+            yield f"data: {quick_payload}\n\n"
+        except Exception:
+            pass
+
         while True:
             if await request.is_disconnected():
                 break
-            if not first:
-                await asyncio.sleep(3)
-            first = False
             try:
-                # ── Agent stats ──
+                # ── Agent stats (fast) ──
                 agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
                 agent_results = await asyncio.gather(*agent_tasks)
                 total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])

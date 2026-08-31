@@ -436,6 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (data.connected) {
                     setConnStatus(true);
+                    const overlay = document.getElementById('loadingOverlay');
+                    if (overlay && !hasData) {
+                        const text = overlay.querySelector('.loading-text');
+                        if (text) text.textContent = 'Conectado — cargando datos...';
+                    }
                     return;
                 }
                 if (!hasData) {

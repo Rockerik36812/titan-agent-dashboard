@@ -42,7 +42,6 @@ OPENROUTER_MGMT_KEY = None
 
 
 def load_env():
-    """Load OpenRouter management key from env var or .env file."""
     global OPENROUTER_MGMT_KEY
     import os
     env_key = os.environ.get("OPENROUTER_MANAGEMENT_KEY")
@@ -58,6 +57,176 @@ def load_env():
                     break
     except Exception:
         OPENROUTER_MGMT_KEY = None
+
+
+# ─── Background Data Cache ──────────────────────────────────────────
+_CACHE = {
+    "agents": [],
+    "totals": {"online": 0, "total": 0, "total_ram": 0, "used_ram": 0},
+    "credits": {"total": 0, "used": 0, "remaining": 0, "percent_used": 0},
+    "stats": {},
+    "analytics": {},
+    "activity": [],
+    "gateways": {},
+    "history": {},
+    "ts": 0,
+}
+_CACHE_READY = False
+_PREV_ONLINE = {}
+
+
+async def _update_cache():
+    """Background task: refreshes all dashboard data in memory every 3s."""
+    global _CACHE, _CACHE_READY, _PREV_ONLINE
+    while True:
+        try:
+            # ── Agent stats ──
+            agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
+            agent_results = await asyncio.gather(*agent_tasks)
+            total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
+            used_ram = sum(a["mem_usage"] for a in agent_results if a["online"])
+
+            # ── Credits ──
+            credits_data = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
+            if OPENROUTER_MGMT_KEY:
+                try:
+                    req = urllib.request.Request(
+                        "https://openrouter.ai/api/v1/credits",
+                        headers={"Authorization": f"Bearer {OPENROUTER_MGMT_KEY}"},
+                    )
+                    with urllib.request.urlopen(req, timeout=8) as resp:
+                        cd = json.loads(resp.read())
+                        total = float(cd.get("data", {}).get("total_credits", 0))
+                        usage = float(cd.get("data", {}).get("total_usage", 0))
+                        credits_data = {
+                            "total": round(total, 2), "used": round(usage, 2),
+                            "remaining": round(total - usage, 2),
+                            "percent_used": round((usage / total) * 100, 1) if total > 0 else 0,
+                        }
+                except Exception:
+                    pass
+
+            # ── Epic stats ──
+            stat_tasks = [get_epic_stats(info["container"]) for info in AGENTS.values()]
+            stat_results = await asyncio.gather(*stat_tasks)
+            merged_stats = {
+                "sessions": sum(r.get("sessions", 0) for r in stat_results),
+                "messages": sum(r.get("messages", 0) for r in stat_results),
+                "tool_calls": sum(r.get("tool_calls", 0) for r in stat_results),
+                "tokens": sum(r.get("tokens", 0) for r in stat_results),
+                "cost": round(sum(r.get("cost", 0) for r in stat_results), 4),
+                "days_active": max(r.get("days_active", 0) for r in stat_results),
+                "sessions_24h": sum(r.get("sessions_24h", 0) for r in stat_results),
+            }
+            score = 0
+            score += min(merged_stats["sessions"] * 2, 200)
+            score += min(merged_stats["messages"] * 0.05, 150)
+            score += min(merged_stats["tool_calls"] * 0.5, 100)
+            score += min(merged_stats["days_active"] * 3, 150)
+            score += merged_stats["sessions_24h"] * 5
+            merged_stats["titan_score"] = min(int(score), 999)
+
+            # ── Analytics ──
+            an_tasks = [get_analytics(info["container"]) for info in AGENTS.values()]
+            an_results = await asyncio.gather(*an_tasks)
+            daily_map = {}
+            for r in an_results:
+                for d in r.get("daily_cost", []):
+                    daily_map[d["day"]] = daily_map.get(d["day"], 0) + d["cost"]
+            models_map = {}
+            for r in an_results:
+                for m in r.get("models", []):
+                    nm = m["model"]
+                    if nm not in models_map:
+                        models_map[nm] = {"model": nm, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost": 0}
+                    models_map[nm]["calls"] += m["calls"]
+                    models_map[nm]["input_tokens"] += m["input_tokens"]
+                    models_map[nm]["output_tokens"] += m["output_tokens"]
+                    models_map[nm]["cost"] += m["cost"]
+            analytics = {
+                "daily_cost": [{"day": k, "cost": round(v, 4)} for k, v in sorted(daily_map.items())],
+                "models": sorted(models_map.values(), key=lambda x: x["cost"], reverse=True),
+                "total_sessions": sum(r.get("total_sessions", 0) for r in an_results),
+                "week_cost": round(sum(r.get("week_cost", 0) for r in an_results), 4),
+            }
+
+            # ── Activity ──
+            act_tasks = [get_recent_activity(info["container"], 5) for info in AGENTS.values()]
+            act_results = await asyncio.gather(*act_tasks)
+            feed = []
+            for i, (aid, info) in enumerate(AGENTS.items()):
+                entries = act_results[i]
+                if not isinstance(entries, list):
+                    continue
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    entry["agent_id"] = aid; entry["agent_name"] = info["name"]; entry["emoji"] = info["emoji"]; entry["color"] = info["color"]
+                    feed.append(entry)
+            feed.sort(key=lambda x: x.get("timestamp") or 0, reverse=True)
+
+            # ── Gateway ──
+            gw_tasks = [get_gateway_health(info["container"]) for info in AGENTS.values()]
+            gw_results = await asyncio.gather(*gw_tasks)
+            gateways = {}
+            for i, (aid, info) in enumerate(AGENTS.items()):
+                g = gw_results[i]
+                uptime = ""
+                if g.get("start_time") and int(g["start_time"]) > 0:
+                    secs = time.time() - int(g["start_time"])
+                    hours, rem = divmod(int(secs), 3600)
+                    mins = rem // 60
+                    uptime = f"{hours}h {mins}m"
+                gateways[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"],
+                    "state": g.get("gateway_state", "unknown"), "uptime": uptime,
+                    "active_agents": g.get("active_agents", 0), "platforms": g.get("platforms", {}),
+                }
+
+            # ── History ──
+            hist_tasks = [get_session_history(aid, info["container"], 5) for aid, info in AGENTS.items()]
+            hist_results = await asyncio.gather(*hist_tasks)
+            history = {}
+            for i, (aid, info) in enumerate(AGENTS.items()):
+                history[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"], "sessions": hist_results[i]}
+
+            # ── Auto Notify (push) ──
+            for a in agent_results:
+                aid = a["id"]
+                was_online = _PREV_ONLINE.get(aid, True)
+                if not a["online"] and was_online:
+                    asyncio.ensure_future(_send_push_notification(
+                        title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
+                        body=f"CPU: {a['cpu']}% · RAM: {a['mem_pct']}% · Gateway: {a['gateway']}",
+                        tag=f"offline-{aid}",
+                        url="/",
+                    ))
+            _PREV_ONLINE = {a["id"]: a["online"] for a in agent_results}
+
+            # ── Credits low ──
+            if credits_data.get("remaining", 100) < 5 and credits_data.get("remaining", 0) > 0:
+                asyncio.ensure_future(_send_push_notification(
+                    title="💰 OpenRouter bajo",
+                    body=f"${credits_data['remaining']:.2f} restantes de ${credits_data['total']:.2f}",
+                    tag="credits-low",
+                    url="/",
+                ))
+
+            # ── Update cache ──
+            _CACHE = {
+                "agents": agent_results,
+                "totals": {"online": sum(1 for a in agent_results if a["online"]), "total": len(agent_results), "total_ram": total_ram, "used_ram": used_ram},
+                "credits": credits_data, "stats": merged_stats, "analytics": analytics,
+                "activity": feed[:10], "gateways": gateways, "history": history, "ts": time.time(),
+            }
+            _CACHE_READY = True
+        except Exception:
+            pass
+        await asyncio.sleep(3)
+
+
+@app.on_event("startup")
+async def start_cache():
+    asyncio.create_task(_update_cache())
 
 
 async def exec_in_container(container_name: str, cmd: str) -> str:
@@ -618,6 +787,9 @@ async def health():
 
 @app.get("/api/agents")
 async def api_agents():
+    if _CACHE_READY:
+        return _CACHE
+    # Fallback: direct fetch if cache not ready
     tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
     results = await asyncio.gather(*tasks)
     total_ram = sum(a["mem_limit"] for a in results if a["online"])
@@ -635,27 +807,9 @@ async def api_agents():
 
 @app.get("/api/credits")
 async def api_credits():
-    """Fetch OpenRouter credits from management API."""
-    if not OPENROUTER_MGMT_KEY:
-        return {"error": "No management key configured", "total": 0, "used": 0, "remaining": 0}
-
-    try:
-        req = urllib.request.Request(
-            "https://openrouter.ai/api/v1/credits",
-            headers={"Authorization": f"Bearer {OPENROUTER_MGMT_KEY}"},
-        )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read())
-            total = float(data.get("data", {}).get("total_credits", 0))
-            usage = float(data.get("data", {}).get("total_usage", 0))
-            return {
-                "total": round(total, 2),
-                "used": round(usage, 2),
-                "remaining": round(total - usage, 2),
-                "percent_used": round((usage / total) * 100, 1) if total > 0 else 0,
-            }
-    except Exception as e:
-        return {"error": str(e), "total": 0, "used": 0, "remaining": 0}
+    if _CACHE_READY:
+        return _CACHE["credits"]
+    return {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
 
 
 @app.get("/api/history")
@@ -679,177 +833,24 @@ async def api_history(limit: int = 8):
 
 @app.get("/api/stream")
 async def stream_all(request: Request):
-    """SSE stream that pushes ALL dashboard data every 3 seconds."""
+    """SSE stream that reads from in-memory cache — instant delivery."""
     async def event_generator():
-        # Send immediate "connected" event so frontend knows stream is alive
+        # Send immediate "connected" event
         yield "data: {\"connected\": true}\n\n"
-
-        # ── Phase 1: Agents only (fast, 2-3s) ──
-        try:
-            agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
-            agent_results = await asyncio.gather(*agent_tasks)
-            total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
-            used_ram = sum(a["mem_usage"] for a in agent_results if a["online"])
-            quick_payload = json.dumps({
-                "agents": agent_results,
-                "totals": {"online": sum(1 for a in agent_results if a["online"]), "total": len(agent_results), "total_ram": total_ram, "used_ram": used_ram},
-                "ts": time.time(),
-            })
-            yield f"data: {quick_payload}\n\n"
-        except Exception:
-            pass
-
+        waited = 0
+        # Wait for first cache fill (up to 20s)
+        while not _CACHE_READY and waited < 20:
+            await asyncio.sleep(0.5)
+            waited += 0.5
+        # Yield cached data immediately
+        if _CACHE_READY:
+            yield f"data: {json.dumps(_CACHE)}\n\n"
         while True:
             if await request.is_disconnected():
                 break
-            try:
-                # ── Agent stats (fast) ──
-                agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
-                agent_results = await asyncio.gather(*agent_tasks)
-                total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
-                used_ram = sum(a["mem_usage"] for a in agent_results if a["online"])
-
-                # ── Credits ──
-                credits_data = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
-                if OPENROUTER_MGMT_KEY:
-                    try:
-                        req = urllib.request.Request(
-                            "https://openrouter.ai/api/v1/credits",
-                            headers={"Authorization": f"Bearer {OPENROUTER_MGMT_KEY}"},
-                        )
-                        with urllib.request.urlopen(req, timeout=8) as resp:
-                            cd = json.loads(resp.read())
-                            total = float(cd.get("data", {}).get("total_credits", 0))
-                            usage = float(cd.get("data", {}).get("total_usage", 0))
-                            credits_data = {
-                                "total": round(total, 2), "used": round(usage, 2),
-                                "remaining": round(total - usage, 2),
-                                "percent_used": round((usage / total) * 100, 1) if total > 0 else 0,
-                            }
-                    except Exception:
-                        pass
-
-                # ── Epic stats ──
-                stat_tasks = [get_epic_stats(info["container"]) for info in AGENTS.values()]
-                stat_results = await asyncio.gather(*stat_tasks)
-                merged_stats = {
-                    "sessions": sum(r.get("sessions", 0) for r in stat_results),
-                    "messages": sum(r.get("messages", 0) for r in stat_results),
-                    "tool_calls": sum(r.get("tool_calls", 0) for r in stat_results),
-                    "tokens": sum(r.get("tokens", 0) for r in stat_results),
-                    "cost": round(sum(r.get("cost", 0) for r in stat_results), 4),
-                    "days_active": max(r.get("days_active", 0) for r in stat_results),
-                    "sessions_24h": sum(r.get("sessions_24h", 0) for r in stat_results),
-                }
-                score = 0
-                score += min(merged_stats["sessions"] * 2, 200)
-                score += min(merged_stats["messages"] * 0.05, 150)
-                score += min(merged_stats["tool_calls"] * 0.5, 100)
-                score += min(merged_stats["days_active"] * 3, 150)
-                score += merged_stats["sessions_24h"] * 5
-                merged_stats["titan_score"] = min(int(score), 999)
-
-                # ── Analytics ──
-                an_tasks = [get_analytics(info["container"]) for info in AGENTS.values()]
-                an_results = await asyncio.gather(*an_tasks)
-                daily_map = {}
-                for r in an_results:
-                    for d in r.get("daily_cost", []):
-                        daily_map[d["day"]] = daily_map.get(d["day"], 0) + d["cost"]
-                models_map = {}
-                for r in an_results:
-                    for m in r.get("models", []):
-                        nm = m["model"]
-                        if nm not in models_map:
-                            models_map[nm] = {"model": nm, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost": 0}
-                        models_map[nm]["calls"] += m["calls"]
-                        models_map[nm]["input_tokens"] += m["input_tokens"]
-                        models_map[nm]["output_tokens"] += m["output_tokens"]
-                        models_map[nm]["cost"] += m["cost"]
-                analytics = {
-                    "daily_cost": [{"day": k, "cost": round(v, 4)} for k, v in sorted(daily_map.items())],
-                    "models": sorted(models_map.values(), key=lambda x: x["cost"], reverse=True),
-                    "total_sessions": sum(r.get("total_sessions", 0) for r in an_results),
-                    "week_cost": round(sum(r.get("week_cost", 0) for r in an_results), 4),
-                }
-
-                # ── Activity ──
-                act_tasks = [get_recent_activity(info["container"], 5) for info in AGENTS.values()]
-                act_results = await asyncio.gather(*act_tasks)
-                feed = []
-                for i, (aid, info) in enumerate(AGENTS.items()):
-                    entries = act_results[i]
-                    if not isinstance(entries, list):
-                        continue
-                    for entry in entries:
-                        if not isinstance(entry, dict):
-                            continue
-                        entry["agent_id"] = aid; entry["agent_name"] = info["name"]; entry["emoji"] = info["emoji"]; entry["color"] = info["color"]
-                        feed.append(entry)
-                feed.sort(key=lambda x: x.get("timestamp") or 0, reverse=True)
-
-                # ── Gateway ──
-                gw_tasks = [get_gateway_health(info["container"]) for info in AGENTS.values()]
-                gw_results = await asyncio.gather(*gw_tasks)
-                gateways = {}
-                for i, (aid, info) in enumerate(AGENTS.items()):
-                    g = gw_results[i]
-                    uptime = ""
-                    if g.get("start_time") and int(g["start_time"]) > 0:
-                        secs = time.time() - int(g["start_time"])
-                        hours, rem = divmod(int(secs), 3600)
-                        mins = rem // 60
-                        uptime = f"{hours}h {mins}m"
-                    gateways[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"],
-                        "state": g.get("gateway_state", "unknown"), "uptime": uptime,
-                        "active_agents": g.get("active_agents", 0), "platforms": g.get("platforms", {}),
-                    }
-
-                # ── History ──
-                hist_tasks = [get_session_history(aid, info["container"], 5) for aid, info in AGENTS.items()]
-                hist_results = await asyncio.gather(*hist_tasks)
-                history = {}
-                for i, (aid, info) in enumerate(AGENTS.items()):
-                    history[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"], "sessions": hist_results[i]}
-
-                # ── Auto Notify (push) ──
-                _prev_state = getattr(event_generator, "_prev_online", {})
-                for a in agent_results:
-                    aid = a["id"]
-                    was_online = _prev_state.get(aid, True)
-                    if not a["online"] and was_online:
-                        asyncio.ensure_future(_send_push_notification(
-                            title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
-                            body=f"CPU: {a['cpu']}% · RAM: {a['mem_pct']}% · Gateway: {a['gateway']}",
-                            tag=f"offline-{aid}",
-                            url="/",
-                        ))
-                event_generator._prev_online = {a["id"]: a["online"] for a in agent_results}
-
-                # ── Credits low ──
-                if credits_data.get("remaining", 100) < 5 and credits_data.get("remaining", 0) > 0:
-                    asyncio.ensure_future(_send_push_notification(
-                        title="💰 OpenRouter bajo",
-                        body=f"${credits_data['remaining']:.2f} restantes de ${credits_data['total']:.2f}",
-                        tag="credits-low",
-                        url="/",
-                    ))
-
-                # ── Push ──
-                payload = json.dumps({
-                    "agents": agent_results,
-                    "totals": {"online": sum(1 for a in agent_results if a["online"]), "total": len(agent_results), "total_ram": total_ram, "used_ram": used_ram},
-                    "credits": credits_data, "stats": merged_stats, "analytics": analytics,
-                    "activity": feed[:10], "gateways": gateways, "history": history, "ts": time.time(),
-                })
-                yield f"data: {payload}\n\n"
-            except Exception as exc:
-                import logging
-                log = logging.getLogger()
-                log.error(f"SSE stream error: {exc}", exc_info=True)
-                err = json.dumps({"error": str(exc)})
-                yield f"data: {err}\n\n"
             await asyncio.sleep(3)
+            if _CACHE_READY:
+                yield f"data: {json.dumps(_CACHE)}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

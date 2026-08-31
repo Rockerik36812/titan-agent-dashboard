@@ -217,7 +217,7 @@ async def _update_cache():
                         url="/",
                     ))
             # Reset si recarga (sube de $5 otra vez)
-            if remaining >= 6:
+            if remaining > 5:
                 _PREV_LOW_CREDITS_SENT.clear()
 
             # ── Update cache ──

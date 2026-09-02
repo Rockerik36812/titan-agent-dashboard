@@ -720,7 +720,7 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
     if not subs:
         return
 
-    payload = _json.dumps({"title": title, "body": body, "tag": tag, "url": url, "icon": "/static/favicon.svg"})
+    payload = _json.dumps({"title": title, "body": body, "tag": tag, "url": url, "icon": "/static/notif-icon.png"})
 
     try:
         from pywebpush import webpush, WebPushException

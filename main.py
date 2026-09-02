@@ -89,6 +89,21 @@ async def _update_cache():
             total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
             used_ram = sum(a["mem_usage"] for a in agent_results if a["online"])
 
+            # ── Auto Notify (push) — must run FIRST, before anything can fail ──
+            for a in agent_results:
+                aid = a["id"]
+                was_online = _PREV_ONLINE.get(aid, True)
+                if not a["online"] and was_online:
+                    import logging
+                    logging.getLogger().info(f"NOTIFY: {aid} went offline (was_online={was_online})")
+                    asyncio.ensure_future(_send_push_notification(
+                        title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
+                        body="Agente fuera de línea",
+                        tag=f"offline-{aid}",
+                        url="/",
+                    ))
+            _PREV_ONLINE = {a["id"]: a["online"] for a in agent_results}
+
             # ── Credits ──
             credits_data = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
             if OPENROUTER_MGMT_KEY:
@@ -191,22 +206,6 @@ async def _update_cache():
             history = {}
             for i, (aid, info) in enumerate(AGENTS.items()):
                 history[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"], "sessions": hist_results[i]}
-
-            # ── Auto Notify (push) ──
-            for a in agent_results:
-                aid = a["id"]
-                was_online = _PREV_ONLINE.get(aid, True)
-                if not a["online"] and was_online:
-                    body = f"Agente fuera de línea"
-                    import logging
-                    logging.getLogger().info(f"NOTIFY: {aid} went offline (was_online={was_online})")
-                    asyncio.ensure_future(_send_push_notification(
-                        title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
-                        body=body,
-                        tag=f"offline-{aid}",
-                        url="/",
-                    ))
-            _PREV_ONLINE = {a["id"]: a["online"] for a in agent_results}
 
             # ── Credits low progresivo ──
             global _PREV_LOW_CREDITS_SENT

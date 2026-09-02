@@ -5,9 +5,7 @@
       <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <!-- Dark background so Android doesn't add white -->
-  <rect width="96" height="96" rx="16" fill="#0a0a0f"/>
-  <circle cx="48" cy="48" r="42" fill="none" stroke="#00d4ff" stroke-width="6"/>
-  <circle cx="48" cy="48" r="42" fill="url(#glow)"/>
+  <circle cx="48" cy="48" r="44" fill="none" stroke="#00d4ff" stroke-width="6"/>
+  <circle cx="48" cy="48" r="44" fill="url(#glow)"/>
   <text x="48" y="62" text-anchor="middle" font-size="42" fill="#00d4ff" font-family="sans-serif" font-weight="bold">⚡</text>
 </svg>

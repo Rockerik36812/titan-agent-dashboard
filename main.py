@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import time
 import urllib.request
@@ -249,15 +250,20 @@ async def exec_in_container(container_name: str, cmd: str) -> str:
         return f"ERROR: {e}"
 
 
+async def exec_python(container_name: str, script: str) -> str:
+    """Execute Python code directly (no shell) — avoids all quoting issues."""
+    client = docker.from_env()
+    try:
+        container = client.containers.get(container_name)
+        result = container.exec_run(["python3", "-c", script], user="hermes")
+        return result.output.decode() if result.output else ""
+    except Exception as e:
+        return f"ERROR: {e}"
+
+
 async def exec_script(container_name: str, script: str) -> str:
-    """Write a Python script via base64 + echo (safe quoting), then execute."""
-    import base64
-    b64 = base64.b64encode(script.encode()).decode()
-    write_cmd = f"echo '{b64}' | base64 -d > /tmp/_dash_script.py"
-    write_result = await exec_in_container(container_name, write_cmd)
-    if write_result and "ERROR" in write_result:
-        return write_result
-    return await exec_in_container(container_name, "python3 /tmp/_dash_script.py")
+    """Execute a Python script in the container directly — avoids shell quoting issues."""
+    return await exec_python(container_name, script)
 
 
 async def get_agent_stats(agent_id: str, info: dict) -> dict:

@@ -292,6 +292,10 @@ async def get_agent_stats(agent_id: str, info: dict) -> dict:
         gateway = await exec_in_container(container_name,
             "cat /run/service/gateway-default/supervise/stat 2>/dev/null || "
             "s6-svstat /run/service/gateway-default 2>/dev/null || echo 'unknown'")
+        gateway = gateway.strip()[:80]
+        if not gateway or gateway == "unknown":
+            if status == "running":
+                gateway = "online"  # Agent is up but no gateway service = still good
 
         return {
             "id": agent_id,

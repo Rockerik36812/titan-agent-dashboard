@@ -81,12 +81,11 @@ _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
 async def _update_cache():
     """Background task: refreshes all dashboard data in memory every 3s."""
     global _CACHE, _CACHE_READY, _PREV_ONLINE
-    import logging
-    logging.getLogger().info("CACHE: _update_cache started")
+    print("CACHE: _update_cache started", flush=True)
     while True:
         try:
             # ── Agent stats ──
-            logging.getLogger().info("CACHE: cycle begin")
+            print("CACHE: cycle begin", flush=True)
             agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
             agent_results = await asyncio.gather(*agent_tasks)
             total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
@@ -97,7 +96,7 @@ async def _update_cache():
                 aid = a["id"]
                 was_online = _PREV_ONLINE.get(aid, True)
                 if not a["online"] and was_online:
-                    logging.getLogger().info(f"NOTIFY: {aid} went offline (was_online={was_online})")
+                    print(f"NOTIFY: {aid} went offline (was_online={was_online})", flush=True)
                     asyncio.ensure_future(_send_push_notification(
                         title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
                         body="Agente fuera de línea",
@@ -240,15 +239,14 @@ async def _update_cache():
 
 @app.on_event("startup")
 async def on_startup():
-    import logging
-    logging.getLogger().info("CACHE: startup event fires")
+    print("CACHE: startup event fires", flush=True)
     load_env()
-    logging.getLogger().info("CACHE: load_env done")
+    print("CACHE: load_env done", flush=True)
     try:
         asyncio.create_task(_update_cache())
-        logging.getLogger().info("CACHE: task created successfully")
+        print("CACHE: task created successfully", flush=True)
     except Exception as e:
-        logging.getLogger().error(f"CACHE: failed to create task: {e}")
+        print(f"CACHE: failed to create task: {e}", flush=True)
 
 
 async def exec_in_container(container_name: str, cmd: str) -> str:

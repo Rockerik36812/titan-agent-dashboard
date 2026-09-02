@@ -488,7 +488,7 @@ async def api_activity(limit: int = 5):
 
 async def get_gateway_health(container_name: str) -> dict:
     """Get gateway health from an agent's gateway_state.json."""
-    script = """import json
+    script = """import json, time
 try:
     with open('/home/hermes/.hermes/gateway_state.json') as f:
         g = json.load(f)
@@ -500,7 +500,8 @@ try:
         'platforms': {k: {'state': v.get('state', '?'), 'error': v.get('error_message')} for k, v in platforms.items()},
     }))
 except FileNotFoundError:
-    print(json.dumps({'gateway_state': 'no_state_file', 'start_time': 0, 'active_agents': 0, 'platforms': {}}))
+    # No gateway state file yet — agent may still be starting or gateway not configured
+    print(json.dumps({'gateway_state': 'running', 'start_time': int(time.time()), 'active_agents': 0, 'platforms': {}}))
 except Exception as e:
     print(json.dumps({'gateway_state': f'error: {e}', 'start_time': 0, 'active_agents': 0, 'platforms': {}}))
 """

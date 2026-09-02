@@ -1,7 +1,7 @@
-// Panel de Agentes — Service Worker v3
+// Panel de Agentes — Service Worker v2
 // Enables Web Push notifications in background with root scope
 
-const ICON = '/static/notif-icon.png';
+const ICON = '/static/favicon.svg';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

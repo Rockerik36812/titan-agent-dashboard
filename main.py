@@ -73,7 +73,8 @@ _CACHE = {
     "ts": 0,
 }
 _CACHE_READY = False
-_PREV_ONLINE = {}
+# Initialize _PREV_ONLINE with all agents as online so first run detects transitions
+_PREV_ONLINE = {aid: True for aid in AGENTS}
 _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
 
 
@@ -197,6 +198,8 @@ async def _update_cache():
                 was_online = _PREV_ONLINE.get(aid, True)
                 if not a["online"] and was_online:
                     body = f"Agente fuera de línea"
+                    import logging
+                    logging.getLogger().info(f"NOTIFY: {aid} went offline (was_online={was_online})")
                     asyncio.ensure_future(_send_push_notification(
                         title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
                         body=body,

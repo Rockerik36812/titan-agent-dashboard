@@ -743,7 +743,7 @@ async def push_vapid_key():
 
 @app.post("/api/push/subscribe")
 async def push_subscribe(request: Request):
-    """Save a push subscription from the browser."""
+    """Save a push subscription from the browser — validate it first."""
     sub = await request.json()
     subs = _load_subscribers()
     # Avoid duplicates (same endpoint)

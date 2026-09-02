@@ -81,9 +81,12 @@ _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
 async def _update_cache():
     """Background task: refreshes all dashboard data in memory every 3s."""
     global _CACHE, _CACHE_READY, _PREV_ONLINE
+    import logging
+    logging.getLogger().info("CACHE: _update_cache started")
     while True:
         try:
             # ── Agent stats ──
+            logging.getLogger().info("CACHE: cycle begin")
             agent_tasks = [get_agent_stats(aid, info) for aid, info in AGENTS.items()]
             agent_results = await asyncio.gather(*agent_tasks)
             total_ram = sum(a["mem_limit"] for a in agent_results if a["online"])
@@ -94,7 +97,6 @@ async def _update_cache():
                 aid = a["id"]
                 was_online = _PREV_ONLINE.get(aid, True)
                 if not a["online"] and was_online:
-                    import logging
                     logging.getLogger().info(f"NOTIFY: {aid} went offline (was_online={was_online})")
                     asyncio.ensure_future(_send_push_notification(
                         title=f"⚠️ {a['emoji']} {a['name']} — fuera de línea",
@@ -237,8 +239,16 @@ async def _update_cache():
 
 
 @app.on_event("startup")
-async def start_cache():
-    asyncio.create_task(_update_cache())
+async def on_startup():
+    import logging
+    logging.getLogger().info("CACHE: startup event fires")
+    load_env()
+    logging.getLogger().info("CACHE: load_env done")
+    try:
+        asyncio.create_task(_update_cache())
+        logging.getLogger().info("CACHE: task created successfully")
+    except Exception as e:
+        logging.getLogger().error(f"CACHE: failed to create task: {e}")
 
 
 async def exec_in_container(container_name: str, cmd: str) -> str:
@@ -796,11 +806,6 @@ async def push_test():
                 subs.remove(sub)
                 _save_subscribers(subs)
     return result
-
-@app.on_event("startup")
-async def startup():
-    load_env()
-
 
 @app.get("/health")
 async def health():

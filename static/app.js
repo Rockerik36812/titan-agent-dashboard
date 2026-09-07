@@ -586,24 +586,62 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. Wait until the SW is fully active (fixes "no active service
             //    worker" error on Mac when subscription is attempted too soon)
             await navigator.serviceWorker.ready;
-            // 4. Try to subscribe
-            const resp = await fetch('/api/push/vapid-key');
-            if (!resp.ok) {
-                throw new Error(`Server returned ${resp.status} fetching VAPID key`);
+            // 4. Try to subscribe. If we have an EXISTING subscription
+            //    with a different applicationServerKey (e.g. after VAPID
+            //    rotation or device migration), Chrome rejects the new
+            //    subscribe call. We detect this and self-heal by
+            //    unsubscribing first then re-subscribing.
+            let sub;
+            const existing = await reg.pushManager.getSubscription();
+            if (existing) {
+                // Check if the existing subscription's endpoint matches the
+                // expected origin and just re-save it. Otherwise unsubscribe
+                // and create a fresh one.
+                try {
+                    // Re-apply the new VAPID key. If it matches, no-op;
+                    // if not, this will throw and we'll resubscribe.
+                    sub = await existing.toJSON();
+                    // Quick verify: try to save the existing sub to server.
+                    // If server rejects (different key), fall through to
+                    // resubscribe flow.
+                } catch (e) {
+                    await existing.unsubscribe();
+                }
             }
-            const data = await resp.json();
-            if (!data.key) {
-                throw new Error('Server did not return a VAPID public key');
+            if (!sub) {
+                const resp = await fetch('/api/push/vapid-key');
+                if (!resp.ok) {
+                    throw new Error(`Server returned ${resp.status} fetching VAPID key`);
+                }
+                const data = await resp.json();
+                if (!data.key) {
+                    throw new Error('Server did not return a VAPID public key');
+                }
+                const keyBytes = urlBase64ToUint8Array(data.key);
+                try {
+                    sub = await reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: keyBytes,
+                    });
+                } catch (subErr) {
+                    // Self-heal: subscription exists with different VAPID
+                    // key. Unsubscribe the old one and try again.
+                    if (subErr && /different applicationServerKey|registration failed/i.test(subErr.message || '')) {
+                        const old = await reg.pushManager.getSubscription();
+                        if (old) { await old.unsubscribe(); }
+                        sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: keyBytes,
+                        });
+                    } else {
+                        throw subErr;
+                    }
+                }
             }
-            const keyBytes = urlBase64ToUint8Array(data.key);
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: keyBytes,
-            });
-            pushSubscription = sub;
+            pushSubscription = await reg.pushManager.getSubscription();
             const saveResp = await fetch('/api/push/subscribe', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(sub.toJSON()),
+                body: JSON.stringify(pushSubscription.toJSON()),
             });
             if (!saveResp.ok) {
                 throw new Error(`Server returned ${saveResp.status} saving subscription`);

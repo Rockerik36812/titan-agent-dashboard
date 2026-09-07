@@ -555,27 +555,73 @@ document.addEventListener('DOMContentLoaded', () => {
     registerSW();
 
     // Make togglePush global
+    // Fixed for Mac: always register SW first, show errors to user, handle
+    // "SW not yet activated" race condition common on first subscription.
     window.togglePush = async function() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
             alert('Las notificaciones push no son compatibles con este navegador.');
             return;
         }
-        if (pushActive) {
+        if (pushActive && pushSubscription) {
             await unsubscribePush();
             return;
         }
+        // Set button to "loading" state
+        const btn = document.getElementById('pushBtn');
+        if (btn) { btn.disabled = true; btn.classList.add('loading'); }
         try {
+            // 1. Request notification permission
             const perm = await Notification.requestPermission();
             if (perm !== 'granted') {
-                alert('Permiso denegado. Actívalo desde la configuración del navegador.');
+                alert('Permiso denegado. Actívalo desde la configuración del navegador:\n\nChrome Mac → Preferencias → Privacidad y seguridad → Notificaciones');
                 return;
             }
-            const reg = await navigator.serviceWorker.getRegistration();
-            if (reg) {
-                await subscribePush(reg);
+            // 2. ALWAYS register the SW (returns existing or registers new)
+            //    This is the fix for Mac: getRegistration() can return null
+            //    if SW was unregistered or never registered on this profile.
+            let reg = await navigator.serviceWorker.getRegistration();
+            if (!reg) {
+                reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             }
+            // 3. Wait until the SW is fully active (fixes "no active service
+            //    worker" error on Mac when subscription is attempted too soon)
+            await navigator.serviceWorker.ready;
+            // 4. Try to subscribe
+            const resp = await fetch('/api/push/vapid-key');
+            if (!resp.ok) {
+                throw new Error(`Server returned ${resp.status} fetching VAPID key`);
+            }
+            const data = await resp.json();
+            if (!data.key) {
+                throw new Error('Server did not return a VAPID public key');
+            }
+            const keyBytes = urlBase64ToUint8Array(data.key);
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: keyBytes,
+            });
+            pushSubscription = sub;
+            const saveResp = await fetch('/api/push/subscribe', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(sub.toJSON()),
+            });
+            if (!saveResp.ok) {
+                throw new Error(`Server returned ${saveResp.status} saving subscription`);
+            }
+            pushActive = true;
+            localStorage.setItem('pushActive', 'true');
+            if (btn) { btn.classList.add('active'); btn.classList.remove('loading'); btn.disabled = false; }
         } catch (e) {
-            console.warn('Push toggle failed:', e);
+            console.error('Push toggle failed:', e);
+            // Show the actual error to the user (Mac-specific diagnosis)
+            let msg = 'No se pudo activar el push.';
+            if (e && e.name === 'NotAllowedError') {
+                msg = 'Permiso bloqueado. Ve a Preferencias del sistema → Notificaciones y permite el navegador.';
+            } else if (e && e.message) {
+                msg = `No se pudo activar el push: ${e.message}`;
+            }
+            alert(msg);
+            if (btn) { btn.classList.remove('active', 'loading'); btn.disabled = false; }
         }
     };
 

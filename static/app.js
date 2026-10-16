@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Modal ────────────────────────────────────────────────────
     let modalAgentId = null;
+    // Cache de logs: el modal se re-renderiza cada 3s (SSE) y borraría lo cargado,
+    // así que guardamos el último contenido y lo restauramos tras cada re-render.
+    let modalLogCache = { which: null, text: null, scroll: 0 };
 
     function renderModalBody(agentId) {
         const agent = cachedAgents[agentId];
@@ -94,11 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }).join('') + '</div>';
         }
+
+        // Restaurar logs si el usuario ya había cargado alguno (el SSE re-renderiza cada 3s)
+        if (modalLogCache.text) {
+            const pre = document.getElementById('modal-logs');
+            if (pre) {
+                pre.textContent = modalLogCache.text;
+                pre.scrollTop = modalLogCache.scroll || 0;
+            }
+        }
     }
 
     function openAgentModal(agentId) {
         if (!cachedAgents[agentId]) return;
         modalAgentId = agentId;
+        modalLogCache = { which: null, text: null, scroll: 0 };  // logs limpios al abrir otro agente
         renderModalBody(agentId);
         els.modalOverlay.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -121,12 +134,22 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const r = await fetch(`/api/logs/${agentId}?lines=${n}&which=${which}`);
             const d = await r.json();
-            if (d.error) { pre.textContent = `Error: ${d.error}`; return; }
-            const tail = (d.lines || []).join('\n').trim();
-            pre.textContent = tail || '(log vacío)';
-            pre.scrollTop = pre.scrollHeight;  // saltar al final (lo más reciente)
+            if (d.error) {
+                modalLogCache = { which, text: `Error: ${d.error}`, scroll: 0 };
+            } else {
+                const tail = (d.lines || []).join('\n').trim();
+                modalLogCache = { which, text: tail || '(log vacío)', scroll: 0 };
+            }
+            const pre2 = document.getElementById('modal-logs');
+            if (pre2) {
+                pre2.textContent = modalLogCache.text;
+                pre2.scrollTop = pre2.scrollHeight;  // saltar al final (lo más reciente)
+                modalLogCache.scroll = pre2.scrollTop;
+            }
         } catch (e) {
-            pre.textContent = `Error al cargar logs: ${e}`;
+            modalLogCache = { which, text: `Error al cargar logs: ${e}`, scroll: 0 };
+            const pre3 = document.getElementById('modal-logs');
+            if (pre3) pre3.textContent = modalLogCache.text;
         }
     }
     window.loadAgentLogs = loadAgentLogs;

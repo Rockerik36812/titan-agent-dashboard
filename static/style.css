@@ -1156,6 +1156,77 @@ footer a:hover {
     text-transform: uppercase;
 }
 
+/* ── Uso de herramientas: tarjetas por agente con barras ── */
+.tool-agent {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--color, #00d4ff);
+    border-radius: 12px;
+    padding: 1rem;
+    animation: scaleIn 0.4s ease-out;
+    transition: box-shadow 0.3s ease;
+}
+.tool-agent:hover { box-shadow: var(--shadow); }
+
+.tool-agent-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.tool-agent-name { font-size: 0.9rem; font-weight: 600; color: var(--color, #fff); }
+.tool-agent-total { font-size: 0.7rem; color: var(--text-muted); }
+
+.tool-rows { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.tool-row {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr 4.2rem;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tool-name {
+    font-size: 0.72rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-secondary, #b0b0c0);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tool-bar {
+    height: 7px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.tool-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+.tool-count {
+    font-size: 0.7rem;
+    text-align: right;
+    color: var(--text-secondary, #b0b0c0);
+    font-variant-numeric: tabular-nums;
+}
+.tool-count em {
+    font-style: normal;
+    color: var(--text-muted);
+    margin-left: 0.3rem;
+    font-size: 0.62rem;
+}
+.tool-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 1.5rem 0;
+}
+
 /* ═══════════════════════════════════════════════════════
    RESPONSIVE — Mobile First
    ═══════════════════════════════════════════════════════ */

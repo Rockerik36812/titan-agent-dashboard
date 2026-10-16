@@ -70,6 +70,7 @@ _CACHE = {
     "activity": [],
     "gateways": {},
     "history": {},
+    "tools": {},
     "ts": 0,
 }
 _CACHE_READY = False
@@ -81,7 +82,7 @@ _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
 # Se lee lanzando un contenedor efímero con / montado en modo lectura (el panel
 # no ve el filesystem del host directamente). Es costoso -> cache de 5 min.
 _DISK = {"total": 0, "used": 0, "free": 0, "percent": 0, "ts": 0}
-_DISK_TTL = 300  # segundos
+_DISK_TTL = 120  # 2 min: leerlo lanza un contenedor efímero, no conviene más seguido
 _PREV_DISK_ALERTS = set()  # umbrales de disco ya notificados
 
 
@@ -129,9 +130,9 @@ async def get_host_disk(force: bool = False) -> dict:
 # ── RAM del host ──
 # /proc/meminfo dentro del contenedor YA refleja la memoria del host (Docker no
 # la aísla, salvo que se use lxcfs) -> lectura directa, mucho más barata que el
-# contenedor efímero del disco. Cache de 60s.
+# contenedor efímero del disco. Cache de 15s (casi en vivo).
 _MEM = {"total": 0, "used": 0, "free": 0, "percent": 0, "ts": 0}
-_MEM_TTL = 60
+_MEM_TTL = 15  # refresco casi en vivo (leer /proc/meminfo es barato)
 
 
 async def get_host_memory(force: bool = False) -> dict:
@@ -285,6 +286,17 @@ async def _update_cache():
                     feed.append(entry)
             feed.sort(key=lambda x: x.get("timestamp") or 0, reverse=True)
 
+            # ── Uso de herramientas (cache 5 min: la query recorre toda la tabla) ──
+            global _TOOLS
+            if not _TOOLS["ts"] or (time.time() - _TOOLS["ts"]) > _TOOLS_TTL:
+                tools_tasks = [get_tool_usage(info["container"]) for info in AGENTS.values()]
+                tools_results = await asyncio.gather(*tools_tasks)
+                _TOOLS = {
+                    "by_agent": {aid: res for aid, res in zip(AGENTS.keys(), tools_results)},
+                    "ts": time.time(),
+                }
+            tools_data = _TOOLS["by_agent"]
+
             # ── Gateway ──
             gw_tasks = [get_gateway_health(info["container"]) for info in AGENTS.values()]
             gw_results = await asyncio.gather(*gw_tasks)
@@ -336,6 +348,7 @@ async def _update_cache():
                          "free": disk.get("free", 0), "percent": disk.get("percent", 0)},
                 "mem": {"total": mem.get("total", 0), "used": mem.get("used", 0),
                         "free": mem.get("free", 0), "percent": mem.get("percent", 0)},
+                "tools": tools_data,
                 "ts": time.time(),
             }
             _CACHE_READY = True
@@ -524,6 +537,31 @@ print(json.dumps([{{'id': r[0], 'title': r[1], 'started_at': r[2], 'ended_at': r
         return data
     except Exception as e:
         return []
+
+
+# ── Uso de herramientas por agente ──
+# La query recorre toda la tabla `messages` (~34k filas en Titán, ~157 ms), así que
+# NO va en el ciclo del SSE (3s): cache de 5 min.
+_TOOLS = {"by_agent": {}, "ts": 0}
+_TOOLS_TTL = 300
+
+
+async def get_tool_usage(container_name: str, limit: int = 8) -> dict:
+    """Desglose de herramientas usadas, desde messages.tool_name de state.db."""
+    try:
+        script = f"""import sqlite3, json
+db = sqlite3.connect('/home/hermes/.hermes/state.db')
+q = "SELECT tool_name, COUNT(*) FROM messages WHERE tool_name IS NOT NULL AND tool_name != '' GROUP BY tool_name ORDER BY COUNT(*) DESC LIMIT {limit}"
+rows = db.execute(q).fetchall()
+tot = db.execute("SELECT COUNT(*) FROM messages WHERE tool_name IS NOT NULL AND tool_name != ''").fetchone()[0]
+db.close()
+print(json.dumps({{'tools': [{{'name': r[0], 'count': r[1]}} for r in rows], 'total': tot}}))
+"""
+        result = await exec_script(container_name, script)
+        return json.loads(result)
+    except Exception as e:
+        print(f"TOOLS: error {e}", flush=True)
+        return {"tools": [], "total": 0}
 
 
 # ─── NEW: Analytics ─────────────────────────────────────────────────
@@ -1064,7 +1102,7 @@ async def api_disk():
 
 @app.get("/api/memory")
 async def api_memory():
-    """Uso de RAM del host (cacheado 60s)."""
+    """Uso de RAM del host (cacheado 15s)."""
     m = await get_host_memory()
     return {
         "total": m.get("total", 0), "used": m.get("used", 0), "free": m.get("free", 0),
@@ -1072,6 +1110,12 @@ async def api_memory():
         "total_h": _fmt_bytes(m.get("total", 0)), "used_h": _fmt_bytes(m.get("used", 0)),
         "free_h": _fmt_bytes(m.get("free", 0)),
     }
+
+
+@app.get("/api/tools")
+async def api_tools():
+    """Uso de herramientas por agente (se llena con el cache, 5 min)."""
+    return _CACHE.get("tools", {})
 
 
 @app.get("/api/logs/{agent_id}")

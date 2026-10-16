@@ -301,6 +301,43 @@ document.addEventListener('DOMContentLoaded', () => {
         renderResource(els.memPct, els.memBar, els.memInfo, d);
     }
 
+    // ── Uso de herramientas por agente ──
+    function renderTools(tools) {
+        if (!els.toolsGrid) return;
+        const order = ['titan', 'hermes', 'hermina'];
+        const ids = order.filter(id => tools && tools[id]).concat(
+            Object.keys(tools || {}).filter(id => !order.includes(id))
+        );
+        const html = ids.map(id => {
+            const a = cachedAgents[id] || {};
+            const t = tools[id] || {};
+            const list = (t.tools || []).filter(x => x && x.name);
+            if (!list.length) return '';
+            const max = Math.max(...list.map(x => x.count || 0), 1);
+            const color = a.color || '#00d4ff';
+            const rows = list.map(x => {
+                const w = Math.max(Math.round(((x.count || 0) / max) * 100), 2);
+                const pct = t.total ? Math.round(((x.count || 0) / t.total) * 100) : 0;
+                return `
+                    <div class="tool-row">
+                        <span class="tool-name" title="${x.name}">${x.name}</span>
+                        <div class="tool-bar"><div class="tool-bar-fill" style="width:${w}%; background:${color}"></div></div>
+                        <span class="tool-count">${fmtNumber(x.count || 0)}<em>${pct}%</em></span>
+                    </div>`;
+            }).join('');
+            return `
+                <div class="tool-agent" style="--color:${color}">
+                    <div class="tool-agent-head">
+                        <span class="tool-agent-name">${a.emoji || ''} ${a.name || id}</span>
+                        <span class="tool-agent-total">${fmtNumber(t.total || 0)} tool calls</span>
+                    </div>
+                    <div class="tool-rows">${rows}</div>
+                </div>`;
+        }).join('');
+        els.toolsGrid.innerHTML = html ||
+            '<div class="tool-empty">Aún no hay registros de herramientas…</div>';
+    }
+
     function updateAll(data) {
         // ── Timestamp ──
         if (data.ts) {
@@ -356,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ── Disco del host ──
         if (data.disk) renderDisk(data.disk);
         if (data.mem) renderMem(data.mem);
+        if (data.tools) renderTools(data.tools);
 
         // ── Stats ──
         if (data.stats) {
@@ -798,9 +836,13 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/disk').then(r => r.json()).then(data => {
         if (data && data.total) renderDisk(data);
     }).catch(() => {});
-    // RAM del host (cacheada 60s en el server)
+    // RAM del host (cacheada 15s en el server)
     fetch('/api/memory').then(r => r.json()).then(data => {
         if (data && data.total) renderMem(data);
+    }).catch(() => {});
+    // Uso de herramientas (cache 5 min en el server)
+    fetch('/api/tools').then(r => r.json()).then(data => {
+        if (data && Object.keys(data).length) renderTools(data);
     }).catch(() => {});
     connectSSE();
     tickClock();

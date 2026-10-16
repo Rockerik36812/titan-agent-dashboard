@@ -51,11 +51,20 @@ document.addEventListener('DOMContentLoaded', () => {
         els.modalTitle.textContent = `${agent.emoji} ${agent.name} — Historial de Sesiones`;
         els.modalTitle.style.color = agent.color;
 
+        // Bloque de modelo: en uso, principal y fallback
+        const modelBox = agent.model ? `
+            <div class="modal-model-box">
+                <div class="model-line"><span class="model-label">🧠 En uso</span><code>${agent.model}</code></div>
+                ${agent.model_primary ? `<div class="model-line"><span class="model-label">Principal</span><code>${agent.model_primary}</code></div>` : ''}
+                ${agent.model_fallback ? `<div class="model-line"><span class="model-label">Fallback</span><code>${agent.model_fallback}</code></div>` : ''}
+                ${agent.fallback_active ? '<div class="modal-fallback-warn">⚠️ Fallback activo — el modelo principal falló</div>' : ''}
+            </div>` : '';
+
         const sessions = hist?.sessions || [];
         if (sessions.length === 0) {
-            els.modalBody.innerHTML = '<div class="timeline-empty">Sin sesiones registradas</div>';
+            els.modalBody.innerHTML = modelBox + '<div class="timeline-empty">Sin sesiones registradas</div>';
         } else {
-            els.modalBody.innerHTML = '<div class="timeline-items">' + sessions.map(s => {
+            els.modalBody.innerHTML = modelBox + '<div class="timeline-items">' + sessions.map(s => {
                 const cost = s.cost_usd ? `$${s.cost_usd.toFixed(4)}` : '—';
                 return `
                     <div class="timeline-item">
@@ -163,6 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const memPct = agent.mem_pct || 0;
         const memUsed = fmtBytes(agent.mem_usage || 0);
         const memTotal = fmtBytes(agent.mem_limit || 0);
+        // Modelo en uso (nombre corto tras la barra) + aviso si el fallback está activo
+        const modelFull = agent.model || '';
+        const modelName = modelFull ? modelFull.split('/').pop() : '—';
+        const fallbackBadge = agent.fallback_active
+            ? `<span class="agent-fallback" title="Fallback activo: el modelo principal falló">⚠️ fallback</span>`
+            : '';
         return `
             <div class="agent-card clickable ${agent.online ? 'online' : ''}" data-agent-id="${agent.id}" style="--color: ${agent.color}">
                 <div class="agent-card-header">
@@ -191,6 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="agent-detail">
                     <span class="agent-uptime">${agent.uptime || '—'}</span>
                     <span class="agent-gateway">${agent.online ? '✅ up' : '❌ down'}</span>
+                </div>
+                <div class="agent-detail agent-model-row" title="${modelFull}">
+                    <span class="agent-model">🧠 ${modelName}</span>
+                    ${fallbackBadge}
                 </div>
             </div>
         `;

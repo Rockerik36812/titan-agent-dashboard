@@ -376,6 +376,81 @@ main {
     align-items: center;
 }
 
+/* fila del modelo en uso: nombre corto + badge si el fallback está activo */
+.agent-model-row {
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+    font-size: 0.72rem;
+    border-top: 1px dashed var(--border);
+}
+
+.agent-model {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 68%;
+}
+
+.agent-fallback {
+    background: rgba(255, 176, 32, 0.15);
+    color: #ffb020;
+    border: 1px solid rgba(255, 176, 32, 0.4);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Bloque de modelo dentro del modal de historial */
+.modal-model-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.model-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.model-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+}
+
+.model-line code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.76rem;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal-fallback-warn {
+    margin-top: 0.15rem;
+    background: rgba(255, 176, 32, 0.12);
+    color: #ffb020;
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 .agent-uptime {
     display: flex;
     align-items: center;

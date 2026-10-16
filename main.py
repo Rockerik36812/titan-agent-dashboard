@@ -191,11 +191,12 @@ async def _update_cache():
             for i, (aid, info) in enumerate(AGENTS.items()):
                 g = gw_results[i]
                 uptime = ""
-                if g.get("start_time") and int(g["start_time"]) > 0:
-                    secs = time.time() - int(g["start_time"])
-                    hours, rem = divmod(int(secs), 3600)
+                # uptime_secs viene calculado en get_gateway_health (start_time NO es epoch)
+                secs = int(g.get("uptime_secs") or 0)
+                if secs > 0:
+                    hours, rem = divmod(secs, 3600)
                     mins = rem // 60
-                    uptime = f"{hours}h {mins}m"
+                    uptime = f"{hours}h {mins}m" if hours else f"{mins}m"
                 gateways[aid] = {"name": info["name"], "emoji": info["emoji"], "color": info["color"],
                     "state": g.get("gateway_state", "unknown"), "uptime": uptime,
                     "active_agents": g.get("active_agents", 0), "platforms": g.get("platforms", {}),
@@ -276,6 +277,51 @@ async def exec_script(container_name: str, script: str) -> str:
     return await exec_python(container_name, script)
 
 
+async def get_model_info(container_name: str) -> dict:
+    """Modelo configurado (principal + fallback) y el que está realmente en uso."""
+    script = """import json, re, os
+out = {'primary': None, 'fallback': None, 'in_use': None, 'fallback_active': False}
+Q = chr(34); A = chr(39)
+cfg_path = '/home/hermes/.hermes/config.yaml'
+try:
+    txt = open(cfg_path).read()
+    # bloque model: -> default
+    m = re.search(r'^model:\\s*\\n((?:[ \\t]+.*\\n?)*)', txt, re.M)
+    if m:
+        mm = re.search(r'default:\\s*(\\S+)', m.group(1))
+        if mm:
+            out['primary'] = mm.group(1).strip().strip(Q).strip(A) or None
+    # bloque fallback_providers: -> primer model
+    fm = re.search(r'^fallback_providers:\\s*\\n((?:[ \\t]+.*\\n?)*)', txt, re.M)
+    if fm:
+        fm2 = re.search(r'model:\\s*(\\S+)', fm.group(1))
+        if fm2:
+            out['fallback'] = fm2.group(1).strip().strip(Q).strip(A) or None
+except Exception:
+    pass
+# modelo realmente en uso: ultimo 'model=' del agent.log (ultimos ~256KB)
+try:
+    log = '/home/hermes/.hermes/logs/agent.log'
+    size = os.path.getsize(log)
+    with open(log, 'rb') as f:
+        if size > 262144:
+            f.seek(size - 262144)
+        txt = f.read().decode('utf-8', 'replace')
+    found = re.findall(r'model=([\\w\\-\\./:]+)', txt)
+    if found:
+        out['in_use'] = found[-1]
+except Exception:
+    pass
+out['fallback_active'] = bool(out['in_use'] and out['primary'] and out['in_use'] != out['primary'])
+print(json.dumps(out))
+"""
+    try:
+        result = await exec_script(container_name, script)
+        return json.loads(result)
+    except Exception:
+        return {"primary": None, "fallback": None, "in_use": None, "fallback_active": False}
+
+
 async def get_agent_stats(agent_id: str, info: dict) -> dict:
     """Get stats for a single agent."""
     container_name = info["container"]
@@ -313,6 +359,9 @@ async def get_agent_stats(agent_id: str, info: dict) -> dict:
             if status == "running":
                 gateway = "online"  # Agent is up but no gateway service = still good
 
+        # Modelo configurado + modelo en uso (para ver si el fallback está activo)
+        model_info = await get_model_info(container_name)
+
         return {
             "id": agent_id,
             "name": info["name"],
@@ -326,6 +375,10 @@ async def get_agent_stats(agent_id: str, info: dict) -> dict:
             "uptime": uptime,
             "gateway": gateway.strip()[:80],
             "container": container_name[:20],
+            "model": model_info.get("in_use") or model_info.get("primary"),
+            "model_primary": model_info.get("primary"),
+            "model_fallback": model_info.get("fallback"),
+            "fallback_active": bool(model_info.get("fallback_active")),
         }
     except Exception as e:
         return {
@@ -341,6 +394,10 @@ async def get_agent_stats(agent_id: str, info: dict) -> dict:
             "uptime": "offline",
             "gateway": "unknown",
             "container": container_name[:20],
+            "model": None,
+            "model_primary": None,
+            "model_fallback": None,
+            "fallback_active": False,
         }
 
 
@@ -370,12 +427,27 @@ async def get_analytics(container_name: str) -> dict:
     script = """import sqlite3, json
 db = sqlite3.connect('/home/hermes/.hermes/state.db')
 
-# Cost per day (last 30 days)
+# Cost per day — últimos 30 días CON datos.
+# OJO: antes filtraba por started_at > now-30d, y si el agente no tuvo sesiones
+# recientes la gráfica salía vacía. Ahora tomamos los últimos días con costo real.
 daily = db.execute(
     "SELECT date(started_at, 'unixepoch') as d, COALESCE(SUM(estimated_cost_usd), 0) "
-    "FROM sessions WHERE started_at > strftime('%s', 'now', '-30 days') AND estimated_cost_usd > 0 "
-    "GROUP BY d ORDER BY d"
-).fetchall()
+    "FROM sessions WHERE estimated_cost_usd > 0 "
+    "GROUP BY d ORDER BY d DESC LIMIT 30"
+).fetchall()[::-1]
+
+# Rellenar días intermedios sin actividad con 0 para una serie continua
+if daily:
+    from datetime import date, timedelta
+    dmap = {r[0]: r[1] for r in daily}
+    cur = date.fromisoformat(daily[0][0])
+    last = date.fromisoformat(daily[-1][0])
+    series = []
+    while cur <= last:
+        k = cur.isoformat()
+        series.append((k, dmap.get(k, 0)))
+        cur += timedelta(days=1)
+    daily = series
 
 # Model usage
 models = db.execute(
@@ -458,22 +530,32 @@ async def get_recent_activity(container_name: str, limit: int = 5) -> list:
     """Get recent activity entries from an agent."""
     script = f"""import sqlite3, json, time
 db = sqlite3.connect('/home/hermes/.hermes/state.db')
+# OJO: antes se filtraba por last_activity_description no vacío, y ese campo
+# casi nunca se llena (solo en eventos de compresión) -> el feed salía vacío.
+# Ahora tomamos las sesiones recientes y derivamos una descripción útil.
 rows = db.execute(
     "SELECT id, title, last_activity_description, last_activity_at, estimated_cost_usd, "
-    "message_count, started_at FROM sessions "
-    "WHERE last_activity_description IS NOT NULL AND last_activity_description != '' "
+    "message_count, started_at, end_reason FROM sessions "
+    "WHERE last_activity_at IS NOT NULL "
     "ORDER BY last_activity_at DESC LIMIT {limit}"
 ).fetchall()
 db.close()
-print(json.dumps([{{
-    'session_id': r[0],
-    'title': r[1],
-    'description': r[2],
-    'timestamp': r[3],
-    'cost_usd': round(r[4] or 0, 4),
-    'message_count': r[5] or 0,
-    'started_at': r[6],
-}} for r in rows]))
+out = []
+for r in rows:
+    desc = (r[2] or '').strip() or (r[1] or '').strip()
+    if not desc:
+        er = (r[7] or '').strip()
+        desc = ('Sesión ' + er) if er else 'Actividad reciente'
+    out.append({{
+        'session_id': r[0],
+        'title': r[1],
+        'description': desc,
+        'timestamp': r[3],
+        'cost_usd': round(r[4] or 0, 4),
+        'message_count': r[5] or 0,
+        'started_at': r[6],
+    }})
+print(json.dumps(out))
 """
     try:
         result = await exec_script(container_name, script)
@@ -504,14 +586,38 @@ async def api_activity(limit: int = 5):
 
 async def get_gateway_health(container_name: str) -> dict:
     """Get gateway health from an agent's gateway_state.json."""
-    script = """import json, time
+    script = """import json, time, os
 try:
     with open('/home/hermes/.hermes/gateway_state.json') as f:
         g = json.load(f)
     platforms = g.get('platforms', {})
+    # ── Uptime real del proceso del gateway ──
+    # OJO: g['start_time'] NO es un timestamp epoch (son ticks de /proc/PID/stat),
+    # por eso no se puede hacer time.time() - start_time.
+    uptime_secs = 0
+    pid = g.get('pid')
+    if pid:
+        try:
+            # método 1: /proc/uptime - (starttime_ticks / CLK_TCK)
+            with open('/proc/%s/stat' % pid) as f:
+                fields = f.read().split()
+            starttime_ticks = int(fields[21])
+            clk = os.sysconf('SC_CLK_TCK')
+            with open('/proc/uptime') as f:
+                system_uptime = float(f.read().split()[0])
+            uptime_secs = max(0, int(system_uptime - (starttime_ticks / clk)))
+        except Exception:
+            try:
+                import subprocess
+                out = subprocess.check_output(['ps', '-o', 'etimes=', '-p', str(pid)], stderr=subprocess.DEVNULL)
+                uptime_secs = max(0, int(out.decode().strip()))
+            except Exception:
+                uptime_secs = 0
     print(json.dumps({
         'gateway_state': g.get('gateway_state', 'unknown'),
         'start_time': g.get('start_time', 0),
+        'uptime_secs': uptime_secs,
+        'pid': pid,
         'active_agents': g.get('active_agents', 0),
         'platforms': {k: {'state': v.get('state', '?'), 'error': v.get('error_message')} for k, v in platforms.items()},
     }))
@@ -537,11 +643,12 @@ async def api_gateway():
     for i, (aid, info) in enumerate(AGENTS.items()):
         g = results[i]
         uptime = ""
-        if g.get("start_time") and int(g["start_time"]) > 0:
-            secs = time.time() - int(g["start_time"])
-            hours, rem = divmod(int(secs), 3600)
+        # uptime_secs viene calculado en get_gateway_health (start_time NO es epoch)
+        secs = int(g.get("uptime_secs") or 0)
+        if secs > 0:
+            hours, rem = divmod(secs, 3600)
             mins = rem // 60
-            uptime = f"{hours}h {mins}m"
+            uptime = f"{hours}h {mins}m" if hours else f"{mins}m"
 
         output[aid] = {
             "name": info["name"],

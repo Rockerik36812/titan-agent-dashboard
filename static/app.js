@@ -401,7 +401,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const modelCtx = document.getElementById('modelChart');
             if (modelCtx && d.models && d.models.length > 0) {
-                const colors = ['#00d4ff', '#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#ef4444'];
+                // Colores generados para N modelos: la paleta fija de 6 hacía que
+                // se repitieran los colores cuando hay muchos modelos.
+                const colors = d.models.map((_, i) =>
+                    `hsl(${Math.round((i * 360) / d.models.length)}, 72%, 60%)`
+                );
                 const labels = d.models.map(m => {
                     // Quitar el prefijo del proveedor ("deepseek/") pero conservar el
                     // nombre completo del modelo: cortar a 2 partes hacía que

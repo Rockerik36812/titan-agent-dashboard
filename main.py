@@ -77,6 +77,54 @@ _CACHE_READY = False
 _PREV_ONLINE = {aid: True for aid in AGENTS}
 _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
 
+# ── Disco del host ──
+# Se lee lanzando un contenedor efímero con / montado en modo lectura (el panel
+# no ve el filesystem del host directamente). Es costoso -> cache de 5 min.
+_DISK = {"total": 0, "used": 0, "free": 0, "percent": 0, "ts": 0}
+_DISK_TTL = 300  # segundos
+_PREV_DISK_ALERTS = set()  # umbrales de disco ya notificados
+
+
+def _fmt_bytes(n) -> str:
+    """Formatea bytes a algo legible (GB/MB)."""
+    try:
+        n = float(n)
+    except Exception:
+        return "—"
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024 or unit == "TB":
+            return f"{n:.1f} {unit}" if unit != "B" else f"{int(n)} B"
+        n /= 1024
+    return f"{n:.1f} TB"
+
+
+async def get_host_disk(force: bool = False) -> dict:
+    """Uso de disco del HOST. Cacheado (_DISK_TTL) porque lanza un contenedor efímero."""
+    global _DISK
+    now = time.time()
+    if not force and _DISK.get("ts") and (now - _DISK["ts"]) < _DISK_TTL:
+        return _DISK
+    try:
+        client = docker.from_env()
+
+        def _run():
+            return client.containers.run(
+                "alpine", ["df", "-B1", "/host"],
+                volumes={"/": {"bind": "/host", "mode": "ro"}},
+                remove=True,
+            )
+
+        out = await asyncio.to_thread(_run)
+        lines = [l for l in out.decode().strip().split("\n") if l.strip()]
+        parts = lines[-1].split()
+        total, used, free = int(parts[1]), int(parts[2]), int(parts[3])
+        pct = round(used / total * 100, 1) if total else 0
+        _DISK = {"total": total, "used": used, "free": free, "percent": pct, "ts": now}
+    except Exception as e:
+        print(f"DISK: error {e}", flush=True)
+        _DISK["ts"] = now  # evitar reintentos en cada ciclo si falla
+    return _DISK
+
 
 async def _update_cache():
     """Background task: refreshes all dashboard data in memory every 3s."""
@@ -104,6 +152,24 @@ async def _update_cache():
                         url="/",
                     ))
             _PREV_ONLINE = {a["id"]: a["online"] for a in agent_results}
+
+            # ── Disco del host (+ alertas por umbral) ──
+            global _PREV_DISK_ALERTS
+            disk = await get_host_disk()
+            dpct = disk.get("percent", 0)
+            for threshold in (90, 80):
+                if dpct >= threshold and threshold not in _PREV_DISK_ALERTS:
+                    _PREV_DISK_ALERTS.add(threshold)
+                    print(f"NOTIFY: disco al {dpct}% (umbral {threshold})", flush=True)
+                    asyncio.ensure_future(_send_push_notification(
+                        title=f"💾 Disco al {dpct}%",
+                        body=f"Quedan {_fmt_bytes(disk.get('free', 0))} libres de {_fmt_bytes(disk.get('total', 0))}",
+                        tag=f"disk-{threshold}",
+                        url="/",
+                    ))
+            # Reset cuando baja, para volver a avisar si sube otra vez
+            if dpct < 75:
+                _PREV_DISK_ALERTS.clear()
 
             # ── Credits ──
             credits_data = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
@@ -230,7 +296,10 @@ async def _update_cache():
                 "agents": agent_results,
                 "totals": {"online": sum(1 for a in agent_results if a["online"]), "total": len(agent_results), "total_ram": total_ram, "used_ram": used_ram},
                 "credits": credits_data, "stats": merged_stats, "analytics": analytics,
-                "activity": feed[:10], "gateways": gateways, "history": history, "ts": time.time(),
+                "activity": feed[:10], "gateways": gateways, "history": history,
+                "disk": {"total": disk.get("total", 0), "used": disk.get("used", 0),
+                         "free": disk.get("free", 0), "percent": disk.get("percent", 0)},
+                "ts": time.time(),
             }
             _CACHE_READY = True
         except Exception:
@@ -942,6 +1011,42 @@ async def api_credits():
     if _CACHE_READY:
         return _CACHE["credits"]
     return {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
+
+
+@app.get("/api/disk")
+async def api_disk():
+    """Uso de disco del host (cacheado 5 min)."""
+    d = await get_host_disk()
+    return {
+        "total": d.get("total", 0), "used": d.get("used", 0), "free": d.get("free", 0),
+        "percent": d.get("percent", 0),
+        "total_h": _fmt_bytes(d.get("total", 0)), "used_h": _fmt_bytes(d.get("used", 0)),
+        "free_h": _fmt_bytes(d.get("free", 0)),
+    }
+
+
+@app.get("/api/logs/{agent_id}")
+async def api_logs(agent_id: str, lines: int = 200, which: str = "agent"):
+    """Tail del log de un agente (agent.log por defecto, gateway.log con ?which=gateway)."""
+    info = AGENTS.get(agent_id)
+    if not info:
+        return {"error": "agente desconocido"}
+    try:
+        n = max(10, min(int(lines), 2000))
+    except Exception:
+        n = 200
+    fname = "gateway.log" if which == "gateway" else "agent.log"
+    try:
+        out = await exec_in_container(
+            info["container"],
+            f"tail -n {n} /home/hermes/.hermes/logs/{fname} 2>/dev/null || echo '(sin log disponible)'",
+        )
+        return {
+            "agent_id": agent_id, "name": info["name"], "emoji": info["emoji"],
+            "color": info["color"], "file": fname, "lines": out.split("\n"),
+        }
+    except Exception as e:
+        return {"error": str(e), "agent_id": agent_id, "lines": []}
 
 
 @app.get("/api/history")

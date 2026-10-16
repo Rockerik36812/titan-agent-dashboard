@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Panel de Agentes</title>
-    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link rel="stylesheet" href="/static/style.css?v=5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -143,6 +143,24 @@
             </div>
         </section>
 
+        <!-- 💾 Sistema: disco del host -->
+        <section id="system-section" class="section fade-in">
+            <div class="section-header">
+                <h2>💾 Sistema</h2>
+                <span class="section-badge">Disco del host</span>
+            </div>
+            <div class="disk-card">
+                <div class="disk-top">
+                    <span class="disk-label">Almacenamiento</span>
+                    <span class="disk-pct" id="disk-pct">—</span>
+                </div>
+                <div class="disk-bar">
+                    <div class="disk-bar-fill" id="disk-bar" style="width: 0%"></div>
+                </div>
+                <div class="disk-info" id="disk-info">Cargando…</div>
+            </div>
+        </section>
+
         <!-- 🤖 Agent Cards -->
         <section id="agents-section" class="section fade-in">
             <div class="section-header">
@@ -205,6 +223,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=6"></script>
+    <script src="/static/app.js?v=7"></script>
 </body>
 </html>

@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         creditsRemaining: document.getElementById('credits-remaining'),
         creditsPct: document.getElementById('credits-pct'),
         creditsBar: document.getElementById('credits-bar'),
+        diskPct: document.getElementById('disk-pct'),
+        diskBar: document.getElementById('disk-bar'),
+        diskInfo: document.getElementById('disk-info'),
         historyContent: document.getElementById('history-content'),
         agentsBadge: document.getElementById('agents-badge'),
         weekCostBadge: document.getElementById('weekCostBadge'),
@@ -60,11 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${agent.fallback_active ? '<div class="modal-fallback-warn">⚠️ Fallback activo — el modelo principal falló</div>' : ''}
             </div>` : '';
 
+        // Controles de logs en vivo
+        const logControls = `
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent')">📜 Logs del agente</button>
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','gateway')">🔌 Logs del gateway</button>
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent',true)">🔄 Refrescar</button>
+            </div>
+            <pre id="modal-logs" class="modal-logs">Pulsa un botón para ver los logs…</pre>`;
+
         const sessions = hist?.sessions || [];
         if (sessions.length === 0) {
-            els.modalBody.innerHTML = modelBox + '<div class="timeline-empty">Sin sesiones registradas</div>';
+            els.modalBody.innerHTML = modelBox + logControls + '<div class="timeline-empty">Sin sesiones registradas</div>';
         } else {
-            els.modalBody.innerHTML = modelBox + '<div class="timeline-items">' + sessions.map(s => {
+            els.modalBody.innerHTML = modelBox + logControls + '<div class="timeline-items">' + sessions.map(s => {
                 const cost = s.cost_usd ? `$${s.cost_usd.toFixed(4)}` : '—';
                 return `
                     <div class="timeline-item">
@@ -99,6 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
     }
     window.closeAgentModal = closeAgentModal;
+
+    // ── Visor de logs en vivo (agent.log / gateway.log) ──
+    async function loadAgentLogs(agentId, which = 'agent', isRefresh = false) {
+        const pre = document.getElementById('modal-logs');
+        if (!pre) return;
+        const n = isRefresh ? 400 : 200;
+        pre.textContent = 'Cargando logs…';
+        try {
+            const r = await fetch(`/api/logs/${agentId}?lines=${n}&which=${which}`);
+            const d = await r.json();
+            if (d.error) { pre.textContent = `Error: ${d.error}`; return; }
+            const tail = (d.lines || []).join('\n').trim();
+            pre.textContent = tail || '(log vacío)';
+            pre.scrollTop = pre.scrollHeight;  // saltar al final (lo más reciente)
+        } catch (e) {
+            pre.textContent = `Error al cargar logs: ${e}`;
+        }
+    }
+    window.loadAgentLogs = loadAgentLogs;
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -215,6 +246,26 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    function fmtGB(bytes) {
+        if (!bytes) return '—';
+        const gb = bytes / (1024 ** 3);
+        return gb >= 1024 ? `${(gb / 1024).toFixed(1)} TB` : `${gb.toFixed(1)} GB`;
+    }
+
+    function renderDisk(d) {
+        const pct = (d && d.percent) || 0;
+        if (els.diskPct) els.diskPct.textContent = pct ? `${pct}%` : '—';
+        if (els.diskBar) {
+            els.diskBar.style.width = `${Math.min(pct, 100)}%`;
+            els.diskBar.style.background = pct >= 90 ? 'var(--accent-red)'
+                : pct >= 80 ? 'var(--accent-orange)'
+                : '#00d4ff';
+        }
+        if (els.diskInfo && d && d.total) {
+            els.diskInfo.textContent = `${fmtGB(d.used)} usados · ${fmtGB(d.free)} libres de ${fmtGB(d.total)}`;
+        }
+    }
+
     function updateAll(data) {
         // ── Timestamp ──
         if (data.ts) {
@@ -266,6 +317,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlert(`⚠️ OpenRouter bajo: $${c.remaining.toFixed(2)} restantes`, 'warning');
             }
         }
+
+        // ── Disco del host ──
+        if (data.disk) renderDisk(data.disk);
 
         // ── Stats ──
         if (data.stats) {
@@ -695,6 +749,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data && data.remaining !== undefined && !hasData) {
             // updateAll will pick it up from SSE, just a warmup
         }
+    }).catch(() => {});
+    // Disco del host: cacheado en el server (5 min), lo pedimos al arrancar
+    fetch('/api/disk').then(r => r.json()).then(data => {
+        if (data && data.total) renderDisk(data);
     }).catch(() => {});
     connectSSE();
     tickClock();

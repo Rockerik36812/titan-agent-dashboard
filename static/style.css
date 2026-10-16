@@ -451,6 +451,102 @@ main {
     font-weight: 600;
 }
 
+/* ── Sección Sistema: disco del host ── */
+.disk-card {
+    background: var(--card, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.disk-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.disk-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.disk-pct {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.disk-bar {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.disk-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #00d4ff;
+    transition: width 0.6s ease, background 0.4s ease;
+}
+
+.disk-info {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ── Logs en vivo dentro del modal ── */
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.modal-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.modal-logs {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    max-height: 320px;
+    overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    line-height: 1.45;
+    color: #b9c6d4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 640px) {
+    .modal-btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; }
+    .modal-logs { max-height: 240px; font-size: 0.66rem; }
+}
+
 .agent-uptime {
     display: flex;
     align-items: center;

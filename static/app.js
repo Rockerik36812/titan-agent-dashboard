@@ -403,8 +403,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modelCtx && d.models && d.models.length > 0) {
                 const colors = ['#00d4ff', '#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#ef4444'];
                 const labels = d.models.map(m => {
-                    const short = m.model.replace(/^[^/]+\//, '').split('-').slice(0, 2).join('-');
-                    return short.length > 15 ? short.slice(0, 12) + '...' : short;
+                    // Quitar el prefijo del proveedor ("deepseek/") pero conservar el
+                    // nombre completo del modelo: cortar a 2 partes hacía que
+                    // "deepseek-v4-flash" y "deepseek-v4-flash-0731" se vieran IGUALES.
+                    const short = m.model.replace(/^[^/]+\//, '');
+                    return short.length > 24 ? short.slice(0, 22) + '…' : short;
                 });
                 const values = d.models.map(m => m.cost);
                 if (modelChart) {
@@ -417,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         data: {
                             labels: labels,
                             datasets: [{
+                                label: 'Costo ($)',
                                 data: values,
                                 backgroundColor: colors.slice(0, labels.length),
                                 borderColor: '#16161f', borderWidth: 2,

@@ -126,6 +126,40 @@ async def get_host_disk(force: bool = False) -> dict:
     return _DISK
 
 
+# ── RAM del host ──
+# /proc/meminfo dentro del contenedor YA refleja la memoria del host (Docker no
+# la aísla, salvo que se use lxcfs) -> lectura directa, mucho más barata que el
+# contenedor efímero del disco. Cache de 60s.
+_MEM = {"total": 0, "used": 0, "free": 0, "percent": 0, "ts": 0}
+_MEM_TTL = 60
+
+
+async def get_host_memory(force: bool = False) -> dict:
+    """Uso de RAM del HOST leyendo /proc/meminfo."""
+    global _MEM
+    now = time.time()
+    if not force and _MEM.get("ts") and (now - _MEM["ts"]) < _MEM_TTL:
+        return _MEM
+    try:
+        vals = {}
+        with open("/proc/meminfo") as f:
+            for line in f:
+                key, _, rest = line.partition(":")
+                parts = rest.split()
+                if parts:
+                    vals[key.strip()] = int(parts[0]) * 1024  # kB -> bytes
+        total = vals.get("MemTotal", 0)
+        # "used" como en `free`: total - disponible (MemAvailable incluye caché recuperable)
+        avail = vals.get("MemAvailable") or vals.get("MemFree") or 0
+        used = max(total - avail, 0)
+        pct = round(used / total * 100, 1) if total else 0
+        _MEM = {"total": total, "used": used, "free": avail, "percent": pct, "ts": now}
+    except Exception as e:
+        print(f"MEM: error {e}", flush=True)
+        _MEM["ts"] = now  # evitar reintentos en cada ciclo si falla
+    return _MEM
+
+
 async def _update_cache():
     """Background task: refreshes all dashboard data in memory every 3s."""
     global _CACHE, _CACHE_READY, _PREV_ONLINE
@@ -156,6 +190,7 @@ async def _update_cache():
             # ── Disco del host (+ alertas por umbral) ──
             global _PREV_DISK_ALERTS
             disk = await get_host_disk()
+            mem = await get_host_memory()
             dpct = disk.get("percent", 0)
             for threshold in (90, 80):
                 if dpct >= threshold and threshold not in _PREV_DISK_ALERTS:
@@ -299,6 +334,8 @@ async def _update_cache():
                 "activity": feed[:10], "gateways": gateways, "history": history,
                 "disk": {"total": disk.get("total", 0), "used": disk.get("used", 0),
                          "free": disk.get("free", 0), "percent": disk.get("percent", 0)},
+                "mem": {"total": mem.get("total", 0), "used": mem.get("used", 0),
+                        "free": mem.get("free", 0), "percent": mem.get("percent", 0)},
                 "ts": time.time(),
             }
             _CACHE_READY = True
@@ -1022,6 +1059,18 @@ async def api_disk():
         "percent": d.get("percent", 0),
         "total_h": _fmt_bytes(d.get("total", 0)), "used_h": _fmt_bytes(d.get("used", 0)),
         "free_h": _fmt_bytes(d.get("free", 0)),
+    }
+
+
+@app.get("/api/memory")
+async def api_memory():
+    """Uso de RAM del host (cacheado 60s)."""
+    m = await get_host_memory()
+    return {
+        "total": m.get("total", 0), "used": m.get("used", 0), "free": m.get("free", 0),
+        "percent": m.get("percent", 0),
+        "total_h": _fmt_bytes(m.get("total", 0)), "used_h": _fmt_bytes(m.get("used", 0)),
+        "free_h": _fmt_bytes(m.get("free", 0)),
     }
 
 

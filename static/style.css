@@ -451,7 +451,13 @@ main {
     font-weight: 600;
 }
 
-/* ── Sección Sistema: disco del host ── */
+/* ── Sección Sistema: recursos del host (disco + RAM) ── */
+.sys-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
 .disk-card {
     background: var(--card, rgba(255, 255, 255, 0.03));
     border: 1px solid var(--border);
@@ -545,6 +551,7 @@ main {
 @media (max-width: 640px) {
     .modal-btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; }
     .modal-logs { max-height: 240px; font-size: 0.66rem; }
+    .sys-grid { grid-template-columns: 1fr; }  /* disco y RAM en columna en móvil */
 }
 
 .agent-uptime {

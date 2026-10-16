@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
         diskPct: document.getElementById('disk-pct'),
         diskBar: document.getElementById('disk-bar'),
         diskInfo: document.getElementById('disk-info'),
+        memPct: document.getElementById('mem-pct'),
+        memBar: document.getElementById('mem-bar'),
+        memInfo: document.getElementById('mem-info'),
         historyContent: document.getElementById('history-content'),
         agentsBadge: document.getElementById('agents-badge'),
         weekCostBadge: document.getElementById('weekCostBadge'),
@@ -275,18 +278,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return gb >= 1024 ? `${(gb / 1024).toFixed(1)} TB` : `${gb.toFixed(1)} GB`;
     }
 
-    function renderDisk(d) {
+    // Render genérico de una barra de recurso (sirve para disco y RAM)
+    function renderResource(pctEl, barEl, infoEl, d) {
         const pct = (d && d.percent) || 0;
-        if (els.diskPct) els.diskPct.textContent = pct ? `${pct}%` : '—';
-        if (els.diskBar) {
-            els.diskBar.style.width = `${Math.min(pct, 100)}%`;
-            els.diskBar.style.background = pct >= 90 ? 'var(--accent-red)'
+        if (pctEl) pctEl.textContent = pct ? `${pct}%` : '—';
+        if (barEl) {
+            barEl.style.width = `${Math.min(pct, 100)}%`;
+            barEl.style.background = pct >= 90 ? 'var(--accent-red)'
                 : pct >= 80 ? 'var(--accent-orange)'
                 : '#00d4ff';
         }
-        if (els.diskInfo && d && d.total) {
-            els.diskInfo.textContent = `${fmtGB(d.used)} usados · ${fmtGB(d.free)} libres de ${fmtGB(d.total)}`;
+        if (infoEl && d && d.total) {
+            infoEl.textContent = `${fmtGB(d.used)} usados · ${fmtGB(d.free)} libres de ${fmtGB(d.total)}`;
         }
+    }
+
+    function renderDisk(d) {
+        renderResource(els.diskPct, els.diskBar, els.diskInfo, d);
+    }
+
+    function renderMem(d) {
+        renderResource(els.memPct, els.memBar, els.memInfo, d);
     }
 
     function updateAll(data) {
@@ -343,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ── Disco del host ──
         if (data.disk) renderDisk(data.disk);
+        if (data.mem) renderMem(data.mem);
 
         // ── Stats ──
         if (data.stats) {
@@ -784,6 +797,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Disco del host: cacheado en el server (5 min), lo pedimos al arrancar
     fetch('/api/disk').then(r => r.json()).then(data => {
         if (data && data.total) renderDisk(data);
+    }).catch(() => {});
+    // RAM del host (cacheada 60s en el server)
+    fetch('/api/memory').then(r => r.json()).then(data => {
+        if (data && data.total) renderMem(data);
     }).catch(() => {});
     connectSSE();
     tickClock();

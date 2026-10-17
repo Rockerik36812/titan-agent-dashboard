@@ -1439,36 +1439,42 @@ footer a:hover {
     opacity: 0.8;
 }
 
-/* Botón de salir: la puertita sola no dice nada, así que lleva etiqueta
-   visible. Va en fila (puerta + texto) para quedar a la altura de la campanita. */
+/* Botón de salir: la puertita sola no dice nada, así que lleva etiqueta visible.
+   El botón mide solo la puerta (queda a la altura del indicador "En vivo") y el
+   texto cuelga justo debajo, fuera del flujo para no estirar el botón. */
 .logout-btn {
+    position: relative;
     display: flex;
-    flex-direction: row;   /* puerta y texto al lado: así el botón no es más alto que la campanita */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     align-self: center;   /* .header-stats no define align-items: sin esto el botón se estira */
-    gap: 0.5rem;
+    padding: 0;
     background: none;
     border: 1px solid transparent;
-    padding: 2px 8px;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.25s;
 }
 .logout-btn .logout-icon {
-    font-size: 1.45rem;   /* deja el botón en 29px exactos, igual que la campanita y el "En vivo" */
+    font-size: 1.65rem;   /* deja el botón en 28px, igual que el "En vivo" */
     line-height: 1;
     filter: grayscale(1);
     opacity: 0.6;
     transition: all 0.25s;
 }
 .logout-btn .logout-label {
-    font-size: 1rem;      /* escalado en la misma proporcion que la puerta (~43%) */
+    position: absolute;   /* fuera del flujo: no estira el botón */
+    top: calc(100% + 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.03em;
     line-height: 1;
+    white-space: nowrap;
     transition: all 0.25s;
 }
 .logout-btn:hover {

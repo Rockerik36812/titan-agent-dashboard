@@ -112,6 +112,7 @@ header {
 
 .header-stats {
     display: flex;
+    align-items: center;   /* sin esto los hijos se estiran a la altura del más alto */
     gap: 1.5rem;
 }
 
@@ -1444,6 +1445,8 @@ footer a:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    align-self: center;   /* .header-stats no define align-items: sin esto el botón se estira */
     gap: 1px;
     background: none;
     border: 1px solid transparent;

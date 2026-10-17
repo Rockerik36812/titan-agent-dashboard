@@ -1457,17 +1457,17 @@ footer a:hover {
     transition: all 0.25s;
 }
 .logout-btn .logout-icon {
-    font-size: 4.6rem;   /* 4x el tamaño original (1.15rem): el dueño lo pidió así */
+    font-size: 3.45rem;   /* 3x el tamaño original (1.15rem) */
     line-height: 1;
     filter: grayscale(1);
     opacity: 0.6;
     transition: all 0.25s;
 }
 .logout-btn .logout-label {
-    font-size: 0.7rem;
+    font-size: 1.5rem;    /* escalado para acompañar a la puerta (antes 0.7rem, quedaba diminuto) */
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     line-height: 1;
     transition: all 0.25s;
 }

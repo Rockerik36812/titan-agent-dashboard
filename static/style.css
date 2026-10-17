@@ -1437,3 +1437,40 @@ footer a:hover {
 .push-btn:hover {
     opacity: 0.8;
 }
+
+/* Botón de salir: la puertita sola no dice nada, así que lleva etiqueta
+   visible (mismo patrón que los stats del header: valor arriba, texto abajo). */
+.logout-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    background: none;
+    border: 1px solid transparent;
+    padding: 2px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.25s;
+}
+.logout-btn .logout-icon {
+    font-size: 1.15rem;
+    line-height: 1.2;
+    filter: grayscale(1);
+    opacity: 0.6;
+    transition: all 0.25s;
+}
+.logout-btn .logout-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    transition: all 0.25s;
+}
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.logout-btn:hover .logout-icon { filter: grayscale(0); opacity: 1; }
+.logout-btn:hover .logout-label { color: #ff9b9b; }

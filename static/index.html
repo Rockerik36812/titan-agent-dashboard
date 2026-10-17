@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Panel de Agentes</title>
-    <link rel="stylesheet" href="/static/style.css?v=8">
+    <link rel="stylesheet" href="/static/style.css?v=9">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -52,8 +52,9 @@
                 <button id="pushBtn" class="push-btn" onclick="togglePush()" title="Activar notificaciones">
                     🔔
                 </button>
-                <button id="logoutBtn" class="push-btn" onclick="doLogout()" title="Cerrar sesión">
-                    🚪
+                <button id="logoutBtn" class="logout-btn" onclick="doLogout()" title="Cerrar sesión">
+                    <span class="logout-icon">🚪</span>
+                    <span class="logout-label">Salir</span>
                 </button>
                 <div class="connection-status">
                     <span class="conn-dot dead" id="connDot"></span>

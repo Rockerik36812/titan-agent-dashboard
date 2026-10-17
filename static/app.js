@@ -619,9 +619,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventSource.close();
                 eventSource = null;
             }
+            // Si la sesión expiró, el SSE falla en bucle: comprobar y volver al login.
+            rawFetch('/api/agents').catch(() => {});
             reconnectTimer = setTimeout(connectSSE, 2000);
         };
     }
+
+    // ─── Sesión ────────────────────────────────────────────────────
+    // fetch sin el guard, para poder comprobar la sesión sin bucles.
+    const rawFetch = window.fetch.bind(window);
+
+    // Cualquier 401 significa que la sesión expiró -> volver al login.
+    // Se intercepta globalmente para cubrir también los fetch que se agreguen después.
+    window.fetch = async (...args) => {
+        const res = await rawFetch(...args);
+        if (res.status === 401) {
+            window.location.replace('/login');
+        }
+        return res;
+    };
+
+    async function doLogout() {
+        try {
+            await rawFetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) { /* aunque falle, salimos del panel */ }
+        window.location.replace('/login');
+    }
+    window.doLogout = doLogout;
 
     // ─── Footer + Header clock (local time, never reloads) ──
     function tickClock() {

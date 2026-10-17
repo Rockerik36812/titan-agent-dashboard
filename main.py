@@ -1,6 +1,9 @@
 import asyncio
 import base64
+import hashlib
+import hmac
 import json
+import os
 import time
 import urllib.request
 import urllib.error
@@ -9,7 +12,7 @@ from pathlib import Path
 
 import docker
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Titan Agent Dashboard")
@@ -58,6 +61,182 @@ def load_env():
                     break
     except Exception:
         OPENROUTER_MGMT_KEY = None
+
+
+# ─── Autenticación ──────────────────────────────────────────────────
+# Un solo usuario (el dueño del panel). La contraseña se crea la PRIMERA vez
+# desde /login (como el "primer registro = admin" del dashboard de cumpleaños)
+# y se guarda hasheada con PBKDF2-SHA256 + salt aleatorio en el volumen /app/data.
+# El directorio es configurable para poder probar sin tocar el volumen real.
+_APP_DIR = os.environ.get("PANEL_APP_DIR", "/app")   # configurable para pruebas
+_DATA_DIR = os.environ.get("PANEL_DATA_DIR", "/app/data")
+_AUTH_FILE = os.path.join(_DATA_DIR, "auth.json")
+_SECRET_FILE = os.path.join(_DATA_DIR, "session_secret")
+COOKIE_NAME = "panel_session"
+SESSION_TTL_REMEMBER = 7 * 24 * 3600   # 7 días con "recordarme"
+SESSION_TTL_DEFAULT = 12 * 3600        # 12 h si no lo marca
+_PBKDF2_ROUNDS = 200_000
+# Rutas accesibles SIN sesión (la pantalla de login y lo que necesita para verse)
+_PUBLIC_PATHS = {
+    "/login", "/api/auth/login", "/api/auth/setup", "/api/auth/status",
+    "/sw.js", "/static/sw.js", "/favicon.ico", "/health",
+}
+
+
+def _auth_secret() -> bytes:
+    """Secreto para firmar las cookies de sesión (persistente en el volumen)."""
+    try:
+        with open(_SECRET_FILE, "rb") as f:
+            s = f.read()
+            if len(s) >= 32:
+                return s
+    except Exception:
+        pass
+    s = os.urandom(32)
+    try:
+        os.makedirs(os.path.dirname(_SECRET_FILE), exist_ok=True)
+        with open(_SECRET_FILE, "wb") as f:
+            f.write(s)
+        os.chmod(_SECRET_FILE, 0o600)
+    except Exception as e:
+        print(f"AUTH: no se pudo guardar el secreto ({e}); las sesiones no sobrevivirán al reinicio", flush=True)
+    return s
+
+
+def _load_auth() -> dict:
+    try:
+        with open(_AUTH_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_auth(d: dict):
+    os.makedirs(os.path.dirname(_AUTH_FILE), exist_ok=True)
+    with open(_AUTH_FILE, "w") as f:
+        json.dump(d, f)
+    try:
+        os.chmod(_AUTH_FILE, 0o600)
+    except Exception:
+        pass
+
+
+def hash_password(password: str, salt: str) -> str:
+    """PBKDF2-SHA256 con salt. Nunca se guarda la contraseña en texto plano."""
+    return hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), bytes.fromhex(salt), _PBKDF2_ROUNDS
+    ).hex()
+
+
+def make_session(ttl: int) -> str:
+    """Token de sesión firmado con HMAC: payload.exp + firma."""
+    exp = int(time.time()) + ttl
+    payload = base64.urlsafe_b64encode(
+        json.dumps({"exp": exp}).encode()
+    ).decode().rstrip("=")
+    sig = hmac.new(_auth_secret(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}.{sig}"
+
+
+def session_valid(token: str) -> bool:
+    """Valida firma (comparación en tiempo constante) y expiración."""
+    try:
+        payload, sig = token.rsplit(".", 1)
+        expected = hmac.new(_auth_secret(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected):
+            return False
+        pad = "=" * (-len(payload) % 4)
+        data = json.loads(base64.urlsafe_b64decode(payload + pad))
+        return int(data.get("exp", 0)) > time.time()
+    except Exception:
+        return False
+
+
+def _set_session_cookie(resp: JSONResponse, remember: bool, secure: bool):
+    ttl = SESSION_TTL_REMEMBER if remember else SESSION_TTL_DEFAULT
+    resp.set_cookie(
+        COOKIE_NAME, make_session(ttl), max_age=ttl,
+        httponly=True, secure=secure, samesite="lax", path="/",
+    )
+
+
+def _is_https(request: Request) -> bool:
+    """Caddy termina el TLS, así que hay que mirar X-Forwarded-Proto."""
+    proto = request.headers.get("x-forwarded-proto", "") or request.url.scheme
+    return proto.split(",")[0].strip() == "https"
+
+
+@app.middleware("http")
+async def auth_guard(request: Request, call_next):
+    """Protege TODO (página, APIs, logs, SSE) salvo las rutas públicas."""
+    path = request.url.path
+    if path in _PUBLIC_PATHS or path.startswith("/static/"):
+        return await call_next(request)
+    token = request.cookies.get(COOKIE_NAME)
+    if token and session_valid(token):
+        return await call_next(request)
+    # Sin sesión válida: JSON 401 para las APIs, redirect al login para el resto
+    if path.startswith("/api/"):
+        return JSONResponse({"error": "no autenticado"}, status_code=401)
+    return RedirectResponse("/login", status_code=302)
+
+
+@app.get("/api/auth/status")
+async def auth_status():
+    """¿Ya existe contraseña? (define si el login muestra 'crear' o 'entrar')."""
+    return {"configured": bool(_load_auth().get("hash"))}
+
+
+@app.post("/api/auth/setup")
+async def auth_setup(request: Request):
+    """Primera vez: crea la contraseña del dueño."""
+    if _load_auth().get("hash"):
+        return JSONResponse({"error": "Ya está configurado"}, status_code=400)
+    body = await request.json()
+    pwd = (body.get("password") or "")
+    if len(pwd) < 8:
+        return JSONResponse({"error": "La contraseña debe tener al menos 8 caracteres"}, status_code=400)
+    salt = os.urandom(16).hex()
+    _save_auth({
+        "user": (body.get("user") or "titan").strip() or "titan",
+        "salt": salt, "hash": hash_password(pwd, salt), "created": int(time.time()),
+    })
+    print("AUTH: contraseña configurada", flush=True)
+    resp = JSONResponse({"ok": True})
+    _set_session_cookie(resp, remember=True, secure=_is_https(request))
+    return resp
+
+
+@app.post("/api/auth/login")
+async def auth_login(request: Request):
+    a = _load_auth()
+    if not a.get("hash"):
+        return JSONResponse({"error": "Aún no hay contraseña configurada", "setup": True}, status_code=400)
+    body = await request.json()
+    user = (body.get("user") or "").strip()
+    pwd = body.get("password") or ""
+    ok_user = hmac.compare_digest(user, a.get("user", ""))
+    ok_pwd = hmac.compare_digest(hash_password(pwd, a.get("salt", "")), a.get("hash", ""))
+    if not (ok_user and ok_pwd):
+        print(f"AUTH: intento fallido (usuario '{user[:20]}')", flush=True)
+        await asyncio.sleep(1)  # freno a la fuerza bruta
+        return JSONResponse({"error": "Usuario o contraseña incorrectos"}, status_code=401)
+    print("AUTH: sesión iniciada", flush=True)
+    resp = JSONResponse({"ok": True})
+    _set_session_cookie(resp, remember=bool(body.get("remember")), secure=_is_https(request))
+    return resp
+
+
+@app.post("/api/auth/logout")
+async def auth_logout():
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(COOKIE_NAME, path="/")
+    return resp
+
+
+@app.get("/login")
+async def login_page():
+    return FileResponse(f"{_APP_DIR}/static/login.html", headers={"Cache-Control": "no-store"})
 
 
 # ─── Background Data Cache ──────────────────────────────────────────
@@ -1186,12 +1365,12 @@ async def stream_all(request: Request):
 
 
 # Serve static files
-app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+app.mount("/static", StaticFiles(directory=f"{_APP_DIR}/static"), name="static")
 
 
 @app.get("/")
 async def serve_index():
-    return FileResponse("/app/static/index.html", headers={
+    return FileResponse(f"{_APP_DIR}/static/index.html", headers={
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",
         "Expires": "0",
@@ -1200,7 +1379,7 @@ async def serve_index():
 
 @app.get("/sw.js")
 async def serve_sw():
-    return FileResponse("/app/sw.js", media_type="application/javascript", headers={
+    return FileResponse(f"{_APP_DIR}/sw.js", media_type="application/javascript", headers={
         "Service-Worker-Allowed": "/",
         "Cache-Control": "no-cache",
     })
@@ -1209,7 +1388,7 @@ async def serve_sw():
 # Redirect old SW path so Brave doesn't register the stale one
 @app.get("/static/sw.js")
 async def old_sw_redirect():
-    return FileResponse("/app/sw.js", media_type="application/javascript", headers={
+    return FileResponse(f"{_APP_DIR}/sw.js", media_type="application/javascript", headers={
         "Service-Worker-Allowed": "/",
         "Cache-Control": "no-cache",
     })
@@ -1217,4 +1396,4 @@ async def old_sw_redirect():
 
 @app.get("/favicon.ico")
 async def favicon():
-    return FileResponse("/app/static/favicon.svg")
+    return FileResponse(f"{_APP_DIR}/static/favicon.svg")

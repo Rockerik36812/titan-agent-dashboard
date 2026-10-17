@@ -74,7 +74,6 @@ header {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     padding: 1rem 2rem;
-    padding-bottom: 12px;   /* aire extra abajo para el texto "Salir" del botón de salida */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -1445,6 +1444,7 @@ footer a:hover {
    texto cuelga justo debajo, fuera del flujo para no estirar el botón. */
 .logout-btn {
     position: relative;
+    top: 8px;             /* el bloque (puerta + texto) va más abajo, a petición del dueño */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1484,3 +1484,9 @@ footer a:hover {
 }
 .logout-btn:hover .logout-icon { filter: grayscale(0); opacity: 1; }
 .logout-btn:hover .logout-label { color: #ff9b9b; }
+
+/* Aire extra abajo del header para el texto "Salir" que cuelga bajo la puerta.
+   Se excluye el modo "celular acostado" (max-height 480px), que debe seguir compacto. */
+@media (min-height: 481px) {
+    header { padding-bottom: 20px; }
+}

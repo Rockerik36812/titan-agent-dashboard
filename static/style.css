@@ -74,6 +74,7 @@ header {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     padding: 1rem 2rem;
+    padding-bottom: 12px;   /* aire extra abajo para el texto "Salir" del botón de salida */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -1466,7 +1467,7 @@ footer a:hover {
 }
 .logout-btn .logout-label {
     position: absolute;   /* fuera del flujo: no estira el botón */
-    top: calc(100% + 1px);
+    top: calc(100% + 5px);
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.75rem;

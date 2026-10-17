@@ -1457,7 +1457,7 @@ footer a:hover {
     transition: all 0.25s;
 }
 .logout-btn .logout-icon {
-    font-size: 2.3rem;   /* 2x el tamaño original (1.15rem) */
+    font-size: 1.45rem;   /* deja el botón en 29px exactos, igual que la campanita y el "En vivo" */
     line-height: 1;
     filter: grayscale(1);
     opacity: 0.6;

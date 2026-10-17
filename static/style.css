@@ -1457,8 +1457,8 @@ footer a:hover {
     transition: all 0.25s;
 }
 .logout-btn .logout-icon {
-    font-size: 1.15rem;
-    line-height: 1.2;
+    font-size: 4.6rem;   /* 4x el tamaño original (1.15rem): el dueño lo pidió así */
+    line-height: 1;
     filter: grayscale(1);
     opacity: 0.6;
     transition: all 0.25s;

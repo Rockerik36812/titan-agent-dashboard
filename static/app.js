@@ -464,7 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const short = m.model.replace(/^[^/]+\//, '');
                     return short.length > 24 ? short.slice(0, 22) + '…' : short;
                 });
-                const values = d.models.map(m => m.cost);
+                // El tamaño mide LLAMADAS, no costo: los modelos gratis (:free) tienen
+                // costo $0 y su rebanada quedaba en cero (invisible) en la gráfica.
+                const values = d.models.map(m => m.calls || 0);
                 if (modelChart) {
                     modelChart.data.labels = labels;
                     modelChart.data.datasets[0].data = values;
@@ -475,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         data: {
                             labels: labels,
                             datasets: [{
-                                label: 'Costo ($)',
+                                label: 'Llamadas',
                                 data: values,
                                 backgroundColor: colors.slice(0, labels.length),
                                 borderColor: '#16161f', borderWidth: 2,
@@ -485,7 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { position: 'bottom', labels: { color: '#8888a0', font: { size: 9 }, padding: 8 } },
-                                tooltip: { callbacks: { label: ctx => `$${ctx.parsed.toFixed(4)}` } }
+                                tooltip: { callbacks: { label: ctx => {
+                                    const m = d.models[ctx.dataIndex] || {};
+                                    const calls = (m.calls || 0).toLocaleString();
+                                    return `${calls} llamadas · $${(m.cost || 0).toFixed(4)}`;
+                                } } }
                             }
                         }
                     });

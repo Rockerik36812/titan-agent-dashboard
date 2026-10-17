@@ -266,7 +266,7 @@ async def _update_cache():
                     models_map[nm]["cost"] += m["cost"]
             analytics = {
                 "daily_cost": [{"day": k, "cost": round(v, 4)} for k, v in sorted(daily_map.items())],
-                "models": sorted(models_map.values(), key=lambda x: x["cost"], reverse=True),
+                "models": sorted(models_map.values(), key=lambda x: x["calls"], reverse=True),
                 "total_sessions": sum(r.get("total_sessions", 0) for r in an_results),
                 "week_cost": round(sum(r.get("week_cost", 0) for r in an_results), 4),
             }

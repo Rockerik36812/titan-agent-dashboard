@@ -1440,14 +1440,14 @@ footer a:hover {
 }
 
 /* Botón de salir: la puertita sola no dice nada, así que lleva etiqueta
-   visible (mismo patrón que los stats del header: valor arriba, texto abajo). */
+   visible. Va en fila (puerta + texto) para quedar a la altura de la campanita. */
 .logout-btn {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;   /* puerta y texto al lado: así el botón no es más alto que la campanita */
     align-items: center;
     justify-content: center;
     align-self: center;   /* .header-stats no define align-items: sin esto el botón se estira */
-    gap: 0.4rem;          /* aire entre la puerta y el texto (antes 1px, quedaba pegado) */
+    gap: 0.5rem;
     background: none;
     border: 1px solid transparent;
     padding: 2px 8px;

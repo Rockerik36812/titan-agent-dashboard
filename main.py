@@ -193,12 +193,15 @@ async def auth_setup(request: Request):
     if _load_auth().get("hash"):
         return JSONResponse({"error": "Ya está configurado"}, status_code=400)
     body = await request.json()
+    user = (body.get("user") or "").strip()
     pwd = (body.get("password") or "")
+    if not user:
+        return JSONResponse({"error": "Escribe un usuario"}, status_code=400)
     if len(pwd) < 8:
         return JSONResponse({"error": "La contraseña debe tener al menos 8 caracteres"}, status_code=400)
     salt = os.urandom(16).hex()
     _save_auth({
-        "user": (body.get("user") or "titan").strip() or "titan",
+        "user": user,
         "salt": salt, "hash": hash_password(pwd, salt), "created": int(time.time()),
     })
     print("AUTH: contraseña configurada", flush=True)

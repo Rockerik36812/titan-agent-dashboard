@@ -214,13 +214,8 @@
                 const r = await fetch('/api/auth/status');
                 const d = await r.json();
                 applyMode(d.configured ? 'login' : 'setup');
-                if (d.configured) {
-                    els.user.value = 'titan';
-                    els.password.focus();
-                } else {
-                    els.user.value = 'titan';
-                    els.user.focus();
-                }
+                // Sin pre-llenar: el usuario lo escribe el dueño (no se revela en la pantalla)
+                els.user.focus();
             } catch (e) {
                 applyMode('login');
             }

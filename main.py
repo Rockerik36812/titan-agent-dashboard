@@ -1243,6 +1243,30 @@ async def health():
     return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat(), "agents": len(AGENTS)}
 
 
+@app.post("/api/agents/{agent_id}/restart")
+async def api_restart_agent(agent_id: str):
+    """Reinicia el contenedor de un agente (botón 🔄 de la tarjeta).
+
+    Al reiniciar el contenedor se reinicia su gateway y su sesión de chat:
+    la conversación en curso de ese agente se corta y vuelve en unos segundos.
+    """
+    info = AGENTS.get(agent_id)
+    if not info:
+        return JSONResponse({"error": "Agente no encontrado"}, status_code=404)
+    try:
+        client = docker.from_env()
+        container = client.containers.get(info["container"])
+        container.restart(timeout=10)
+        return {
+            "ok": True,
+            "agent": agent_id,
+            "name": info["name"],
+            "message": f"{info['name']} se está reiniciando…",
+        }
+    except Exception as e:
+        return JSONResponse({"error": f"No se pudo reiniciar: {e}"}, status_code=500)
+
+
 @app.get("/api/agents")
 async def api_agents():
     if _CACHE_READY:

@@ -242,7 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="agent-emoji">${agent.emoji}</span>
                         ${agent.name}
                     </div>
-                    <div class="status-dot ${agent.online ? 'online' : 'offline'}"></div>
+                    <div class="agent-header-actions">
+                        <button class="agent-restart" onclick="restartAgent(event, '${agent.id}')" title="Reiniciar ${agent.name}">🔄</button>
+                        <div class="status-dot ${agent.online ? 'online' : 'offline'}"></div>
+                    </div>
                 </div>
                 <div class="agent-stats">
                     <div class="stat-row">
@@ -571,6 +574,38 @@ document.addEventListener('DOMContentLoaded', () => {
         els.alertBanner.classList.remove('hidden');
         setTimeout(() => els.alertBanner.classList.add('hidden'), 8000);
     }
+
+    // ─── Reiniciar el contenedor de un agente (botón 🔄) ──────
+    async function restartAgent(ev, agentId) {
+        ev.stopPropagation();  // que no abra el modal de historial
+        const card = ev.target.closest('.agent-card');
+        const nameEl = card ? card.querySelector('.agent-name') : null;
+        const name = nameEl ? nameEl.textContent.trim() : agentId;
+        const aviso = agentId === 'titan'
+            ? `¿Reiniciar a ${name}?\n\n⚠️ ${name} es el agente con el que estás hablando: la conversación actual se cortará y volverá en unos segundos.`
+            : `¿Reiniciar a ${name}?\n\nSu conversación en curso se cortará y volverá en unos segundos.`;
+        if (!confirm(aviso)) return;
+
+        const btn = ev.target;
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '⏳';
+        try {
+            const r = await fetch(`/api/agents/${agentId}/restart`, { method: 'POST' });
+            const d = await r.json();
+            if (r.ok && d.ok) {
+                showAlert(d.message || `${name} reiniciado`, 'success');
+            } else {
+                showAlert(d.error || `No se pudo reiniciar a ${name}`, 'danger');
+            }
+        } catch (e) {
+            showAlert('Error de conexión al reiniciar el agente', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = original;
+        }
+    }
+    window.restartAgent = restartAgent;
 
     // ─── SSE Stream (real-time) ───────────────────────────────
     let eventSource = null;

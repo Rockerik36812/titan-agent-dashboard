@@ -227,6 +227,29 @@ main {
     margin-top: 0.5rem;
 }
 
+/* Proyección de créditos: días de autonomía al ritmo de gasto actual */
+.credit-projection {
+    margin-top: 0.85rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.credit-projection:empty {
+    display: none;
+}
+
+.credit-projection strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.credit-projection.urgent,
+.credit-projection.urgent strong {
+    color: var(--accent-orange);
+}
+
 .credit-bar-label {
     display: flex;
     justify-content: space-between;
@@ -1521,4 +1544,8 @@ footer a:hover {
    Se excluye el modo "celular acostado" (max-height 480px), que debe seguir compacto. */
 @media (min-height: 481px) {
     header { padding-bottom: 20px; }
+}
+/* Tarjeta del servidor remoto (2º VPS): ocupa el ancho completo bajo las otras dos */
+.remote-card {
+    grid-column: 1 / -1;
 }

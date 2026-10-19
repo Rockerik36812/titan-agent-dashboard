@@ -11,12 +11,18 @@ document.addEventListener('DOMContentLoaded', () => {
         creditsRemaining: document.getElementById('credits-remaining'),
         creditsPct: document.getElementById('credits-pct'),
         creditsBar: document.getElementById('credits-bar'),
+        creditsProjection: document.getElementById('credits-projection'),
         diskPct: document.getElementById('disk-pct'),
         diskBar: document.getElementById('disk-bar'),
         diskInfo: document.getElementById('disk-info'),
         memPct: document.getElementById('mem-pct'),
         memBar: document.getElementById('mem-bar'),
         memInfo: document.getElementById('mem-info'),
+        remoteBadge: document.getElementById('remote-badge'),
+        remoteDiskTxt: document.getElementById('remote-disk-txt'),
+        remoteDiskBar: document.getElementById('remote-disk-bar'),
+        remoteMemTxt: document.getElementById('remote-mem-txt'),
+        remoteMemBar: document.getElementById('remote-mem-bar'),
         historyContent: document.getElementById('history-content'),
         agentsBadge: document.getElementById('agents-badge'),
         weekCostBadge: document.getElementById('weekCostBadge'),
@@ -281,6 +287,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return gb >= 1024 ? `${(gb / 1024).toFixed(1)} TB` : `${gb.toFixed(1)} GB`;
     }
 
+    // Servidor remoto (2º VPS, clientes): disco + RAM leídos por Tailscale SSH
+    function renderRemote(r) {
+        if (!els.remoteBadge || !r) return;
+        const on = !!r.online;
+        els.remoteBadge.textContent = on ? '✅ en línea' : '⚠️ sin conexión';
+        els.remoteBadge.style.color = on ? 'var(--accent-green)' : 'var(--accent-red)';
+
+        const pinta = (txtEl, barEl, x) => {
+            if (txtEl) txtEl.textContent = x.total_h ? `${x.used_h} / ${x.total_h} (${x.percent}%)` : '—';
+            if (barEl) {
+                const pct = Math.min(x.percent || 0, 100);
+                barEl.style.width = `${pct}%`;
+                barEl.style.background = (x.percent || 0) > 80 ? 'var(--accent-red)'
+                    : (x.percent || 0) > 60 ? 'var(--accent-orange)' : 'var(--accent-green)';
+            }
+        };
+        pinta(els.remoteDiskTxt, els.remoteDiskBar, r.disk || {});
+        pinta(els.remoteMemTxt, els.remoteMemBar, r.mem || {});
+    }
+
     // Render genérico de una barra de recurso (sirve para disco y RAM)
     function renderResource(pctEl, barEl, infoEl, d) {
         const pct = (d && d.percent) || 0;
@@ -388,14 +414,34 @@ document.addEventListener('DOMContentLoaded', () => {
             els.creditsBar.style.width = `${Math.min(pct, 100)}%`;
             els.creditsBar.style.background = pct > 75 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-orange)' : 'linear-gradient(90deg, var(--accent-green), var(--accent-orange))';
 
-            if (c.remaining < 5 && c.remaining > 0) {
-                showAlert(`⚠️ OpenRouter bajo: $${c.remaining.toFixed(2)} restantes`, 'warning');
+            // Proyección: a este ritmo de gasto, ¿cuántos días quedan?
+            if (els.creditsProjection) {
+                if (c.days_left !== undefined && c.avg_daily) {
+                    const urgente = c.days_left <= 7;
+                    els.creditsProjection.className = `credit-projection${urgente ? ' urgent' : ''}`;
+                    els.creditsProjection.innerHTML =
+                        `⏳ A $${c.avg_daily.toFixed(2)}/día te quedan <strong>≈ ${c.days_left} días</strong>` +
+                        (c.runout_date ? ` · se agota ~${c.runout_date}` : '');
+                } else {
+                    els.creditsProjection.className = 'credit-projection';
+                    els.creditsProjection.textContent = '';
+                }
+            }
+
+            // Aviso por monto bajo O por poca autonomía (lo que llegue primero)
+            const pocosDias = c.days_left !== undefined && c.days_left <= 7;
+            if ((c.remaining < 5 && c.remaining > 0) || pocosDias) {
+                const msg = pocosDias
+                    ? `⚠️ OpenRouter: $${c.remaining.toFixed(2)} restantes ≈ ${c.days_left} días al ritmo actual`
+                    : `⚠️ OpenRouter bajo: $${c.remaining.toFixed(2)} restantes`;
+                showAlert(msg, 'warning');
             }
         }
 
         // ── Disco del host ──
         if (data.disk) renderDisk(data.disk);
         if (data.mem) renderMem(data.mem);
+        if (data.remote) renderRemote(data.remote);
         if (data.tools) renderTools(data.tools);
 
         // ── Stats ──

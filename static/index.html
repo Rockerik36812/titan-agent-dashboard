@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Panel de Agentes</title>
-    <link rel="stylesheet" href="/static/style.css?v=19">
+    <link rel="stylesheet" href="/static/style.css?v=21">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -144,6 +144,7 @@
                     </div>
                 </div>
             </div>
+            <div class="credit-projection" id="credits-projection"></div>
         </section>
 
         <!-- 💾 Sistema: disco del host -->
@@ -172,6 +173,26 @@
                         <div class="disk-bar-fill" id="mem-bar" style="width: 0%"></div>
                     </div>
                     <div class="disk-info" id="mem-info">Cargando…</div>
+                </div>
+                <div class="disk-card remote-card">
+                    <div class="disk-top">
+                        <span class="disk-label">🖥️ Servidor de clientes</span>
+                        <span class="disk-pct" id="remote-badge">—</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label-inline">💽 Disco</span>
+                        <span class="stat-value-inline" id="remote-disk-txt">—</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="remote-disk-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label-inline">🧠 RAM</span>
+                        <span class="stat-value-inline" id="remote-mem-txt">—</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="remote-mem-bar" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -236,6 +257,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=16"></script>
+    <script src="/static/app.js?v=18"></script>
 </body>
 </html>

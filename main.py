@@ -7,7 +7,7 @@ import os
 import time
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import docker
@@ -43,6 +43,19 @@ AGENTS = {
 }
 
 OPENROUTER_MGMT_KEY = None
+
+# ─── Servidor remoto (2º VPS: clientes) ───────────────────────────────
+# El contenedor del panel NO está en la tailnet, pero el HOST sí: se lanza un
+# contenedor efímero con la red del host y chroot al host para usar su cliente ssh.
+# El -b (bind) fuerza que el origen sea la IP Tailscale del host, porque Tailscale SSH
+# solo acepta conexiones que vengan de la tailnet.
+REMOTE_HOST = {
+    "name": "Erik Servicios Clientes",
+    "ip": "100.107.215.85",        # IP Tailscale del 2º VPS
+    "host_ts_ip": "100.80.81.48",  # IP Tailscale de ESTE host (origen del ssh)
+}
+_REMOTE = {"ts": 0}
+_REMOTE_TTL = 300  # 5 min: lanzar contenedor + ssh es caro
 
 
 def load_env():
@@ -253,6 +266,7 @@ _CACHE = {
     "gateways": {},
     "history": {},
     "tools": {},
+    "remote": {},
     "ts": 0,
 }
 _CACHE_READY = False
@@ -343,6 +357,60 @@ async def get_host_memory(force: bool = False) -> dict:
     return _MEM
 
 
+async def get_remote_stats(force: bool = False) -> dict:
+    """Disco y RAM del 2º VPS (clientes) vía Tailscale SSH desde el host.
+
+    Cacheado (_REMOTE_TTL): lanzar el contenedor efímero + el ssh tarda varios segundos.
+    """
+    global _REMOTE
+    now = time.time()
+    if not force and _REMOTE.get("ts") and (now - _REMOTE["ts"]) < _REMOTE_TTL:
+        return _REMOTE
+    r = {"name": REMOTE_HOST["name"], "ip": REMOTE_HOST["ip"], "online": False, "ts": now}
+    try:
+        client = docker.from_env()
+        cmd = (
+            "timeout 25 ssh -o StrictHostKeyChecking=no -o BatchMode=yes "
+            f"-b {REMOTE_HOST['host_ts_ip']} root@{REMOTE_HOST['ip']} "
+            "'df -B1 / | tail -1; free -b | grep Mem' 2>&1"
+        )
+
+        def _run():
+            return client.containers.run(
+                "alpine", ["chroot", "/host", "sh", "-c", cmd],
+                volumes={"/": {"bind": "/host", "mode": "ro"}},
+                network_mode="host", pid_mode="host",
+                remove=True,
+            )
+
+        out = (await asyncio.to_thread(_run)).decode()
+        for linea in out.splitlines():
+            p = linea.split()
+            # Disco: "/dev/sda1  total  used  free  pct%  /"
+            if p and p[0].startswith("/dev/") and len(p) >= 5:
+                total, used, free = int(p[1]), int(p[2]), int(p[3])
+                r["disk"] = {
+                    "total": total, "used": used, "free": free,
+                    "percent": round(used / total * 100, 1) if total else 0,
+                }
+            # RAM: "Mem:  total  used  free  shared  buff/cache  available"
+            elif p and p[0] == "Mem:" and len(p) >= 7:
+                total, avail = int(p[1]), int(p[6])
+                used = max(total - avail, 0)
+                r["mem"] = {
+                    "total": total, "used": used, "free": avail,
+                    "percent": round(used / total * 100, 1) if total else 0,
+                }
+        r["online"] = "disk" in r
+        if not r["online"]:
+            r["error"] = out.strip()[:200]
+    except Exception as e:
+        print(f"REMOTE: error {e}", flush=True)
+        r["error"] = str(e)[:200]
+    _REMOTE = r
+    return _REMOTE
+
+
 async def _update_cache():
     """Background task: refreshes all dashboard data in memory every 3s."""
     global _CACHE, _CACHE_READY, _PREV_ONLINE
@@ -374,6 +442,8 @@ async def _update_cache():
             global _PREV_DISK_ALERTS
             disk = await get_host_disk()
             mem = await get_host_memory()
+            # El remoto se consulta en paralelo (tarda varios segundos, cacheado 5 min)
+            remote = await get_remote_stats()
             dpct = disk.get("percent", 0)
             for threshold in (90, 80):
                 if dpct >= threshold and threshold not in _PREV_DISK_ALERTS:
@@ -390,7 +460,7 @@ async def _update_cache():
                 _PREV_DISK_ALERTS.clear()
 
             # ── Credits ──
-            credits_data = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
+            credits_data: dict = {"total": 0, "used": 0, "remaining": 0, "percent_used": 0}
             if OPENROUTER_MGMT_KEY:
                 try:
                     req = urllib.request.Request(
@@ -452,6 +522,24 @@ async def _update_cache():
                 "total_sessions": sum(r.get("total_sessions", 0) for r in an_results),
                 "week_cost": round(sum(r.get("week_cost", 0) for r in an_results), 4),
             }
+
+            # ── Proyección de créditos: a este ritmo, ¿cuántos días quedan? ──
+            # Promedio de los últimos 7 días con registro (días sin uso cuentan como $0, es lo honesto)
+            try:
+                _rem = float(credits_data.get("remaining") or 0)
+                _ult = [d["cost"] for d in analytics["daily_cost"]][-7:]
+                if _rem > 0 and _ult:
+                    _prom = sum(_ult) / len(_ult)
+                    if _prom > 0.001:
+                        _dias = _rem / _prom
+                        credits_data["avg_daily"] = round(_prom, 4)
+                        credits_data["days_left"] = round(_dias, 1)
+                        if _dias <= 120:
+                            credits_data["runout_date"] = (
+                                datetime.now(timezone.utc) + timedelta(days=_dias)
+                            ).strftime("%d/%m/%Y")
+            except Exception:
+                pass
 
             # ── Activity ──
             act_tasks = [get_recent_activity(info["container"], 5) for info in AGENTS.values()]
@@ -530,6 +618,11 @@ async def _update_cache():
                          "free": disk.get("free", 0), "percent": disk.get("percent", 0)},
                 "mem": {"total": mem.get("total", 0), "used": mem.get("used", 0),
                         "free": mem.get("free", 0), "percent": mem.get("percent", 0)},
+                "remote": {
+                    "name": remote.get("name"), "ip": remote.get("ip"),
+                    "online": remote.get("online", False),
+                    "disk": remote.get("disk"), "mem": remote.get("mem"),
+                },
                 "tools": tools_data,
                 "ts": time.time(),
             }
@@ -1315,6 +1408,29 @@ async def api_memory():
         "percent": m.get("percent", 0),
         "total_h": _fmt_bytes(m.get("total", 0)), "used_h": _fmt_bytes(m.get("used", 0)),
         "free_h": _fmt_bytes(m.get("free", 0)),
+    }
+
+
+@app.get("/api/remote")
+async def api_remote():
+    """Disco y RAM del 2º VPS (clientes), leídos por Tailscale SSH (cacheado 5 min)."""
+    r = await get_remote_stats()
+    d, m = r.get("disk") or {}, r.get("mem") or {}
+    return {
+        "name": r.get("name"), "ip": r.get("ip"), "online": r.get("online", False),
+        "error": r.get("error"),
+        "disk": {
+            "total": d.get("total", 0), "used": d.get("used", 0), "free": d.get("free", 0),
+            "percent": d.get("percent", 0),
+            "total_h": _fmt_bytes(d.get("total", 0)), "used_h": _fmt_bytes(d.get("used", 0)),
+            "free_h": _fmt_bytes(d.get("free", 0)),
+        },
+        "mem": {
+            "total": m.get("total", 0), "used": m.get("used", 0), "free": m.get("free", 0),
+            "percent": m.get("percent", 0),
+            "total_h": _fmt_bytes(m.get("total", 0)), "used_h": _fmt_bytes(m.get("used", 0)),
+            "free_h": _fmt_bytes(m.get("free", 0)),
+        },
     }
 
 

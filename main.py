@@ -357,6 +357,22 @@ async def get_host_memory(force: bool = False) -> dict:
     return _MEM
 
 
+def _fmt_resource(x: dict | None) -> dict:
+    """Normaliza un dict de disco/RAM agregando las versiones legibles (_h).
+
+    El frontend espera total_h/used_h/free_h; el cache guardaba el dict crudo de
+    get_remote_stats (solo números), así que la tarjeta salía vacía.
+    """
+    x = x or {}
+    return {
+        "total": x.get("total", 0), "used": x.get("used", 0),
+        "free": x.get("free", 0), "percent": x.get("percent", 0),
+        "total_h": _fmt_bytes(x.get("total", 0)),
+        "used_h": _fmt_bytes(x.get("used", 0)),
+        "free_h": _fmt_bytes(x.get("free", 0)),
+    }
+
+
 async def get_remote_stats(force: bool = False) -> dict:
     """Disco y RAM del 2º VPS (clientes) vía Tailscale SSH desde el host.
 
@@ -623,7 +639,8 @@ async def _update_cache():
                 "remote": {
                     "name": remote.get("name"), "ip": remote.get("ip"),
                     "online": remote.get("online", False),
-                    "disk": remote.get("disk"), "mem": remote.get("mem"),
+                    "disk": _fmt_resource(remote.get("disk")),
+                    "mem": _fmt_resource(remote.get("mem")),
                 },
                 "tools": tools_data,
                 "ts": time.time(),

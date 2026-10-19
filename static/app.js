@@ -321,8 +321,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderRemote(r) {
         if (!els.remoteBadge || !r) return;
         const on = !!r.online;
-        els.remoteBadge.textContent = on ? '✅ en línea' : '⚠️ sin conexión';
-        els.remoteBadge.style.color = on ? 'var(--accent-green)' : 'var(--accent-red)';
+        // El badge lleva el % del disco (igual que las demás tarjetas);
+        // el estado de la conexión va como punto de color junto al título.
+        const dot = document.getElementById('remote-status');
+        if (dot) {
+            dot.style.background = on ? 'var(--accent-green)' : 'var(--accent-red)';
+            dot.title = on ? 'En línea' : 'Sin conexión';
+        }
+        const dpct = (r.disk && r.disk.total_h) ? (r.disk.percent || 0) : null;
+        els.remoteBadge.textContent = dpct === null ? (on ? '—' : '⚠️') : `${dpct}%`;
+        els.remoteBadge.style.color = !on ? 'var(--accent-red)'
+            : dpct > 80 ? 'var(--accent-red)'
+            : dpct > 60 ? 'var(--accent-orange)' : 'var(--accent-green)';
 
         const pinta = (txtEl, barEl, x) => {
             if (txtEl) txtEl.textContent = x.total_h ? `${x.used_h} / ${x.total_h} (${x.percent}%)` : '—';

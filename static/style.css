@@ -1572,3 +1572,14 @@ footer a:hover {
 .titan-tip strong { display: block; margin-bottom: 6px; font-size: 11px; opacity: .85; }
 .titan-tip-row { display: flex; justify-content: space-between; gap: 14px; opacity: .85; white-space: nowrap; }
 .titan-tip-total { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color, #2a2f3a); font-weight: 700; opacity: 1; }
+
+/* Punto de estado del servidor remoto (verde en línea / rojo sin conexión) */
+.remote-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-muted, #6b7280);
+    vertical-align: middle;
+    margin-left: 2px;
+}

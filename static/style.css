@@ -1549,3 +1549,26 @@ footer a:hover {
 .remote-card {
     grid-column: 1 / -1;
 }
+
+/* Tooltip del Titan Score: desglose del cálculo (tap en móvil, hover en desktop) */
+.epic-card.titan-score { position: relative; cursor: pointer; }
+.titan-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card, #1a1d24);
+    border: 1px solid var(--border-color, #2a2f3a);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.75;
+    min-width: 200px;
+    z-index: 50;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+    text-align: left;
+    pointer-events: none;
+}
+.titan-tip strong { display: block; margin-bottom: 6px; font-size: 11px; opacity: .85; }
+.titan-tip-row { display: flex; justify-content: space-between; gap: 14px; opacity: .85; white-space: nowrap; }
+.titan-tip-total { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color, #2a2f3a); font-weight: 700; opacity: 1; }

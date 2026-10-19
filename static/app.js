@@ -287,6 +287,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return gb >= 1024 ? `${(gb / 1024).toFixed(1)} TB` : `${gb.toFixed(1)} GB`;
     }
 
+    // Tooltip del Titan Score: desglose de cómo se calcula
+    function renderTitanTip(bd) {
+        const tip = document.getElementById('titan-tip');
+        if (!tip) return;
+        if (!bd) { tip.hidden = true; return; }
+        const filas = [
+            ['Sesiones ×2', bd.sessions || 0, 200],
+            ['Mensajes ×0.05', bd.messages || 0, 150],
+            ['Herramientas ×0.5', bd.tool_calls || 0, 100],
+            ['Días activo ×3', bd.days_active || 0, 150],
+            ['Actividad 24h ×5', bd.recent || 0, null],
+        ];
+        const total = Math.min(Math.round(filas.reduce((a, f) => a + (f[1] || 0), 0)), 999);
+        tip.innerHTML =
+            '<strong>⚡ Cómo se calcula</strong>' +
+            filas.map(f => `<span class="titan-tip-row"><span>${f[0]}</span><span>${f[1]}${f[2] ? ' / ' + f[2] : ''}</span></span>`).join('') +
+            `<span class="titan-tip-row titan-tip-total"><span>Total</span><span>${total}</span></span>`;
+    }
+
+    // El tooltip se abre al tocar la tarjeta (móvil) o al pasar el mouse (desktop)
+    (function initTitanTip() {
+        const card = document.getElementById('titan-score-card');
+        const tip = document.getElementById('titan-tip');
+        if (!card || !tip) return;
+        card.addEventListener('click', (e) => { e.stopPropagation(); tip.hidden = !tip.hidden; });
+        card.addEventListener('mouseenter', () => { tip.hidden = false; });
+        card.addEventListener('mouseleave', () => { tip.hidden = true; });
+        document.addEventListener('click', () => { tip.hidden = true; });
+    })();
+
     // Servidor remoto (2º VPS, clientes): disco + RAM leídos por Tailscale SSH
     function renderRemote(r) {
         if (!els.remoteBadge || !r) return;
@@ -453,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
             els.epicCost.textContent = `$${s.cost.toFixed(2)}`;
             els.epicDays.textContent = s.days_active;
             els.epicScore.textContent = s.titan_score || 0;
+            renderTitanTip(s.titan_breakdown);
             const l24 = els.last24hDisplay.querySelector('.stat-value');
             if (l24) l24.textContent = s.sessions_24h;
         }

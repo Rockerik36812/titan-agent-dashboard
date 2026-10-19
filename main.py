@@ -491,13 +491,15 @@ async def _update_cache():
                 "days_active": max(r.get("days_active", 0) for r in stat_results),
                 "sessions_24h": sum(r.get("sessions_24h", 0) for r in stat_results),
             }
-            score = 0
-            score += min(merged_stats["sessions"] * 2, 200)
-            score += min(merged_stats["messages"] * 0.05, 150)
-            score += min(merged_stats["tool_calls"] * 0.5, 100)
-            score += min(merged_stats["days_active"] * 3, 150)
-            score += merged_stats["sessions_24h"] * 5
-            merged_stats["titan_score"] = min(int(score), 999)
+            bd = {
+                "sessions": min(merged_stats["sessions"] * 2, 200),
+                "messages": round(min(merged_stats["messages"] * 0.05, 150), 1),
+                "tool_calls": round(min(merged_stats["tool_calls"] * 0.5, 100), 1),
+                "days_active": min(merged_stats["days_active"] * 3, 150),
+                "recent": merged_stats["sessions_24h"] * 5,
+            }
+            merged_stats["titan_breakdown"] = bd
+            merged_stats["titan_score"] = min(int(sum(bd.values())), 999)
 
             # ── Analytics ──
             an_tasks = [get_analytics(info["container"]) for info in AGENTS.values()]
@@ -1141,13 +1143,15 @@ async def api_stats():
     }
 
     # Titan Score: weighted formula
-    score = 0
-    score += min(merged["sessions"] * 2, 200)       # up to 200
-    score += min(merged["messages"] * 0.05, 150)     # up to 150
-    score += min(merged["tool_calls"] * 0.5, 100)     # up to 100
-    score += min(merged["days_active"] * 3, 150)      # up to 150
-    score += merged["sessions_24h"] * 5              # recent activity bonus
-    merged["titan_score"] = min(int(score), 999)
+    bd = {
+        "sessions": min(merged["sessions"] * 2, 200),                 # hasta 200
+        "messages": round(min(merged["messages"] * 0.05, 150), 1),    # hasta 150
+        "tool_calls": round(min(merged["tool_calls"] * 0.5, 100), 1), # hasta 100
+        "days_active": min(merged["days_active"] * 3, 150),           # hasta 150
+        "recent": merged["sessions_24h"] * 5,                         # bonus actividad reciente
+    }
+    merged["titan_breakdown"] = bd
+    merged["titan_score"] = min(int(sum(bd.values())), 999)
 
     return merged
 

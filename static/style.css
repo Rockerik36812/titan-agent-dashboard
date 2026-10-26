@@ -1585,40 +1585,60 @@ footer a:hover {
 }
 
 /* ==========================================================================
-   TEMA GLASS — se activa con el switch del header (clase .glass en <body>)
-   Cambia SOLO lo visual: colores, transparencias, desenfoque y sombras.
-   NO toca medidas, márgenes, paddings, posiciones ni estructura.
+   TEMA GLASS v2 — "perrón"
+   Se activa con el switch del header (clase .glass en <body>).
+
+   REGLA DE ORO: solo propiedades visuales — color, fondo, sombra, desenfoque,
+   filtros y transform de elementos decorativos. NUNCA medidas ni posiciones.
    ========================================================================== */
 
 body.glass {
-    /* Al redefinir las variables, TODAS las tarjetas se vuelven vidrio
-       sin tocar una sola regla de layout. */
-    --bg-primary:     #06060b;
-    --bg-secondary:   rgba(26, 29, 46, 0.55);
-    --bg-card:        rgba(34, 38, 58, 0.40);
-    --bg-card-hover:  rgba(46, 51, 76, 0.55);
-    --border:         rgba(255, 255, 255, 0.10);
-    --text-primary:   #f3f5ff;
-    --text-secondary: #aab0cd;
-    --text-muted:     #7d83a3;
-    --shadow:         0 8px 32px rgba(0, 0, 0, 0.45);
+    --bg-primary:     #04040a;
+    --bg-secondary:   rgba(20, 24, 42, 0.42);
+    --bg-card:        rgba(32, 37, 62, 0.34);
+    --bg-card-hover:  rgba(46, 52, 84, 0.46);
+    --border:         rgba(255, 255, 255, 0.12);
+    --text-primary:   #f4f6ff;
+    --text-secondary: #b3b9d6;
+    --text-muted:     #8288ab;
+    --shadow:         0 12px 44px rgba(0, 0, 0, 0.55);
 }
 
-/* Luz de color de fondo: sin algo detrás, el desenfoque no se aprecia.
-   position:fixed lo saca del flujo → cero impacto en el acomodo. */
+/* ---------- 1. Aurora de fondo, en movimiento ---------- */
 body.glass::before {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(38rem 30rem at 18% 14%, rgba(0, 212, 255, 0.30), transparent 60%),
+        radial-gradient(34rem 28rem at 82% 20%, rgba(168, 85, 247, 0.34), transparent 62%),
+        radial-gradient(32rem 26rem at 58% 86%, rgba(236, 72, 153, 0.24), transparent 60%),
+        radial-gradient(28rem 22rem at 6% 76%,  rgba(34, 197, 94, 0.16),  transparent 60%);
+    filter: blur(16px);
+    animation: glassAurora 28s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+@keyframes glassAurora {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(2.5%, -2%, 0) scale(1.08); }
+    100% { transform: translate3d(-2.5%, 2%, 0) scale(1.04); }
+}
+
+/* ---------- 2. Grano fino: quita el look de "CSS plano" ---------- */
+body.glass::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background:
-        radial-gradient(60rem 40rem at 12% -8%,  rgba(0, 212, 255, 0.16), transparent 60%),
-        radial-gradient(50rem 36rem at 88% 4%,   rgba(168, 85, 247, 0.18), transparent 62%),
-        radial-gradient(46rem 34rem at 50% 108%, rgba(236, 72, 153, 0.12), transparent 60%);
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* El vidrio: desenfoca lo que hay detrás */
+/* ---------- 3. El vidrio: refracción fuerte ---------- */
 body.glass header,
 body.glass .agent-card,
 body.glass .disk-card,
@@ -1631,21 +1651,85 @@ body.glass .gateway-content,
 body.glass .timeline-item,
 body.glass .credit-bar,
 body.glass .bar-container {
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(190%) brightness(1.07);
+    backdrop-filter: blur(18px) saturate(190%) brightness(1.07);
 }
 
-/* Brillo interior del borde superior: es lo que lee como "cristal" */
+/* ---------- 4. Bordes de luz: anillo + brillo interno ---------- */
 body.glass header,
 body.glass .agent-card,
 body.glass .disk-card,
 body.glass .modal-content,
 body.glass .chart-card,
-body.glass .epic-card {
-    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+body.glass .epic-card,
+body.glass .history-content,
+body.glass .activity-content,
+body.glass .gateway-content {
+    box-shadow:
+        var(--shadow),
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* ---------- El switch (mismo footprint que .push-btn → no mueve el header) ---------- */
+/* El header se funde con el contenido, con filo inferior luminoso */
+body.glass header {
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+        0 12px 44px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -1px 0 rgba(0, 212, 255, 0.10);
+}
+
+/* ---------- 5. Título con degradado vivo y halo ---------- */
+body.glass .logo h1 {
+    background: linear-gradient(135deg, #7ae7ff 0%, #c084fc 55%, #f472b6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 16px rgba(122, 231, 255, 0.35));
+}
+
+/* ---------- 6. Acentos luminosos ---------- */
+body.glass .disk-bar-fill,
+body.glass .credit-bar {
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.55);
+}
+body.glass .logo-icon {
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6));
+}
+
+/* ---------- 7. Hover con glow de color (solo con mouse) ---------- */
+@media (hover: hover) and (pointer: fine) {
+    body.glass .agent-card:hover,
+    body.glass .disk-card:hover {
+        border-color: rgba(0, 212, 255, 0.32);
+        box-shadow:
+            0 18px 56px rgba(0, 0, 0, 0.60),
+            0 0 0 1px rgba(0, 212, 255, 0.30),
+            0 0 40px rgba(0, 212, 255, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    }
+    body.glass .chart-card:hover,
+    body.glass .epic-card:hover {
+        border-color: rgba(168, 85, 247, 0.32);
+        box-shadow:
+            0 18px 56px rgba(0, 0, 0, 0.60),
+            0 0 0 1px rgba(168, 85, 247, 0.30),
+            0 0 40px rgba(168, 85, 247, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    }
+}
+
+/* ---------- 8. Scrollbar de cristal ---------- */
+body.glass ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+}
+body.glass ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+/* ---------- 9. El switch ---------- */
 .theme-btn {
     position: relative;
     display: flex;
@@ -1655,7 +1739,7 @@ body.glass .epic-card {
     align-self: center;
     background: none;
     border: none;
-    padding: 4px 8px;          /* idéntico a .push-btn */
+    padding: 4px 8px;
     cursor: pointer;
     line-height: 1;
     border-radius: 8px;
@@ -1666,12 +1750,12 @@ body.glass .epic-card {
 .theme-track {
     display: block;
     width: 30px;
-    height: 16px;              /* más bajo que la campana (~29px) → nunca estira el header */
+    height: 16px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid var(--border);
     position: relative;
-    transition: background 0.3s, border-color 0.3s;
+    transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
 }
 
 .theme-knob {
@@ -1682,19 +1766,28 @@ body.glass .epic-card {
     height: 12px;
     border-radius: 50%;
     background: var(--text-secondary);
-    transition: transform 0.3s, background 0.3s;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s;
 }
 
 body.glass .theme-track {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.55), rgba(168, 85, 247, 0.55));
-    border-color: rgba(255, 255, 255, 0.25);
+    background: linear-gradient(120deg, rgba(0, 212, 255, 0.75), rgba(168, 85, 247, 0.75), rgba(236, 72, 153, 0.75));
+    background-size: 200% 100%;
+    border-color: rgba(255, 255, 255, 0.30);
+    box-shadow: 0 0 14px rgba(122, 231, 255, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    animation: glassTrack 6s ease-in-out infinite alternate;
 }
+
+@keyframes glassTrack {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
 body.glass .theme-knob {
     transform: translateX(14px);
     background: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.80);
 }
 
-/* Etiqueta colgando debajo, fuera del flujo (mismo patrón que .logout-btn) */
 .theme-label {
     position: absolute;
     top: 100%;
@@ -1704,4 +1797,11 @@ body.glass .theme-knob {
     color: var(--text-muted);
     white-space: nowrap;
     pointer-events: none;
+}
+
+/* ---------- 10. Respeto a quien pide menos movimiento ---------- */
+@media (prefers-reduced-motion: reduce) {
+    body.glass::before,
+    body.glass .theme-track { animation: none; }
+    .theme-knob { transition: none; }
 }

@@ -999,3 +999,42 @@ document.addEventListener('DOMContentLoaded', () => {
     connectSSE();
     tickClock();
 });
+
+/* ==========================================================================
+   Tema visual: clásico <-> glass. Solo cambia la clase .glass en <body>;
+   el CSS hace el resto. La elección se recuerda en localStorage.
+   ========================================================================== */
+(function () {
+    var KEY = 'panelTheme';
+
+    function leer() {
+        try { return localStorage.getItem(KEY) || 'classic'; } catch (e) { return 'classic'; }
+    }
+
+    function aplicar(modo) {
+        var glass = (modo === 'glass');
+        document.body.classList.toggle('glass', glass);
+        var btn = document.getElementById('themeBtn');
+        if (btn) {
+            btn.title = glass
+                ? 'Estilo glass activo — clic para volver al clásico'
+                : 'Estilo clásico — clic para activar el glass';
+            var lbl = btn.querySelector('.theme-label');
+            if (lbl) lbl.textContent = glass ? 'Glass' : 'Clásico';
+        }
+    }
+
+    window.toggleTheme = function () {
+        var siguiente = document.body.classList.contains('glass') ? 'classic' : 'glass';
+        try { localStorage.setItem(KEY, siguiente); } catch (e) {}
+        aplicar(siguiente);
+    };
+
+    function init() { aplicar(leer()); }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

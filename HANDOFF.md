@@ -1,61 +1,85 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 02:34 (CST)
-**Estado:** 🟡 adoptado — falta definir el siguiente paso
+**Última actualización:** 2026-10-30 02:36 (CST)
+**Estado:** 🟢 en marcha
 
 ## Objetivo
 
-> ⚠️ PENDIENTE DE ESCRIBIR. Una o dos frases: qué tiene que existir para que esto esté TERMINADO.
+Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desde el celular o la PC, sin entrar por SSH: online/offline, CPU, RAM, uptime, última actividad, créditos y 2º servidor. Está **sano** cuando el panel refleja la realidad en vivo y cualquier cosa que necesite saber de sus agentes se ve ahí.
 
 ## SIGUIENTE PASO
 
-> ⚠️ PENDIENTE DE ESCRIBIR. Una sola acción concreta y verificable.
+> Barrer el repo y poner el README al día: borrar el CSS muerto y documentar lo que el panel ya hace y no está escrito.
 
 ```bash
-# comando si aplica
+# 1. eliminar el respaldo muerto (42 KB, no referenciado en ninguna parte)
+git rm static/style.css.v1-glass
+
+# 2. verificar que nada lo usaba (debe salir vacío)
+grep -rn 'v1-glass' --include='*.py' --include='*.js' --include='*.html' . || echo "OK: no referenciado"
+
+# 3. commit
+git commit -m "[antigravity] limpia css muerto y actualiza el README"
 ```
 
-## Hecho (historial reciente del repo, rama `main`)
+Al terminar, el README debe mencionar las 6 cosas que hoy **no** están documentadas: proyección de créditos, monitoreo del 2º servidor, notificaciones Web Push, tema glass (switch en el header), login y reinicio del contenedor de un agente.
 
-- [x] `ac28b0f` feat(panel): glass v2 - aurora animada, grano, refraccion fuerte y glows (2026-10-26)
-- [x] `ed65290` feat(panel): tema glass con switch en el header (2026-10-26)
-- [x] `6df1d2d` fix(panel): el cache del servidor remoto no llevaba los campos legibles (2026-10-19)
-- [x] `0426da5` fix(panel): el badge del servidor de clientes muestra el % del disco (2026-10-19)
-- [x] `aaac211` feat(panel): tooltip que explica el Titan Score (2026-10-19)
-- [x] `9fd4f52` feat(panel): proyección de créditos y monitoreo del 2º servidor (2026-10-19)
-- [x] `d1581f8` feat(panel): botón para reiniciar el contenedor de un agente (2026-10-18)
-- [x] `298e424` fix(ui): bajar el bloque completo del boton salir (puerta + texto) 8px y dar aire al header (excluyendo el modo celular acostado) (2026-10-17)
+## Hecho
 
-*Lo anterior es solo el historial de Git: no dice si quedó verificado ni qué falta.*
+**Verificado por Titán el 2026-10-30:**
+
+- [x] Panel vivo: `https://dash.erikservicios.click/health` → HTTP 200; `/` → 302 (redirige al login)
+- [x] **Tema glass v2 desplegado y confirmado**: el `style.css` servido tiene el mismo md5 que el local (`6f929bd2…`) → producción = repo
+- [x] 105 commits desde el 28-ago-2026
+- [x] Último commit real: `ac28b0f` "glass v2 - aurora animada, grano, refraccion fuerte y glows" (26-oct)
+
+**Funcionalidad ya implementada (según código y commits):**
+
+- [x] Estado online/offline + CPU + RAM + uptime por agente (SSE en vivo)
+- [x] Proyección de créditos y monitoreo del 2º servidor (`9fd4f52`)
+- [x] Titan Score con tooltip explicativo (`aaac211`)
+- [x] Badge del servidor de clientes con % de disco (`0426da5`)
+- [x] Botón para reiniciar el contenedor de un agente desde el panel (`d1581f8`)
+- [x] Web Push (service worker `sw.js`) + login con sesión
+- [x] Tema glass con switch en el header (`ed65290`, `ac28b0f`)
 
 ## En curso (a medias)
 
-- (pendiente de revisar)
+- Nada detectado. El último commit está desplegado y verificado; no se encontró trabajo inconcluso en el código.
 
 ## Bloqueos y decisiones pendientes
 
-- (pendiente de revisar)
+- `static/style.css.v1-glass` (42 KB) es el respaldo del estilo anterior y **no está referenciado por nada**. Se propone borrarlo; si Erik lo quiere conservar, va fuera del repo (no dentro).
+- El README está desactualizado: describe solo 7 features y 5 APIs de hace dos meses.
+- Token de GitHub de Titán renovado el 30-oct-2026 (el anterior expiró; los push fallaban con 401).
 
 ## Comandos útiles
 
 ```bash
-docker compose up -d      # levantar con Docker
-pip install -r requirements.txt
+docker compose up -d                     # levantar el panel localmente
+pip install -r requirements.txt          # dependencias (Python)
+
+# verificar que producción corre lo mismo que el repo
+curl -s https://dash.erikservicios.click/static/style.css | md5sum
+md5sum static/style.css                  # deben coincidir
+
+curl -s -o /dev/null -w '%{http_code}\n' https://dash.erikservicios.click/health
 ```
 
 ## Archivos clave
 
-- `.gitignore`
-- `AGENTS.md`
-- `Dockerfile`
-- `README.md`
-- `docker-compose.yml`
-- `main.py`
-- `requirements.txt`
-- `static`
-- `sw.js`
+- `main.py` (62 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
+- `static/app.js` (50 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
+- `static/style.css` (45 KB) — estilos + tema glass v2
+- `static/style.css.v1-glass` (42 KB) — **respaldo muerto, candidato a borrar**
+- `sw.js` — service worker de las notificaciones push
+- `Dockerfile` / `docker-compose.yml` — despliegue; el contenedor necesita el **docker socket** montado
 
 ## Notas para el otro agente
 
-- Proyecto adoptado al protocolo de relevo el 2026-10-30. El estado real hay que confirmarlo leyendo el código y el historial.
+- **Cómo se despliega:** Coolify buildea desde GitHub (`Rockerik36812/titan-agent-dashboard`, rama `main`). Un push a `main` no despliega solo: el deploy se dispara desde el panel de Coolify.
+- **Cómo verificar que el deploy entró:** comparar el md5 del CSS servido contra el local (comando arriba). Es la forma más rápida y no requiere login.
+- El panel corre en un contenedor con el **docker socket montado**: de ahí saca el estado de los agentes y puede reiniciarlos. Ojo con cualquier cambio que toque esa parte.
+- `/` responde **302** a propósito (redirige al login). Un 302 no es un error.
+- El CSS y el JS son archivos grandes y sin minificar: cuidado con los diffs gigantes, revisa que no se cuele ruido de formato.

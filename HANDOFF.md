@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 00:51 (CST)
-**Estado:** 🟢 en marcha
+**Última actualización:** 2026-10-30 01:00 (CST)
+**Estado:** 🟢 en marcha (Aprobado por Erik)
 
 ## Objetivo
 
@@ -10,21 +10,14 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el ajuste de Ultra Glass más oscuro y calibrado (ahumado translúcido con auroras nocturnas).
-
-```bash
-# 1. Disparar el deploy desde el panel de Coolify.
-# 2. Verificar que el style.css servido corresponda al nuevo commit:
-curl -s https://dash.erikservicios.click/static/style.css | md5sum
-md5sum static/style.css
-```
+> Poner el README.md al día documentando el nuevo tema visual Ultra Glass y las features pendientes que hoy no están escritas.
 
 ## Hecho
 
-**Verificado por Antigravity el 2026-10-30:**
+**Verificado por Antigravity el 2026-10-30 (Aprobado por Erik):**
 
-- [x] **Ultra Glass Calibrado (Más oscuro y translúcido)**: Ajustado el fondo y tarjetas con un tinte ahumado elegante (brightness 1.02, auroras nocturnas calibradas a 0.25-0.30) para que no deslumbre, manteniendo la transparencia nítida y el bisel de cristal visible.
-- [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
+- [x] **Tema Ultra Glass calibrado y aprobado**: Fondo oscuro profundo con auroras nocturnas suaves y tarjetas de cristal ahumado translúcidas con bisel de luz especular.
+- [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass`)**: Completamente funcional, ciclando con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
 - [x] **Bumping de caché**: `style.css?v=31` y `app.js?v=27` en `index.html`.
 
@@ -41,13 +34,12 @@ md5sum static/style.css
 
 ## En curso (a medias)
 
-- Nada detectado. El último commit está desplegado y verificado; no se encontró trabajo inconcluso en el código.
+- Nada detectado. El nuevo tema Ultra Glass y el switch de 3 estados quedaron probados, desplegados y aprobados.
 
 ## Bloqueos y decisiones pendientes
 
-- `static/style.css.v1-glass` (42 KB) es el respaldo del estilo anterior y **no está referenciado por nada**. Se propone borrarlo; si Erik lo quiere conservar, va fuera del repo (no dentro).
-- El README está desactualizado: describe solo 7 features y 5 APIs de hace dos meses.
-- Token de GitHub de Titán renovado el 30-oct-2026 (el anterior expiró; los push fallaban con 401).
+- El README está desactualizado: describe solo 7 features y 5 APIs de hace dos meses. Pendiente documentar Ultra Glass y las mejoras acumuladas.
+- Token de GitHub renovado y configurado en el entorno local.
 
 ## Comandos útiles
 

@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 00:30 (CST)
+**Última actualización:** 2026-10-30 00:35 (CST)
 **Estado:** 🟢 en marcha
 
 ## Objetivo
@@ -10,7 +10,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el nuevo tema Cristal Puro transparente (switch de 3 temas: Clásico / Aurora / Cristal).
+> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el tema Cristal Físico (vidrio biselado 3D, reflejo estriado diagonal y luces de fondo).
 
 ```bash
 # 1. Disparar el deploy desde el panel de Coolify.
@@ -23,10 +23,10 @@ md5sum static/style.css
 
 **Verificado por Antigravity el 2026-10-30:**
 
-- [x] **Rediseño a Cristal Puro (True Frosted Glassmorphism)**: Eliminada la saturación azul pesada. Implementado vidrio neutral hiper-transparente con biseles de luz blanca especular, reflejo en diagonal, desenfoque profundo y fondo de luces difusas suaves que revelan la transparencia real.
+- [x] **Vidrio físico hiper-realista**: Reflejo de luz en diagonal (130deg estriado), biseles 3D con luz especular arriba/izquierda y sombra de espesor abajo, mayor desenfoque y brillo interno (brightness 1.12), canales de barras tallados y orbes de luz de fondo más vivas.
 - [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Cristal`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
-- [x] **Bumping de caché**: `style.css?v=27` y `app.js?v=23` en `index.html`.
+- [x] **Bumping de caché**: `style.css?v=28` y `app.js?v=24` en `index.html`.
 
 **Verificado previamente por Titán:**
 

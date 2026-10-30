@@ -1820,26 +1820,28 @@ body.liquid .theme-knob {
 }
 
 /* ==========================================================================
-   TEMA 3: CRISTAL PURO (True Frosted Glassmorphism)
-   Look de vidrio hiper-transparente, neutral y refractivo.
-   Sin saturación azul pesada: vidrio limpio con brillo especular blanco,
-   desenfoque profundo y luces difusas de fondo para una auténtica transparencia.
+   TEMA 3: CRISTAL PURO (Physical Frosted Glassmorphism)
+   Efecto de vidrio físico hiper-realista:
+   - Grosor y biselado 3D (luz en borde superior e izquierdo, sombra en inferior).
+   - Reflejo diagonal estriado (luz rebotando sobre la placa de cristal).
+   - Desenfoque y brillo interno (la superficie frosted atrapa la luz).
+   - Luces orgánicas de fondo más nítidas que refractan a través del vidrio.
    ========================================================================== */
 
 body.liquid {
-    --bg-primary:     #08090e;
-    --bg-secondary:   rgba(255, 255, 255, 0.04);
-    --bg-card:        rgba(255, 255, 255, 0.05);
-    --bg-card-hover:  rgba(255, 255, 255, 0.09);
-    --border:         rgba(255, 255, 255, 0.16);
+    --bg-primary:     #07080d;
+    --bg-secondary:   rgba(255, 255, 255, 0.05);
+    --bg-card:        rgba(255, 255, 255, 0.07);
+    --bg-card-hover:  rgba(255, 255, 255, 0.12);
+    --border:         rgba(255, 255, 255, 0.22);
     --text-primary:   #ffffff;
-    --text-secondary: #cbd5e1;
+    --text-secondary: #e2e8f0;
     --text-muted:     #94a3b8;
-    --shadow:         0 16px 40px -8px rgba(0, 0, 0, 0.55);
-    background-color: #08090e;
+    --shadow:         0 18px 45px -8px rgba(0, 0, 0, 0.65);
+    background-color: #07080d;
 }
 
-/* ---------- 1. Luces de fondo difusas para revelar la transparencia ---------- */
+/* ---------- 1. Luces orgánicas vivas que refractan a través del vidrio ---------- */
 body.liquid::before {
     content: "";
     position: fixed;
@@ -1847,11 +1849,11 @@ body.liquid::before {
     z-index: -2;
     pointer-events: none;
     background:
-        radial-gradient(42rem 38rem at 18% 18%, rgba(139, 92, 246, 0.20), transparent 60%),
-        radial-gradient(40rem 36rem at 82% 22%, rgba(59, 130, 246, 0.18), transparent 62%),
-        radial-gradient(38rem 34rem at 50% 65%, rgba(236, 72, 153, 0.14), transparent 65%),
-        radial-gradient(36rem 32rem at 22% 82%, rgba(16, 185, 129, 0.14), transparent 60%),
-        radial-gradient(32rem 28rem at 78% 85%, rgba(245, 158, 11, 0.12), transparent 58%);
+        radial-gradient(48rem 42rem at 14% 14%, rgba(139, 92, 246, 0.32), transparent 60%),
+        radial-gradient(46rem 40rem at 86% 18%, rgba(59, 130, 246, 0.28), transparent 62%),
+        radial-gradient(42rem 38rem at 50% 62%, rgba(236, 72, 153, 0.22), transparent 64%),
+        radial-gradient(40rem 36rem at 18% 84%, rgba(16, 185, 129, 0.22), transparent 60%),
+        radial-gradient(36rem 32rem at 82% 86%, rgba(245, 158, 11, 0.18), transparent 58%);
     filter: blur(45px);
     animation: crystalDrift 28s ease-in-out infinite alternate;
     will-change: transform;
@@ -1859,8 +1861,8 @@ body.liquid::before {
 
 @keyframes crystalDrift {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
-    50%  { transform: translate3d(2%, -2%, 0) scale(1.05); }
-    100% { transform: translate3d(-2%, 2%, 0) scale(1.02); }
+    50%  { transform: translate3d(2%, -2%, 0) scale(1.06); }
+    100% { transform: translate3d(-2%, 2%, 0) scale(1.03); }
 }
 
 /* ---------- 2. Micrograno sutil ---------- */
@@ -1870,11 +1872,11 @@ body.liquid::after {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.035;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- 3. Vidrio puro: Superficie refractiva y translúcida ---------- */
+/* ---------- 3. Vidrio físico: Velo de reflejo diagonal y refracción lechosa ---------- */
 body.liquid header,
 body.liquid .agent-card,
 body.liquid .disk-card,
@@ -1884,19 +1886,20 @@ body.liquid .epic-card,
 body.liquid .activity-content,
 body.liquid .history-content,
 body.liquid .gateway-content,
-body.liquid .timeline-item,
-body.liquid .credit-bar,
-body.liquid .bar-container {
+body.liquid .timeline-item {
     background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.08) 0%,
-        rgba(255, 255, 255, 0.02) 100%
+        130deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.06) 28%,
+        rgba(255, 255, 255, 0.02) 52%,
+        rgba(255, 255, 255, 0.05) 75%,
+        rgba(255, 255, 255, 0.10) 100%
     ) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
-    backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
+    -webkit-backdrop-filter: blur(26px) saturate(190%) brightness(1.12);
+    backdrop-filter: blur(26px) saturate(190%) brightness(1.12);
 }
 
-/* ---------- 4. Bisel de luz y reflejo de cristal físico ---------- */
+/* ---------- 4. Biselado 3D de cristal templado (Chiseled Glass Edges) ---------- */
 body.liquid header,
 body.liquid .agent-card,
 body.liquid .disk-card,
@@ -1906,117 +1909,147 @@ body.liquid .epic-card,
 body.liquid .history-content,
 body.liquid .activity-content,
 body.liquid .gateway-content {
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
     box-shadow:
         var(--shadow),
-        inset 0 1px 1px 0 rgba(255, 255, 255, 0.32),
-        inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
-        inset 1px 0 0 0 rgba(255, 255, 255, 0.12) !important;
+        0 0 1px 1px rgba(255, 255, 255, 0.10),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
+        inset 1.5px 0 1px 0 rgba(255, 255, 255, 0.30),
+        inset -1px 0 1px 0 rgba(255, 255, 255, 0.10),
+        inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.35) !important;
 }
 
-/* Header Crystal */
+/* Header Crystal con filo luminoso */
 body.liquid header {
-    background: rgba(10, 12, 18, 0.45) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(10, 12, 18, 0.50) 100%
+    ) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
     box-shadow:
-        0 10px 32px rgba(0, 0, 0, 0.40),
-        inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+        0 12px 35px rgba(0, 0, 0, 0.45),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Pills de estadísticas del header */
+/* Píldoras y métricas en cristal esmerilado */
 body.liquid .header-stat {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: 8px;
     padding: 3px 8px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.40),
+        0 2px 8px rgba(0, 0, 0, 0.20);
+    backdrop-filter: blur(14px);
     transition: all 0.25s;
 }
 
 body.liquid .header-stat:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.28);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(255, 255, 255, 0.40);
 }
 
-/* Botones de acción (Push y Logout) */
+/* Botones de acción (Push y Logout) en cristal pulido */
 body.liquid .push-btn,
 body.liquid .logout-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 8px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 2px 10px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(14px);
     transition: all 0.25s;
 }
 
 body.liquid .push-btn:hover,
 body.liquid .logout-btn:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.10));
+    border-color: rgba(255, 255, 255, 0.50);
+    box-shadow:
+        0 0 16px rgba(255, 255, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.60);
 }
 
 /* ---------- 5. Título diamante cristalino ---------- */
 body.liquid .logo h1 {
-    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #cbd5e1 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 40%, #cbd5e1 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.30));
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.40));
 }
 
 body.liquid .logo-icon {
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.60));
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.70));
 }
 
-/* Badges de secciones */
+/* Badges de secciones como láminas de cristal */
 body.liquid .section-badge {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: #f8fafc;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(10px);
 }
 
-/* ---------- 6. Barras de progreso limpias ---------- */
+/* Canales de barra de progreso tallados en el cristal */
+body.liquid .disk-bar,
+body.liquid .credit-bar,
+body.liquid .bar-container {
+    background: rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.60) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Barras de progreso luminosas */
 body.liquid .disk-bar-fill,
 body.liquid .credit-bar-fill,
 body.liquid .bar-fill {
-    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
-    box-shadow: 0 0 12px rgba(96, 165, 250, 0.45);
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+    box-shadow: 0 0 14px rgba(129, 140, 248, 0.55);
 }
 
 /* Titan Score de cristal */
 body.liquid .titan-score {
-    border-color: rgba(255, 255, 255, 0.28);
-    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 70%);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.02) 75%) !important;
 }
 
-/* ---------- 7. Hover de cristal (resplandor de luz blanca) ---------- */
+/* ---------- 6. Hover con destello de cristal (Specular Glint) ---------- */
 @media (hover: hover) and (pointer: fine) {
     body.liquid .agent-card:hover,
     body.liquid .disk-card:hover,
     body.liquid .chart-card:hover,
     body.liquid .epic-card:hover {
         background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.13) 0%,
-            rgba(255, 255, 255, 0.04) 100%
+            130deg,
+            rgba(255, 255, 255, 0.22) 0%,
+            rgba(255, 255, 255, 0.09) 30%,
+            rgba(255, 255, 255, 0.03) 55%,
+            rgba(255, 255, 255, 0.14) 100%
         ) !important;
-        border-color: rgba(255, 255, 255, 0.32) !important;
+        border-color: rgba(255, 255, 255, 0.45) !important;
         box-shadow:
-            0 20px 48px 0 rgba(0, 0, 0, 0.60),
-            0 0 24px rgba(255, 255, 255, 0.08),
-            inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
-            inset 0 -1px 0 0 rgba(255, 255, 255, 0.08) !important;
-        transform: translateY(-2px);
+            0 24px 50px -10px rgba(0, 0, 0, 0.70),
+            0 0 20px rgba(255, 255, 255, 0.15),
+            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.75),
+            inset 1.5px 0 1px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.40) !important;
+        transform: translateY(-3px);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 }
 
-/* ---------- 8. Scrollbar de cristal puro ---------- */
+/* ---------- 7. Scrollbar de cristal puro ---------- */
 body.liquid ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.24);
     border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 body.liquid ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.32);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.40);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.40);
 }

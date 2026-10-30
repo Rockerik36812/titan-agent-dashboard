@@ -1820,28 +1820,29 @@ body.liquid .theme-knob {
 }
 
 /* ==========================================================================
-   TEMA 3: VIDRIO GLASEADO OSCURO (Dark Smoked Frosted Glassmorphism)
-   Tema oscuro y cinematográfico con paneles de vidrio ahumado glaseado:
-   - Fondo oscuro profundo con orbes de luz ambiental suaves y sutiles.
-   - Paneles oscuros con esmerilado denso (blur 32px, brillo calibrado).
-   - Sombras dramáticas multi-capa para elevación física flotante.
-   - Biseles de luz frosted suaves (luz tenue arriba, profundidad abajo).
+   TEMA 3: ULTRA GLASS (Hyper-Transparent Frosted Prism Glass)
+   100% evidente: tarjetas hiper-transparentes donde se ve claramente el
+   fondo luminoso difuminándose a través del cristal:
+   - Luces prismáticas vivas y ricas en el fondo (violeta, cian, rosa y esmeralda).
+   - Paneles ultra-transparentes (92% de transparencia real).
+   - Borde de cristal blanco nítido con filo de luz especular brillante (0.80).
+   - Desenfoque frosted intenso (blur 24px, saturate 200%, brightness 1.15).
    ========================================================================== */
 
 body.liquid {
-    --bg-primary:     #050609;
-    --bg-secondary:   rgba(20, 22, 32, 0.55);
-    --bg-card:        rgba(22, 24, 36, 0.58);
-    --bg-card-hover:  rgba(30, 34, 50, 0.68);
-    --border:         rgba(255, 255, 255, 0.10);
-    --text-primary:   #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted:     #64748b;
-    --shadow:         0 24px 50px -10px rgba(0, 0, 0, 0.85), 0 8px 20px -4px rgba(0, 0, 0, 0.60);
-    background-color: #050609;
+    --bg-primary:     #04050a;
+    --bg-secondary:   rgba(255, 255, 255, 0.04);
+    --bg-card:        rgba(255, 255, 255, 0.05);
+    --bg-card-hover:  rgba(255, 255, 255, 0.12);
+    --border:         rgba(255, 255, 255, 0.28);
+    --text-primary:   #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted:     #94a3b8;
+    --shadow:         0 16px 45px rgba(0, 0, 0, 0.55);
+    background-color: #04050a;
 }
 
-/* ---------- 1. Fondo oscuro con suaves auroras nocturnas ---------- */
+/* ---------- 1. Fondo vivo de luces prismáticas que atraviesan el cristal ---------- */
 body.liquid::before {
     content: "";
     position: fixed;
@@ -1849,34 +1850,34 @@ body.liquid::before {
     z-index: -2;
     pointer-events: none;
     background:
-        radial-gradient(48rem 42rem at 16% 16%, rgba(99, 102, 241, 0.18), transparent 62%),
-        radial-gradient(44rem 38rem at 84% 20%, rgba(59, 130, 246, 0.16), transparent 60%),
-        radial-gradient(40rem 36rem at 50% 65%, rgba(168, 85, 247, 0.14), transparent 64%),
-        radial-gradient(38rem 34rem at 20% 84%, rgba(20, 184, 166, 0.12), transparent 60%),
-        radial-gradient(34rem 30rem at 80% 86%, rgba(236, 72, 153, 0.10), transparent 58%);
-    filter: blur(55px);
-    animation: crystalDrift 28s ease-in-out infinite alternate;
+        radial-gradient(55rem 48rem at 12% 15%, rgba(139, 92, 246, 0.45), transparent 60%),
+        radial-gradient(50rem 44rem at 88% 18%, rgba(6, 182, 212, 0.40), transparent 60%),
+        radial-gradient(46rem 40rem at 50% 50%, rgba(244, 63, 94, 0.32), transparent 62%),
+        radial-gradient(48rem 42rem at 18% 85%, rgba(16, 185, 129, 0.35), transparent 60%),
+        radial-gradient(45rem 40rem at 85% 85%, rgba(59, 130, 246, 0.42), transparent 60%);
+    filter: blur(40px);
+    animation: crystalDrift 22s ease-in-out infinite alternate;
     will-change: transform;
 }
 
 @keyframes crystalDrift {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
-    50%  { transform: translate3d(2%, -2%, 0) scale(1.04); }
-    100% { transform: translate3d(-2%, 2%, 0) scale(1.02); }
+    50%  { transform: translate3d(3%, -2.5%, 0) scale(1.08); }
+    100% { transform: translate3d(-2.5%, 2%, 0) scale(1.04); }
 }
 
-/* ---------- 2. Micrograno glaseado fino (efecto esmerilado al ácido) ---------- */
+/* ---------- 2. Micrograno sutil ---------- */
 body.liquid::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.045;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- 3. Vidrio Glaseado Ahumado (Dark Smoked Frosted Glass) ---------- */
+/* ---------- 3. Vidrio Hiper-Transparente (Ultra Frosted Glass) ---------- */
 body.liquid header,
 body.liquid .agent-card,
 body.liquid .disk-card,
@@ -1889,14 +1890,15 @@ body.liquid .gateway-content,
 body.liquid .timeline-item {
     background: linear-gradient(
         135deg,
-        rgba(26, 28, 42, 0.62) 0%,
-        rgba(15, 17, 26, 0.70) 100%
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.03) 60%,
+        rgba(255, 255, 255, 0.08) 100%
     ) !important;
-    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(0.96);
-    backdrop-filter: blur(32px) saturate(180%) brightness(0.96);
+    -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.14);
+    backdrop-filter: blur(24px) saturate(200%) brightness(1.14);
 }
 
-/* ---------- 4. Sombras profundas y bisel de cristal glaseado ---------- */
+/* ---------- 4. Filo de luz blanca y bisel especular 3D ---------- */
 body.liquid header,
 body.liquid .agent-card,
 body.liquid .disk-card,
@@ -1906,88 +1908,85 @@ body.liquid .epic-card,
 body.liquid .history-content,
 body.liquid .activity-content,
 body.liquid .gateway-content {
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.20) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
     box-shadow:
-        0 24px 50px -10px rgba(0, 0, 0, 0.88),
-        0 8px 20px -4px rgba(0, 0, 0, 0.65),
-        0 0 1px 1px rgba(255, 255, 255, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.50) !important;
+        0 16px 45px rgba(0, 0, 0, 0.55),
+        0 2px 8px rgba(0, 0, 0, 0.35),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
+        inset 1.5px 0 0 rgba(255, 255, 255, 0.40),
+        inset 0 -1.5px 0 rgba(0, 0, 0, 0.30) !important;
 }
 
-/* Header Glaseado */
+/* Header Ultra Glass */
 body.liquid header {
-    background: rgba(10, 12, 18, 0.75) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+    background: rgba(10, 12, 22, 0.45) !important;
+    backdrop-filter: blur(24px) saturate(200%) brightness(1.14) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.30) !important;
     box-shadow:
-        0 16px 45px rgba(0, 0, 0, 0.80),
-        inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+        0 12px 35px rgba(0, 0, 0, 0.45),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.70) !important;
 }
 
-/* Píldoras y métricas en cristal ahumado */
+/* Píldoras y métricas en cristal esmerilado */
 body.liquid .header-stat {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.32);
     border-radius: 8px;
     padding: 3px 8px;
     box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.40),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        0 4px 10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.50);
     backdrop-filter: blur(16px);
     transition: all 0.25s;
 }
 
 body.liquid .header-stat:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.50);
 }
 
-/* Botones de acción en cristal */
+/* Botones de acción en cristal pulido */
 body.liquid .push-btn,
 body.liquid .logout-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 8px;
     box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        0 4px 12px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(16px);
     transition: all 0.25s;
 }
 
 body.liquid .push-btn:hover,
 body.liquid .logout-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.60);
     box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.30);
+        0 0 20px rgba(255, 255, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
-/* ---------- 5. Título y tipografía nítida ---------- */
+/* ---------- 5. Título y tipografía diamante ---------- */
 body.liquid .logo h1 {
-    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 45%, #94a3b8 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 40%, #cbd5e1 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.25));
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.45));
 }
 
 body.liquid .logo-icon {
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.50));
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.80));
 }
 
-/* Badges como láminas frosted */
+/* Badges como láminas de cristal */
 body.liquid .section-badge {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #ffffff;
     box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        0 4px 10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(12px);
 }
 
@@ -1995,26 +1994,27 @@ body.liquid .section-badge {
 body.liquid .disk-bar,
 body.liquid .credit-bar,
 body.liquid .bar-container {
-    background: rgba(0, 0, 0, 0.55) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.75) !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.60) !important;
+    backdrop-filter: blur(10px);
 }
 
-/* Barras de progreso con resplandor suave */
+/* Barras de progreso luminosas */
 body.liquid .disk-bar-fill,
 body.liquid .credit-bar-fill,
 body.liquid .bar-fill {
-    background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+    box-shadow: 0 0 16px rgba(129, 140, 248, 0.65);
 }
 
-/* Titan Score */
+/* Titan Score de cristal */
 body.liquid .titan-score {
-    border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
-    background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15), rgba(18, 20, 30, 0.65) 75%) !important;
+    border-color: rgba(255, 255, 255, 0.38) !important;
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 75%) !important;
 }
 
-/* ---------- 6. Hover: elevación dramática con sombra profunda ---------- */
+/* ---------- 6. Hover: destello brillante de cristal ---------- */
 @media (hover: hover) and (pointer: fine) {
     body.liquid .agent-card:hover,
     body.liquid .disk-card:hover,
@@ -2022,28 +2022,29 @@ body.liquid .titan-score {
     body.liquid .epic-card:hover {
         background: linear-gradient(
             135deg,
-            rgba(32, 35, 52, 0.72) 0%,
-            rgba(18, 20, 32, 0.80) 100%
+            rgba(255, 255, 255, 0.20) 0%,
+            rgba(255, 255, 255, 0.06) 60%,
+            rgba(255, 255, 255, 0.15) 100%
         ) !important;
-        border-top-color: rgba(255, 255, 255, 0.35) !important;
+        border-color: rgba(255, 255, 255, 0.55) !important;
         box-shadow:
-            0 32px 65px -12px rgba(0, 0, 0, 0.95),
-            0 12px 28px -6px rgba(0, 0, 0, 0.75),
-            0 0 15px rgba(255, 255, 255, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.30),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.60) !important;
-        transform: translateY(-4px);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            0 24px 50px rgba(0, 0, 0, 0.65),
+            0 0 25px rgba(255, 255, 255, 0.18),
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+            inset 1.5px 0 0 rgba(255, 255, 255, 0.50),
+            inset 0 -1.5px 0 rgba(0, 0, 0, 0.35) !important;
+        transform: translateY(-4px) scale(1.01);
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 }
 
-/* ---------- 7. Scrollbar ahumado ---------- */
+/* ---------- 7. Scrollbar de cristal puro ---------- */
 body.liquid ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.25);
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 body.liquid ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.28);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.50);
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.40);
 }

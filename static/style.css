@@ -1749,7 +1749,7 @@ body.glass ::-webkit-scrollbar-thumb:hover {
 
 .theme-track {
     display: block;
-    width: 30px;
+    width: 42px;
     height: 16px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.12);
@@ -1766,7 +1766,7 @@ body.glass ::-webkit-scrollbar-thumb:hover {
     height: 12px;
     border-radius: 50%;
     background: var(--text-secondary);
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s, box-shadow 0.35s;
 }
 
 body.glass .theme-track {
@@ -1788,6 +1788,25 @@ body.glass .theme-knob {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.80);
 }
 
+body.liquid .theme-track {
+    background: linear-gradient(120deg, #0284c7, #0ea5e9, #38bdf8);
+    background-size: 200% 100%;
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 14px rgba(14, 165, 233, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    animation: liquidTrack 6s ease-in-out infinite alternate;
+}
+
+@keyframes liquidTrack {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+body.liquid .theme-knob {
+    transform: translateX(28px);
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 12px rgba(56, 189, 248, 0.85);
+}
+
 .theme-label {
     position: absolute;
     top: 100%;
@@ -1802,6 +1821,196 @@ body.glass .theme-knob {
 /* ---------- 10. Respeto a quien pide menos movimiento ---------- */
 @media (prefers-reduced-motion: reduce) {
     body.glass::before,
-    body.glass .theme-track { animation: none; }
+    body.glass .theme-track,
+    body.liquid::before,
+    body.liquid .theme-track { animation: none; }
     .theme-knob { transition: none; }
+}
+
+/* ==========================================================================
+   TEMA 3: LIQUID GLASS (Cobalto profundo, cristal ahumado y resplandor cian)
+   Inspirado en interfaces "RevenuePulse AI" / dark liquid glass.
+   Solo propiedades visuales para garantizar que ninguna métrica ni posición
+   se altere.
+   ========================================================================== */
+
+body.liquid {
+    --bg-primary:     #030712;
+    --bg-secondary:   rgba(10, 18, 38, 0.55);
+    --bg-card:        rgba(12, 22, 45, 0.48);
+    --bg-card-hover:  rgba(18, 32, 64, 0.62);
+    --border:         rgba(56, 189, 248, 0.14);
+    --text-primary:   #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted:     #64748b;
+    --shadow:         0 16px 44px -6px rgba(2, 6, 23, 0.80);
+}
+
+/* ---------- 1. Fondo de ondas líquidas (Cobalt & Electric Cyan) ---------- */
+body.liquid::before {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(46rem 38rem at 16% 16%, rgba(14, 165, 233, 0.32), transparent 62%),
+        radial-gradient(44rem 36rem at 84% 22%, rgba(37, 99, 235, 0.30), transparent 60%),
+        radial-gradient(40rem 32rem at 52% 68%, rgba(2, 132, 199, 0.24), transparent 64%),
+        radial-gradient(36rem 30rem at 18% 84%, rgba(30, 58, 138, 0.40), transparent 62%),
+        radial-gradient(32rem 28rem at 82% 88%, rgba(56, 189, 248, 0.22), transparent 60%);
+    filter: blur(22px);
+    animation: liquidFlow 24s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+@keyframes liquidFlow {
+    0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+    50%  { transform: translate3d(2.2%, -2.5%, 0) scale(1.06) rotate(1deg); }
+    100% { transform: translate3d(-2.5%, 2%, 0) scale(1.03) rotate(-1deg); }
+}
+
+/* ---------- 2. Micrograno estético ---------- */
+body.liquid::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- 3. Vidrio líquido: Refracción profunda ---------- */
+body.liquid header,
+body.liquid .agent-card,
+body.liquid .disk-card,
+body.liquid .modal-content,
+body.liquid .chart-card,
+body.liquid .epic-card,
+body.liquid .activity-content,
+body.liquid .history-content,
+body.liquid .gateway-content,
+body.liquid .timeline-item,
+body.liquid .credit-bar,
+body.liquid .bar-container {
+    -webkit-backdrop-filter: blur(24px) saturate(185%) brightness(1.04);
+    backdrop-filter: blur(24px) saturate(185%) brightness(1.04);
+}
+
+/* ---------- 4. Bisel de luz especular y borde cian ---------- */
+body.liquid header,
+body.liquid .agent-card,
+body.liquid .disk-card,
+body.liquid .modal-content,
+body.liquid .chart-card,
+body.liquid .epic-card,
+body.liquid .history-content,
+body.liquid .activity-content,
+body.liquid .gateway-content {
+    border: 1px solid rgba(56, 189, 248, 0.14);
+    box-shadow:
+        var(--shadow),
+        0 0 0 1px rgba(56, 189, 248, 0.08),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 0 24px 0 rgba(14, 165, 233, 0.05);
+}
+
+/* Header Liquid */
+body.liquid header {
+    border-bottom: 1px solid rgba(56, 189, 248, 0.20);
+    box-shadow:
+        0 14px 44px rgba(2, 6, 23, 0.75),
+        inset 0 1px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -1px 0 rgba(56, 189, 248, 0.25);
+}
+
+/* Pills de estadísticas del header */
+body.liquid .header-stat {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+    border-radius: 8px;
+    padding: 3px 8px;
+    transition: border-color 0.3s;
+}
+
+body.liquid .header-stat:hover {
+    border-color: rgba(56, 189, 248, 0.30);
+}
+
+/* Botones auxiliares */
+body.liquid .push-btn,
+body.liquid .logout-btn {
+    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 8px;
+    transition: all 0.25s;
+}
+
+body.liquid .push-btn:hover,
+body.liquid .logout-btn:hover {
+    background: rgba(14, 165, 233, 0.18);
+    border-color: rgba(56, 189, 248, 0.40);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+/* ---------- 5. Título con gradiente cobalto / cian eléctrico ---------- */
+body.liquid .logo h1 {
+    background: linear-gradient(135deg, #ffffff 0%, #7dd3fc 45%, #38bdf8 75%, #2563eb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.45));
+}
+
+body.liquid .logo-icon {
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.80));
+}
+
+/* Badges de secciones */
+body.liquid .section-badge {
+    background: rgba(14, 165, 233, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    color: #38bdf8;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.22);
+}
+
+/* ---------- 6. Acentos luminosos y barras de progreso ---------- */
+body.liquid .disk-bar-fill,
+body.liquid .credit-bar-fill,
+body.liquid .bar-fill {
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 55%, #38bdf8 100%);
+    box-shadow: 0 0 16px rgba(14, 165, 233, 0.65);
+}
+
+/* Titan Score especial */
+body.liquid .titan-score {
+    border-color: rgba(56, 189, 248, 0.35);
+    background: radial-gradient(circle at top, rgba(14, 165, 233, 0.18), transparent 70%);
+}
+
+/* ---------- 7. Hover con resplandor líquido ---------- */
+@media (hover: hover) and (pointer: fine) {
+    body.liquid .agent-card:hover,
+    body.liquid .disk-card:hover,
+    body.liquid .chart-card:hover,
+    body.liquid .epic-card:hover {
+        border-color: rgba(56, 189, 248, 0.45);
+        box-shadow:
+            0 20px 52px rgba(2, 6, 23, 0.85),
+            0 0 0 1px rgba(56, 189, 248, 0.40),
+            0 0 35px rgba(14, 165, 233, 0.28),
+            inset 0 1px 1px rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+}
+
+/* ---------- 8. Scrollbar Liquid Glass ---------- */
+body.liquid ::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.22);
+    border-radius: 999px;
+}
+body.liquid ::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.42);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
 }

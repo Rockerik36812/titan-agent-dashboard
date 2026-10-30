@@ -1001,31 +1001,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   Tema visual: clásico <-> glass. Solo cambia la clase .glass en <body>;
-   el CSS hace el resto. La elección se recuerda en localStorage.
+   Tema visual: clásico <-> glass (aurora) <-> liquid (cobalto profundo).
+   Cambia las clases .glass o .liquid en <body>; el CSS hace el resto.
+   La elección se recuerda en localStorage.
    ========================================================================== */
 (function () {
     var KEY = 'panelTheme';
+    var THEMES = ['classic', 'glass', 'liquid'];
 
     function leer() {
-        try { return localStorage.getItem(KEY) || 'classic'; } catch (e) { return 'classic'; }
+        try {
+            var guardado = localStorage.getItem(KEY);
+            return THEMES.indexOf(guardado) !== -1 ? guardado : 'classic';
+        } catch (e) {
+            return 'classic';
+        }
     }
 
     function aplicar(modo) {
-        var glass = (modo === 'glass');
-        document.body.classList.toggle('glass', glass);
+        document.body.classList.remove('glass', 'liquid');
+        if (modo === 'glass') document.body.classList.add('glass');
+        if (modo === 'liquid') document.body.classList.add('liquid');
+
         var btn = document.getElementById('themeBtn');
         if (btn) {
-            btn.title = glass
-                ? 'Estilo glass activo — clic para volver al clásico'
-                : 'Estilo clásico — clic para activar el glass';
+            var titles = {
+                classic: 'Estilo clásico — clic para activar Glass Aurora',
+                glass: 'Estilo Glass Aurora — clic para activar Liquid Glass',
+                liquid: 'Estilo Liquid Glass — clic para volver al clásico'
+            };
+            var labels = {
+                classic: 'Clásico',
+                glass: 'Aurora',
+                liquid: 'Liquid'
+            };
+            btn.title = titles[modo] || titles.classic;
             var lbl = btn.querySelector('.theme-label');
-            if (lbl) lbl.textContent = glass ? 'Glass' : 'Clásico';
+            if (lbl) lbl.textContent = labels[modo] || 'Clásico';
         }
     }
 
     window.toggleTheme = function () {
-        var siguiente = document.body.classList.contains('glass') ? 'classic' : 'glass';
+        var actual = 'classic';
+        if (document.body.classList.contains('liquid')) actual = 'liquid';
+        else if (document.body.classList.contains('glass')) actual = 'glass';
+
+        var idx = THEMES.indexOf(actual);
+        var siguiente = THEMES[(idx + 1) % THEMES.length];
+
         try { localStorage.setItem(KEY, siguiente); } catch (e) {}
         aplicar(siguiente);
     };

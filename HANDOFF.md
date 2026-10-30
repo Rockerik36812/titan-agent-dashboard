@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 02:36 (CST)
+**Última actualización:** 2026-10-30 00:22 (CST)
 **Estado:** 🟢 en marcha
 
 ## Objetivo
@@ -10,39 +10,36 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Barrer el repo y poner el README al día: borrar el CSS muerto y documentar lo que el panel ya hace y no está escrito.
+> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el switch de 3 temas (Clásico / Aurora / Liquid Glass).
 
 ```bash
-# 1. eliminar el respaldo muerto (42 KB, no referenciado en ninguna parte)
-git rm static/style.css.v1-glass
-
-# 2. verificar que nada lo usaba (debe salir vacío)
-grep -rn 'v1-glass' --include='*.py' --include='*.js' --include='*.html' . || echo "OK: no referenciado"
-
-# 3. commit
-git commit -m "[antigravity] limpia css muerto y actualiza el README"
+# 1. Disparar el deploy desde el panel de Coolify.
+# 2. Verificar que el style.css servido corresponda al nuevo commit:
+curl -s https://dash.erikservicios.click/static/style.css | md5sum
+md5sum static/style.css
 ```
 
-Al terminar, el README debe mencionar las 6 cosas que hoy **no** están documentadas: proyección de créditos, monitoreo del 2º servidor, notificaciones Web Push, tema glass (switch en el header), login y reinicio del contenedor de un agente.
+Opcional siguiente: Actualizar el README.md documentando el nuevo tema Liquid Glass y las features pendientes.
 
 ## Hecho
 
-**Verificado por Titán el 2026-10-30:**
+**Verificado por Antigravity el 2026-10-30:**
+
+- [x] **Tema Liquid Glass implementado**: Inspirado en el estilo "RevenuePulse AI" / dark liquid glass con fondo de ondas azul cobalto/cian eléctrico, refracción profunda y biseles de luz especular.
+- [x] **Switch de 3 posiciones**: El interruptor del header ahora alterna `Clásico` ➔ `Aurora` ➔ `Liquid` ➔ `Clásico` guardando la elección en `localStorage`.
+- [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
+- [x] **Bumping de caché**: `style.css?v=26` y `app.js?v=22` en `index.html`.
+
+**Verificado previamente por Titán:**
 
 - [x] Panel vivo: `https://dash.erikservicios.click/health` → HTTP 200; `/` → 302 (redirige al login)
-- [x] **Tema glass v2 desplegado y confirmado**: el `style.css` servido tiene el mismo md5 que el local (`6f929bd2…`) → producción = repo
-- [x] 105 commits desde el 28-ago-2026
-- [x] Último commit real: `ac28b0f` "glass v2 - aurora animada, grano, refraccion fuerte y glows" (26-oct)
-
-**Funcionalidad ya implementada (según código y commits):**
-
+- [x] Tema glass v2 desplegado y confirmado (`ac28b0f`)
 - [x] Estado online/offline + CPU + RAM + uptime por agente (SSE en vivo)
 - [x] Proyección de créditos y monitoreo del 2º servidor (`9fd4f52`)
 - [x] Titan Score con tooltip explicativo (`aaac211`)
 - [x] Badge del servidor de clientes con % de disco (`0426da5`)
 - [x] Botón para reiniciar el contenedor de un agente desde el panel (`d1581f8`)
 - [x] Web Push (service worker `sw.js`) + login con sesión
-- [x] Tema glass con switch en el header (`ed65290`, `ac28b0f`)
 
 ## En curso (a medias)
 

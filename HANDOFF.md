@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 00:22 (CST)
+**Última actualización:** 2026-10-30 00:30 (CST)
 **Estado:** 🟢 en marcha
 
 ## Objetivo
@@ -10,7 +10,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el switch de 3 temas (Clásico / Aurora / Liquid Glass).
+> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el nuevo tema Cristal Puro transparente (switch de 3 temas: Clásico / Aurora / Cristal).
 
 ```bash
 # 1. Disparar el deploy desde el panel de Coolify.
@@ -19,16 +19,14 @@ curl -s https://dash.erikservicios.click/static/style.css | md5sum
 md5sum static/style.css
 ```
 
-Opcional siguiente: Actualizar el README.md documentando el nuevo tema Liquid Glass y las features pendientes.
-
 ## Hecho
 
 **Verificado por Antigravity el 2026-10-30:**
 
-- [x] **Tema Liquid Glass implementado**: Inspirado en el estilo "RevenuePulse AI" / dark liquid glass con fondo de ondas azul cobalto/cian eléctrico, refracción profunda y biseles de luz especular.
-- [x] **Switch de 3 posiciones**: El interruptor del header ahora alterna `Clásico` ➔ `Aurora` ➔ `Liquid` ➔ `Clásico` guardando la elección en `localStorage`.
+- [x] **Rediseño a Cristal Puro (True Frosted Glassmorphism)**: Eliminada la saturación azul pesada. Implementado vidrio neutral hiper-transparente con biseles de luz blanca especular, reflejo en diagonal, desenfoque profundo y fondo de luces difusas suaves que revelan la transparencia real.
+- [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Cristal`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
-- [x] **Bumping de caché**: `style.css?v=26` y `app.js?v=22` en `index.html`.
+- [x] **Bumping de caché**: `style.css?v=27` y `app.js?v=23` en `index.html`.
 
 **Verificado previamente por Titán:**
 

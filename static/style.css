@@ -1820,29 +1820,25 @@ body.liquid .theme-knob {
 }
 
 /* ==========================================================================
-   TEMA 3: ULTRA GLASS (Hyper-Transparent Frosted Prism Glass)
-   100% evidente: tarjetas hiper-transparentes donde se ve claramente el
-   fondo luminoso difuminándose a través del cristal:
-   - Luces prismáticas vivas y ricas en el fondo (violeta, cian, rosa y esmeralda).
-   - Paneles ultra-transparentes (92% de transparencia real).
-   - Borde de cristal blanco nítido con filo de luz especular brillante (0.80).
-   - Desenfoque frosted intenso (blur 24px, saturate 200%, brightness 1.15).
+   TEMA 3: ULTRA GLASS (Dark Smoked Frosted Glass)
+   Equilibrio perfecto: tarjetas de cristal ahumado translúcidas con fondo
+   de auroras ambientales profundas y bisel de luz especular.
    ========================================================================== */
 
 body.liquid {
-    --bg-primary:     #04050a;
-    --bg-secondary:   rgba(255, 255, 255, 0.04);
-    --bg-card:        rgba(255, 255, 255, 0.05);
-    --bg-card-hover:  rgba(255, 255, 255, 0.12);
-    --border:         rgba(255, 255, 255, 0.28);
+    --bg-primary:     #030408;
+    --bg-secondary:   rgba(255, 255, 255, 0.03);
+    --bg-card:        rgba(15, 18, 28, 0.35);
+    --bg-card-hover:  rgba(255, 255, 255, 0.08);
+    --border:         rgba(255, 255, 255, 0.20);
     --text-primary:   #ffffff;
-    --text-secondary: #e2e8f0;
+    --text-secondary: #cbd5e1;
     --text-muted:     #94a3b8;
-    --shadow:         0 16px 45px rgba(0, 0, 0, 0.55);
-    background-color: #04050a;
+    --shadow:         0 18px 45px rgba(0, 0, 0, 0.65);
+    background-color: #030408;
 }
 
-/* ---------- 1. Fondo vivo de luces prismáticas que atraviesan el cristal ---------- */
+/* ---------- 1. Luces ambientales profundas que atraviesan el cristal ---------- */
 body.liquid::before {
     content: "";
     position: fixed;
@@ -1850,20 +1846,20 @@ body.liquid::before {
     z-index: -2;
     pointer-events: none;
     background:
-        radial-gradient(55rem 48rem at 12% 15%, rgba(139, 92, 246, 0.45), transparent 60%),
-        radial-gradient(50rem 44rem at 88% 18%, rgba(6, 182, 212, 0.40), transparent 60%),
-        radial-gradient(46rem 40rem at 50% 50%, rgba(244, 63, 94, 0.32), transparent 62%),
-        radial-gradient(48rem 42rem at 18% 85%, rgba(16, 185, 129, 0.35), transparent 60%),
-        radial-gradient(45rem 40rem at 85% 85%, rgba(59, 130, 246, 0.42), transparent 60%);
-    filter: blur(40px);
-    animation: crystalDrift 22s ease-in-out infinite alternate;
+        radial-gradient(55rem 48rem at 12% 15%, rgba(139, 92, 246, 0.30), transparent 60%),
+        radial-gradient(50rem 44rem at 88% 18%, rgba(6, 182, 212, 0.26), transparent 60%),
+        radial-gradient(46rem 40rem at 50% 50%, rgba(244, 63, 94, 0.20), transparent 62%),
+        radial-gradient(48rem 42rem at 18% 85%, rgba(16, 185, 129, 0.24), transparent 60%),
+        radial-gradient(45rem 40rem at 85% 85%, rgba(59, 130, 246, 0.28), transparent 60%);
+    filter: blur(45px);
+    animation: crystalDrift 24s ease-in-out infinite alternate;
     will-change: transform;
 }
 
 @keyframes crystalDrift {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
-    50%  { transform: translate3d(3%, -2.5%, 0) scale(1.08); }
-    100% { transform: translate3d(-2.5%, 2%, 0) scale(1.04); }
+    50%  { transform: translate3d(2.5%, -2%, 0) scale(1.06); }
+    100% { transform: translate3d(-2%, 2%, 0) scale(1.03); }
 }
 
 /* ---------- 2. Micrograno sutil ---------- */
@@ -1877,7 +1873,7 @@ body.liquid::after {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- 3. Vidrio Hiper-Transparente (Ultra Frosted Glass) ---------- */
+/* ---------- 3. Vidrio Frosted Ahumado Translúcido ---------- */
 body.liquid header,
 body.liquid .agent-card,
 body.liquid .disk-card,
@@ -1890,12 +1886,12 @@ body.liquid .gateway-content,
 body.liquid .timeline-item {
     background: linear-gradient(
         135deg,
-        rgba(255, 255, 255, 0.12) 0%,
-        rgba(255, 255, 255, 0.03) 60%,
-        rgba(255, 255, 255, 0.08) 100%
+        rgba(255, 255, 255, 0.09) 0%,
+        rgba(14, 17, 28, 0.40) 55%,
+        rgba(255, 255, 255, 0.03) 100%
     ) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.14);
-    backdrop-filter: blur(24px) saturate(200%) brightness(1.14);
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.02);
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.02);
 }
 
 /* ---------- 4. Filo de luz blanca y bisel especular 3D ---------- */
@@ -1908,63 +1904,63 @@ body.liquid .epic-card,
 body.liquid .history-content,
 body.liquid .activity-content,
 body.liquid .gateway-content {
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
     box-shadow:
-        0 16px 45px rgba(0, 0, 0, 0.55),
-        0 2px 8px rgba(0, 0, 0, 0.35),
-        inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
-        inset 1.5px 0 0 rgba(255, 255, 255, 0.40),
-        inset 0 -1.5px 0 rgba(0, 0, 0, 0.30) !important;
+        0 18px 45px rgba(0, 0, 0, 0.65),
+        0 4px 12px rgba(0, 0, 0, 0.45),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+        inset 1.5px 0 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1.5px 0 rgba(0, 0, 0, 0.35) !important;
 }
 
 /* Header Ultra Glass */
 body.liquid header {
-    background: rgba(10, 12, 22, 0.45) !important;
-    backdrop-filter: blur(24px) saturate(200%) brightness(1.14) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.30) !important;
+    background: rgba(8, 10, 18, 0.58) !important;
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.02) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
     box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.45),
-        inset 0 1.5px 0 rgba(255, 255, 255, 0.70) !important;
+        0 14px 35px rgba(0, 0, 0, 0.55),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.50) !important;
 }
 
 /* Píldoras y métricas en cristal esmerilado */
 body.liquid .header-stat {
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 8px;
     padding: 3px 8px;
     box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.50);
+        0 4px 10px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(16px);
     transition: all 0.25s;
 }
 
 body.liquid .header-stat:hover {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.50);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.38);
 }
 
 /* Botones de acción en cristal pulido */
 body.liquid .push-btn,
 body.liquid .logout-btn {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: 8px;
     box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.30),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        0 4px 12px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.40);
     backdrop-filter: blur(16px);
     transition: all 0.25s;
 }
 
 body.liquid .push-btn:hover,
 body.liquid .logout-btn:hover {
-    background: rgba(255, 255, 255, 0.24);
-    border-color: rgba(255, 255, 255, 0.60);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.45);
     box-shadow:
-        0 0 20px rgba(255, 255, 255, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        0 0 16px rgba(255, 255, 255, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 /* ---------- 5. Título y tipografía diamante ---------- */
@@ -1972,21 +1968,21 @@ body.liquid .logo h1 {
     background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 40%, #cbd5e1 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.45));
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.40));
 }
 
 body.liquid .logo-icon {
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.80));
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.70));
 }
 
 /* Badges como láminas de cristal */
 body.liquid .section-badge {
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.26);
     color: #ffffff;
     box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        0 4px 10px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.40);
     backdrop-filter: blur(12px);
 }
 
@@ -1994,9 +1990,9 @@ body.liquid .section-badge {
 body.liquid .disk-bar,
 body.liquid .credit-bar,
 body.liquid .bar-container {
-    background: rgba(0, 0, 0, 0.35) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.60) !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.65) !important;
     backdrop-filter: blur(10px);
 }
 
@@ -2005,16 +2001,16 @@ body.liquid .disk-bar-fill,
 body.liquid .credit-bar-fill,
 body.liquid .bar-fill {
     background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-    box-shadow: 0 0 16px rgba(129, 140, 248, 0.65);
+    box-shadow: 0 0 16px rgba(129, 140, 248, 0.55);
 }
 
 /* Titan Score de cristal */
 body.liquid .titan-score {
-    border-color: rgba(255, 255, 255, 0.38) !important;
-    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 75%) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.15), rgba(15, 18, 28, 0.45) 75%) !important;
 }
 
-/* ---------- 6. Hover: destello brillante de cristal ---------- */
+/* ---------- 6. Hover: destello suave ---------- */
 @media (hover: hover) and (pointer: fine) {
     body.liquid .agent-card:hover,
     body.liquid .disk-card:hover,
@@ -2022,29 +2018,29 @@ body.liquid .titan-score {
     body.liquid .epic-card:hover {
         background: linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.20) 0%,
-            rgba(255, 255, 255, 0.06) 60%,
-            rgba(255, 255, 255, 0.15) 100%
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(22, 26, 40, 0.55) 55%,
+            rgba(255, 255, 255, 0.08) 100%
         ) !important;
-        border-color: rgba(255, 255, 255, 0.55) !important;
+        border-color: rgba(255, 255, 255, 0.38) !important;
         box-shadow:
-            0 24px 50px rgba(0, 0, 0, 0.65),
-            0 0 25px rgba(255, 255, 255, 0.18),
-            inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
-            inset 1.5px 0 0 rgba(255, 255, 255, 0.50),
-            inset 0 -1.5px 0 rgba(0, 0, 0, 0.35) !important;
-        transform: translateY(-4px) scale(1.01);
+            0 24px 55px rgba(0, 0, 0, 0.75),
+            0 0 20px rgba(255, 255, 255, 0.10),
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.70),
+            inset 1.5px 0 0 rgba(255, 255, 255, 0.35),
+            inset 0 -1.5px 0 rgba(0, 0, 0, 0.45) !important;
+        transform: translateY(-3px);
         transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 }
 
 /* ---------- 7. Scrollbar de cristal puro ---------- */
 body.liquid ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.20);
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.10);
 }
 body.liquid ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.45);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.40);
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.30);
 }

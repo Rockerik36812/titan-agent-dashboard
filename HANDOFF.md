@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 00:46 (CST)
+**Última actualización:** 2026-10-30 00:51 (CST)
 **Estado:** 🟢 en marcha
 
 ## Objetivo
@@ -10,7 +10,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el tema Ultra Glass hiper-transparente (fondo prismático vivo difuminado a través de paneles de cristal).
+> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el ajuste de Ultra Glass más oscuro y calibrado (ahumado translúcido con auroras nocturnas).
 
 ```bash
 # 1. Disparar el deploy desde el panel de Coolify.
@@ -23,10 +23,10 @@ md5sum static/style.css
 
 **Verificado por Antigravity el 2026-10-30:**
 
-- [x] **Tema Ultra Glass (Hyper-Transparent Prism Glass)**: Eliminado el aspecto opaco similar al clásico. Implementadas tarjetas 92% transparentes con filo de luz especular blanca brillante (0.75), bisel 3D y un fondo vivo de luces prismáticas en movimiento (violeta, cian, rosa y esmeralda) que se traslucen intensamente a través del cristal frosted.
+- [x] **Ultra Glass Calibrado (Más oscuro y translúcido)**: Ajustado el fondo y tarjetas con un tinte ahumado elegante (brightness 1.02, auroras nocturnas calibradas a 0.25-0.30) para que no deslumbre, manteniendo la transparencia nítida y el bisel de cristal visible.
 - [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
-- [x] **Bumping de caché**: `style.css?v=30` y `app.js?v=26` en `index.html`.
+- [x] **Bumping de caché**: `style.css?v=31` y `app.js?v=27` en `index.html`.
 
 **Verificado previamente por Titán:**
 

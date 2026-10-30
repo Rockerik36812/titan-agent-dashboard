@@ -1027,13 +1027,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) {
             var titles = {
                 classic: 'Estilo clásico — clic para activar Glass Aurora',
-                glass: 'Estilo Glass Aurora — clic para activar Cristal Puro',
-                liquid: 'Estilo Cristal Puro — clic para volver al clásico'
+                glass: 'Estilo Glass Aurora — clic para activar Vidrio Glaseado',
+                liquid: 'Estilo Vidrio Glaseado — clic para volver al clásico'
             };
             var labels = {
                 classic: 'Clásico',
                 glass: 'Aurora',
-                liquid: 'Cristal'
+                liquid: 'Glaseado'
             };
             btn.title = titles[modo] || titles.classic;
             var lbl = btn.querySelector('.theme-label');

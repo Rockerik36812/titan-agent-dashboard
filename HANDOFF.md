@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 00:35 (CST)
+**Última actualización:** 2026-10-30 00:41 (CST)
 **Estado:** 🟢 en marcha
 
 ## Objetivo
@@ -10,7 +10,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el tema Cristal Físico (vidrio biselado 3D, reflejo estriado diagonal y luces de fondo).
+> Desplegar en Coolify y verificar en vivo (`https://dash.erikservicios.click`) el tema Vidrio Glaseado Oscuro (paneles ahumados, sombras profundas y esmerilado mate).
 
 ```bash
 # 1. Disparar el deploy desde el panel de Coolify.
@@ -23,10 +23,10 @@ md5sum static/style.css
 
 **Verificado por Antigravity el 2026-10-30:**
 
-- [x] **Vidrio físico hiper-realista**: Reflejo de luz en diagonal (130deg estriado), biseles 3D con luz especular arriba/izquierda y sombra de espesor abajo, mayor desenfoque y brillo interno (brightness 1.12), canales de barras tallados y orbes de luz de fondo más vivas.
-- [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Cristal`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
+- [x] **Vidrio Glaseado Oscuro (Dark Smoked Frosted Glass)**: Fondo oscuro profundo (#050609) con auroras nocturnas suaves, paneles ahumados glaseados (blur 32px), sombras dramáticas multi-capa (0 24px 50px) para elevación flotante física y biselado superior con micrograno al ácido.
+- [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Glaseado`)**: Actualizado en `app.js` y `style.css` con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
-- [x] **Bumping de caché**: `style.css?v=28` y `app.js?v=24` en `index.html`.
+- [x] **Bumping de caché**: `style.css?v=29` y `app.js?v=25` en `index.html`.
 
 **Verificado previamente por Titán:**
 

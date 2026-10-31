@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-31 01:00 (CST)
+**Última actualización:** 2026-10-31 01:05 (CST)
 **Estado:** 🟢 en marcha (Aprobado por Erik)
 
 ## Objetivo
@@ -10,7 +10,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Poner el README.md al día documentando el nuevo tema visual Ultra Glass y las features pendientes que hoy no están escritas.
+> Probar el panel en el **celular** con el tema Ultra Glass (scroll y batería). Si se siente pesado o caliente: bajar el `blur(45px)` del fondo animado y limpiar los ~15 `!important` del bloque nuevo (es mejora de mantenimiento, no cambio de diseño).
 
 ## Hecho
 
@@ -20,6 +20,13 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 - [x] **Switch de 3 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass`)**: Completamente funcional, ciclando con persistencia en `localStorage`.
 - [x] **Limpieza de CSS muerto**: Eliminado `static/style.css.v1-glass` (42 KB).
 - [x] **Bumping de caché**: `style.css?v=31` y `app.js?v=27` en `index.html`.
+
+**Hecho por Titán el 2026-10-31:**
+
+- [x] **README.md al día**: reescrito con las features reales (agentes, épicas, OpenRouter, sistema + 2º VPS, gateways, herramientas, actividad, analíticas, Web Push, los 3 temas y el auth), **la tabla de los 28 endpoints**, requisitos, despliegue y cómo verificar el deploy por md5.
+- [x] **Tamaños reales** en "Archivos clave" (`style.css` 52 KB, `app.js` 49 KB, `main.py` 61 KB).
+- [x] **Bitácora**: nota de zona horaria en el encabezado — de aquí en adelante todo en hora de México.
+- [x] Detectado y documentado: `docker-compose.yml` está desalineado con el despliegue real.
 
 **Verificado previamente por Titán:**
 
@@ -38,7 +45,8 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## Bloqueos y decisiones pendientes
 
-- El README está desactualizado: describe solo 7 features y 5 APIs de hace dos meses. Pendiente documentar Ultra Glass y las mejoras acumuladas.
+- Nada del README: quedó al día el 2026-10-31 (28 endpoints documentados).
+- `docker-compose.yml` desalineado con el despliegue real (`ghcr.io`/puerto `8000` vs Coolify/`8999`): decidir si se alinea o se borra para no confundir.
 - Token de GitHub renovado y configurado en el entorno local.
 
 ## Comandos útiles
@@ -56,9 +64,10 @@ curl -s -o /dev/null -w '%{http_code}\n' https://dash.erikservicios.click/health
 
 ## Archivos clave
 
-- `main.py` (62 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
-- `static/app.js` (50 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
-- `static/style.css` (47 KB) — estilos + 3 temas visuales (Clásico, Aurora v2 y Ultra Glass)
+- `main.py` (61 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
+- `static/app.js` (49 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
+- `static/style.css` (52 KB) — estilos + 3 temas visuales (Clásico, Aurora y Ultra Glass)
+- `README.md` (6 KB) — features reales, los 28 endpoints, despliegue y verificación por md5
 - `sw.js` — service worker de las notificaciones push
 - `Dockerfile` / `docker-compose.yml` — despliegue; el contenedor necesita el **docker socket** montado
 

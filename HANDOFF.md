@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-30 01:00 (CST)
+**Última actualización:** 2026-10-31 01:00 (CST)
 **Estado:** 🟢 en marcha (Aprobado por Erik)
 
 ## Objetivo
@@ -58,8 +58,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://dash.erikservicios.click/health
 
 - `main.py` (62 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
 - `static/app.js` (50 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
-- `static/style.css` (45 KB) — estilos + tema glass v2
-- `static/style.css.v1-glass` (42 KB) — **respaldo muerto, candidato a borrar**
+- `static/style.css` (47 KB) — estilos + 3 temas visuales (Clásico, Aurora v2 y Ultra Glass)
 - `sw.js` — service worker de las notificaciones push
 - `Dockerfile` / `docker-compose.yml` — despliegue; el contenedor necesita el **docker socket** montado
 

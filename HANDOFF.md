@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-11-01 01:15 (CST)
-**Estado:** 🟢 en marcha (Tema Día de Muertos listo para probar)
+**Última actualización:** 2026-11-01 01:20 (CST)
+**Estado:** 🟢 en marcha (Tema Día de Muertos auténtico listo para probar)
 
 ## Objetivo
 
@@ -10,19 +10,20 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Desplegar en Coolify (o esperar auto-deploy de `main`) y verificar en el navegador / celular el nuevo tema tradicional de **Día de Muertos 💀🏵️** (calaveras/catrina, cempasúchil flotante, papel picado con calavera y huesos en tarjetas) y la fluidez del switch de 4 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass` ➔ `Día de Muertos 🏵️`).
+> Desplegar en Coolify (o esperar auto-deploy de `main`) y verificar en el navegador / celular el nuevo tema tradicional de **Día de Muertos 💀🏵️** (Catrina ilustrada en el logo, guirnalda de papel picado multicolor en el header, camino de cempasúchil y pan de muerto flotante) y la fluidez del switch de 4 posiciones.
 
 ## Hecho
 
 **Hecho por Antigravity el 2026-11-01 (Solicitado por Erik):**
 
-- [x] **4º Tema Visual: Día de Muertos 💀🏵️ (Tradición Mexicana)**:
-  - **Calaveras y Catrinas**: Logo interactivo con calaverita `💀` y animación de resplandor de veladora (`calaveraGlow`); títulos con degradado de Cempasúchil Dorado y Rosa Mexicano.
-  - **Flores de Cempasúchil**: Fondo con camino místico de pétalos dorados/naranjas de cempasúchil, flores de altar y siluetas festivas flotantes con animación continua.
-  - **Huesos y Papel Picado**: Esquinas de tarjetas (`.agent-card`, `.disk-card`, `.chart-card`, `.epic-card`) decoradas con papel picado calado tradicional conteniendo calavera, huesos cruzados y cempasúchil.
-  - **Altar Glass**: Vidrio ahumado translúcido con filo de luz ámbar/veladora y reflejos magenta y morado obispo.
-- [x] **Switch ampliado a 4 posiciones**: Track de 56px (`0px`, `14px`, `28px`, `42px`), track temático (Cempasúchil, Rosa Mexicano y Morado Altar) y compatibilidad retroactiva en `localStorage`.
-- [x] **Bumping de caché**: `style.css?v=33` y `app.js?v=29` en `index.html`.
+- [x] **4º Tema Visual: Día de Muertos 💀🏵️ (Auténtica Tradición Mexicana)**:
+  - **La Catrina Ilustrada en el Logo**: Icono con sombrero de ala ancha, plumas turquesa, flores de cempasúchil, ojos con pétalos y sonrisa calada con animación de veladora (`catrinaFlicker`).
+  - **Guirnalda de Papel Picado en Header**: Cenefa festoneada colgante a lo largo de todo el header con los 5 colores típicos de ofrenda (Rosa Mexicano `#e4007c`, Naranja Cempasúchil `#f29f05`, Amarillo Sol `#ffd100`, Azul Turquesa `#00bcd4`, Morado `#6a2c91`) con calaveritas, huesos y flores caladas.
+  - **Camino de Cempasúchil, Calaveritas y Pan de Muerto**: Fondo animado continuo con lluvia suave de pétalos de cempasúchil dorados y bugambilia, flores completas de 20 pétalos, calaveritas de azúcar mexicanas y pan de muerto tradicional con canillas/huesos.
+  - **Tarjetas Altar Glass con Esquinas de Papel Picado**: Esquinas decoradas con papel picado calado en rosa mexicano con cempasúchil dorado y calaverita sonriente.
+  - **Atmósfera Cálida de Ofrenda**: Resplandores de luz de veladoras en lugar de niebla tenebrosa.
+- [x] **Switch de 4 posiciones calibrado**: Track con los 5 colores de papel picado, knob en oro cempasúchil y persistencia en `localStorage`.
+- [x] **Bumping de caché**: `style.css?v=34` y `app.js?v=30` en `index.html`.
 
 **Verificado por Antigravity el 2026-10-30 (Aprobado por Erik):**
 

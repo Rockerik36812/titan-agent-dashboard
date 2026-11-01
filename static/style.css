@@ -1801,10 +1801,10 @@ body.liquid .theme-knob {
 }
 
 body.muertos .theme-track {
-    background: linear-gradient(120deg, #ff7900, #e11d48, #9333ea, #ffb703);
-    background-size: 200% 100%;
-    border-color: rgba(255, 159, 0, 0.50);
-    box-shadow: 0 0 14px rgba(255, 121, 0, 0.65), 0 0 8px rgba(225, 29, 143, 0.40);
+    background: linear-gradient(120deg, #e4007c, #f29f05, #ffd100, #00bcd4, #6a2c91);
+    background-size: 250% 100%;
+    border-color: rgba(255, 209, 0, 0.60);
+    box-shadow: 0 0 14px rgba(242, 159, 5, 0.70), 0 0 10px rgba(228, 0, 124, 0.45);
     animation: muertosTrack 6s ease-in-out infinite alternate;
 }
 
@@ -1815,8 +1815,8 @@ body.muertos .theme-track {
 
 body.muertos .theme-knob {
     transform: translateX(42px);
-    background: #ffb703;
-    box-shadow: 0 0 10px rgba(255, 183, 3, 0.95), 0 0 16px rgba(255, 121, 0, 0.75);
+    background: #ffd100;
+    box-shadow: 0 0 12px rgba(255, 209, 0, 0.95), 0 0 20px rgba(242, 159, 5, 0.85);
 }
 
 .theme-label {
@@ -2069,23 +2069,23 @@ body.liquid ::-webkit-scrollbar-thumb:hover {
 }
 
 /* ==========================================================================
-   TEMA 4: DÍA DE MUERTOS 💀🏵️ (Altar Glass, Cempasúchil, Calaveras, Catrinas y Huesos)
+   TEMA 4: DÍA DE MUERTOS 💀🏵️ (Tradición Mexicana, Altar, Catrinas, Cempasúchil y Papel Picado)
    ========================================================================== */
 
 body.muertos {
-    --bg-primary:     #09040e;
-    --bg-secondary:   rgba(255, 121, 0, 0.06);
-    --bg-card:        rgba(26, 12, 36, 0.68);
-    --bg-card-hover:  rgba(42, 18, 58, 0.80);
-    --border:         rgba(255, 159, 0, 0.28);
+    --bg-primary:     #0d0514;
+    --bg-secondary:   rgba(242, 159, 5, 0.08);
+    --bg-card:        rgba(28, 12, 38, 0.72);
+    --bg-card-hover:  rgba(45, 18, 62, 0.85);
+    --border:         rgba(242, 159, 5, 0.35);
     --text-primary:   #fff9f2;
-    --text-secondary: #ebd5f2;
-    --text-muted:     #c084fc;
-    --shadow:         0 18px 45px rgba(0, 0, 0, 0.78), 0 0 25px rgba(225, 29, 143, 0.20);
-    background-color: #09040e;
+    --text-secondary: #ffd8a8;
+    --text-muted:     #f472b6;
+    --shadow:         0 18px 45px rgba(0, 0, 0, 0.78), 0 0 25px rgba(228, 0, 124, 0.25);
+    background-color: #0d0514;
 }
 
-/* ---------- 1. Resplandores de Altar y Veladoras (Candlelight & Ofrenda Fog) ---------- */
+/* ---------- 1. Atmósfera de Altar con Veladoras y Luces Místicas ---------- */
 body.muertos::before {
     content: "";
     position: fixed;
@@ -2093,41 +2093,41 @@ body.muertos::before {
     z-index: -2;
     pointer-events: none;
     background:
-        radial-gradient(55rem 48rem at 15% 15%, rgba(255, 121, 0, 0.32), transparent 60%),
-        radial-gradient(50rem 44rem at 85% 20%, rgba(225, 29, 143, 0.30), transparent 60%),
-        radial-gradient(46rem 40rem at 50% 50%, rgba(255, 183, 3, 0.22), transparent 62%),
-        radial-gradient(48rem 42rem at 20% 85%, rgba(147, 51, 234, 0.28), transparent 60%),
-        radial-gradient(45rem 40rem at 85% 85%, rgba(255, 98, 0, 0.30), transparent 60%);
+        radial-gradient(55rem 48rem at 15% 15%, rgba(242, 159, 5, 0.35), transparent 60%),
+        radial-gradient(50rem 44rem at 85% 20%, rgba(228, 0, 124, 0.32), transparent 60%),
+        radial-gradient(46rem 40rem at 50% 50%, rgba(255, 209, 0, 0.25), transparent 62%),
+        radial-gradient(48rem 42rem at 20% 85%, rgba(106, 44, 145, 0.35), transparent 60%),
+        radial-gradient(45rem 40rem at 85% 85%, rgba(255, 112, 0, 0.32), transparent 60%);
     filter: blur(48px);
-    animation: ofrendaFog 22s ease-in-out infinite alternate;
+    animation: ofrendaCandles 18s ease-in-out infinite alternate;
     will-change: transform;
 }
 
-@keyframes ofrendaFog {
+@keyframes ofrendaCandles {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
-    50%  { transform: translate3d(-3%, 2%, 0) scale(1.07); }
-    100% { transform: translate3d(2.5%, -2.5%, 0) scale(1.04); }
+    50%  { transform: translate3d(-3%, 2%, 0) scale(1.06); }
+    100% { transform: translate3d(2.5%, -2%, 0) scale(1.03); }
 }
 
-/* ---------- 2. Pétalos de Cempasúchil, Calaveritas y Huesos flotando ---------- */
+/* ---------- 2. Camino de Pétalos de Cempasúchil, Calaveritas y Pan de Muerto ---------- */
 body.muertos::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.22;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 260'%3E%3Cpath d='M45,35 Q60,15 70,40 Q55,65 45,35 Z' fill='%23ff9f00' opacity='0.55'/%3E%3Cpath d='M190,85 Q210,70 220,95 Q200,115 190,85 Z' fill='%23ff6200' opacity='0.55'/%3E%3Cg transform='translate(130, 165) scale(0.65)' fill='%23e11d48' opacity='0.40'%3E%3Ccircle cx='20' cy='20' r='15'/%3E%3Crect x='13' y='32' width='14' height='9' rx='2'/%3E%3C/g%3E%3Cg transform='translate(240, 195) rotate(30) scale(0.55)' fill='%23ffb703' opacity='0.40'%3E%3Cline x1='10' y1='20' x2='50' y2='20' stroke='%23ffb703' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='16' r='3.5'/%3E%3Ccircle cx='10' cy='24' r='3.5'/%3E%3Ccircle cx='50' cy='16' r='3.5'/%3E%3Ccircle cx='50' cy='24' r='3.5'/%3E%3C/g%3E%3Cpath d='M75,225 Q90,210 100,235 Q82,250 75,225 Z' fill='%23e11d48' opacity='0.45'/%3E%3Cg transform='translate(260, 45) scale(0.65)' fill='%23ffb703' opacity='0.45'%3E%3Ccircle cx='20' cy='20' r='9'/%3E%3Ccircle cx='20' cy='8' r='4.5'/%3E%3Ccircle cx='20' cy='32' r='4.5'/%3E%3Ccircle cx='8' cy='20' r='4.5'/%3E%3Ccircle cx='32' cy='20' r='4.5'/%3E%3Ccircle cx='11' cy='11' r='3.5'/%3E%3Ccircle cx='29' cy='11' r='3.5'/%3E%3Ccircle cx='11' cy='29' r='3.5'/%3E%3Ccircle cx='29' cy='29' r='3.5'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 320px 260px;
-    animation: cempasuchilPath 36s linear infinite;
+    opacity: 0.28;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 280'%3E%3Cpath d='M40,30 Q58,10 68,36 Q52,62 40,30 Z' fill='%23ffd100' opacity='0.75'/%3E%3Cpath d='M190,75 Q212,58 222,85 Q200,108 190,75 Z' fill='%23f29f05' opacity='0.80'/%3E%3Cg transform='translate(125, 150) scale(0.7)' opacity='0.65'%3E%3Ccircle cx='20' cy='20' r='16' fill='%23fff9f0'/%3E%3Crect x='12' y='32' width='16' height='10' rx='2.5' fill='%23fff9f0'/%3E%3Ccircle cx='14' cy='18' r='4' fill='%23e4007c'/%3E%3Ccircle cx='26' cy='18' r='4' fill='%2300bcd4'/%3E%3Ccircle cx='14' cy='18' r='1.8' fill='%23ffd100'/%3E%3Ccircle cx='26' cy='18' r='1.8' fill='%23ffd100'/%3E%3Cpath d='M20,24 L18,28 L22,28 Z' fill='%23111'/%3E%3Cpath d='M15,36 Q20,38 25,36' stroke='%23e4007c' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='20' cy='9' r='3.5' fill='%23f29f05'/%3E%3C/g%3E%3Cg transform='translate(245, 190) scale(0.65)' opacity='0.60'%3E%3Ccircle cx='24' cy='24' r='20' fill='%23f29f05'/%3E%3Ccircle cx='24' cy='24' r='4.5' fill='%23ffd100'/%3E%3Cline x1='8' y1='24' x2='40' y2='24' stroke='%23fff9f0' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='24' y1='8' x2='24' y2='40' stroke='%23fff9f0' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%23fff9f0'/%3E%3Ccircle cx='40' cy='24' r='3' fill='%23fff9f0'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%23fff9f0'/%3E%3Ccircle cx='24' cy='40' r='3' fill='%23fff9f0'/%3E%3C/g%3E%3Cpath d='M75,225 Q92,208 102,234 Q82,252 75,225 Z' fill='%23e4007c' opacity='0.70'/%3E%3Cg transform='translate(260, 35) scale(0.75)' opacity='0.70'%3E%3Ccircle cx='20' cy='20' r='9' fill='%23f29f05'/%3E%3Ccircle cx='20' cy='6' r='4.5' fill='%23ffd100'/%3E%3Ccircle cx='20' cy='34' r='4.5' fill='%23ffd100'/%3E%3Ccircle cx='6' cy='20' r='4.5' fill='%23ffd100'/%3E%3Ccircle cx='34' cy='20' r='4.5' fill='%23ffd100'/%3E%3Ccircle cx='10' cy='10' r='4' fill='%23f29f05'/%3E%3Ccircle cx='30' cy='10' r='4' fill='%23f29f05'/%3E%3Ccircle cx='10' cy='30' r='4' fill='%23f29f05'/%3E%3Ccircle cx='30' cy='30' r='4' fill='%23f29f05'/%3E%3Ccircle cx='15' cy='7' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='25' cy='7' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='15' cy='33' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='25' cy='33' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='7' cy='15' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='7' cy='25' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='33' cy='15' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='33' cy='25' r='3.5' fill='%23ffd100'/%3E%3Ccircle cx='20' cy='20' r='4' fill='%23ff6f00'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 340px 280px;
+    animation: cempasuchilPath 34s linear infinite;
 }
 
 @keyframes cempasuchilPath {
     0%   { background-position: 0 0; }
-    100% { background-position: -640px -520px; }
+    100% { background-position: -680px -560px; }
 }
 
-/* ---------- 3. Vidrio de Altar Translúcido (Ofrenda Smoked Glass) ---------- */
+/* ---------- 3. Vidrio de Altar Translúcido (Ofrenda Glass) ---------- */
 body.muertos header,
 body.muertos .agent-card,
 body.muertos .disk-card,
@@ -2141,22 +2141,22 @@ body.muertos .timeline-item {
     position: relative;
     background: linear-gradient(
         135deg,
-        rgba(255, 183, 3, 0.09) 0%,
-        rgba(30, 14, 42, 0.74) 45%,
-        rgba(15, 6, 22, 0.86) 100%
+        rgba(255, 209, 0, 0.10) 0%,
+        rgba(32, 14, 44, 0.76) 45%,
+        rgba(16, 6, 24, 0.88) 100%
     ) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 159, 0, 0.30) !important;
+    border: 1px solid rgba(242, 159, 5, 0.35) !important;
     box-shadow:
         0 18px 45px rgba(0, 0, 0, 0.78),
-        0 4px 15px rgba(225, 29, 143, 0.18),
-        inset 0 1.5px 0 rgba(255, 200, 50, 0.50),
-        inset 1.5px 0 0 rgba(255, 159, 0, 0.25),
+        0 4px 15px rgba(228, 0, 124, 0.20),
+        inset 0 1.5px 0 rgba(255, 209, 0, 0.60),
+        inset 1.5px 0 0 rgba(228, 0, 124, 0.30),
         inset 0 -1.5px 0 rgba(0, 0, 0, 0.60) !important;
 }
 
-/* ---------- 4. Papel Picado Festivo con Calavera y Huesos en Esquinas ---------- */
+/* ---------- 4. Papel Picado Festivo con Flor de Cempasúchil y Calavera en Esquinas ---------- */
 body.muertos .agent-card::before,
 body.muertos .disk-card::before,
 body.muertos .chart-card::before,
@@ -2165,12 +2165,12 @@ body.muertos .epic-card::before {
     position: absolute;
     top: 0;
     right: 0;
-    width: 68px;
-    height: 68px;
+    width: 72px;
+    height: 72px;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.32;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cpath d='M0,0 L100,0 L100,100 C95,92 90,92 85,100 C80,92 75,92 70,100 C65,92 60,92 55,100 C50,92 45,92 40,100 C35,92 30,92 25,100 C20,92 15,92 10,100 C5,92 0,92 0,100 Z' fill='rgba(225,29,143,0.18)' stroke='%23e11d48' stroke-width='1.2'/%3E%3Ccircle cx='68' cy='32' r='13' fill='none' stroke='%23ffb703' stroke-width='1.4'/%3E%3Ccircle cx='64' cy='30' r='2.2' fill='%23ffb703'/%3E%3Ccircle cx='72' cy='30' r='2.2' fill='%23ffb703'/%3E%3Cpath d='M66,36 Q68,34 70,36' stroke='%23ffb703' stroke-width='1.2'/%3E%3Cline x1='62' y1='43' x2='74' y2='43' stroke='%23ffb703' stroke-width='1.2'/%3E%3Cline x1='64' y1='40' x2='64' y2='45' stroke='%23ffb703' stroke-width='1'/%3E%3Cline x1='68' y1='40' x2='68' y2='45' stroke='%23ffb703' stroke-width='1'/%3E%3Cline x1='72' y1='40' x2='72' y2='45' stroke='%23ffb703' stroke-width='1'/%3E%3Cline x1='48' y1='16' x2='88' y2='48' stroke='%23ff9f00' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='88' y1='16' x2='48' y2='48' stroke='%23ff9f00' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='38' cy='62' r='7' stroke='%23ffa000' stroke-width='1.2' fill='rgba(255,160,0,0.15)'/%3E%3Ccircle cx='38' cy='62' r='2.5' fill='%23ffb703'/%3E%3C/svg%3E");
+    opacity: 0.38;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cpath d='M0,0 L100,0 L100,100 C92,90 85,90 78,100 C71,90 64,90 57,100 C50,90 43,90 36,100 C29,90 22,90 15,100 C8,90 0,90 0,100 Z' fill='rgba(228,0,124,0.22)' stroke='%23e4007c' stroke-width='1.5'/%3E%3Ccircle cx='70' cy='30' r='14' fill='none' stroke='%23f29f05' stroke-width='1.5'/%3E%3Ccircle cx='70' cy='30' r='8' fill='rgba(255,209,0,0.35)' stroke='%23ffd100' stroke-width='1.2'/%3E%3Ccircle cx='70' cy='30' r='3.5' fill='%23ff6f00'/%3E%3Ccircle cx='70' cy='13' r='3' fill='%23ffd100'/%3E%3Ccircle cx='70' cy='47' r='3' fill='%23ffd100'/%3E%3Ccircle cx='53' cy='30' r='3' fill='%23ffd100'/%3E%3Ccircle cx='87' cy='30' r='3' fill='%23ffd100'/%3E%3Ccircle cx='58' cy='18' r='2.5' fill='%23f29f05'/%3E%3Ccircle cx='82' cy='18' r='2.5' fill='%23f29f05'/%3E%3Ccircle cx='58' cy='42' r='2.5' fill='%23f29f05'/%3E%3Ccircle cx='82' cy='42' r='2.5' fill='%23f29f05'/%3E%3Ccircle cx='34' cy='62' r='9' fill='%23fff9f0'/%3E%3Crect x='30' y='69' width='8' height='5' rx='1' fill='%23fff9f0'/%3E%3Ccircle cx='31.5' cy='61' r='2' fill='%23e4007c'/%3E%3Ccircle cx='36.5' cy='61' r='2' fill='%2300bcd4'/%3E%3Cpath d='M34,64 L33,66 L35,66 Z' fill='%23111'/%3E%3Cline x1='31' y1='71' x2='37' y2='71' stroke='%23e4007c' stroke-width='1'/%3E%3C/svg%3E");
     background-size: contain;
     background-repeat: no-repeat;
     transition: opacity 0.3s ease;
@@ -2180,89 +2180,109 @@ body.muertos .agent-card:hover::before,
 body.muertos .disk-card:hover::before,
 body.muertos .chart-card:hover::before,
 body.muertos .epic-card:hover::before {
-    opacity: 0.55;
+    opacity: 0.65;
 }
 
-/* Header Día de Muertos */
+/* ---------- 5. Header Día de Muertos con Guirnalda de Papel Picado ---------- */
 body.muertos header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow: visible;
     background: linear-gradient(
         180deg,
-        rgba(35, 15, 48, 0.90) 0%,
-        rgba(16, 6, 24, 0.82) 100%
+        rgba(38, 15, 52, 0.94) 0%,
+        rgba(18, 6, 26, 0.88) 100%
     ) !important;
-    border-bottom: 1px solid rgba(255, 159, 0, 0.38) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.70), 0 0 20px rgba(225, 29, 143, 0.18) !important;
+    border-bottom: 2px solid rgba(242, 159, 5, 0.45) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.70), 0 0 24px rgba(228, 0, 124, 0.22) !important;
 }
 
-/* Calaverita / Catrina en el Logo Icon */
+/* Guirnalda de Papel Picado colgando a lo largo del header */
+body.muertos header::after {
+    content: "";
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 32' preserveAspectRatio='none'%3E%3Cline x1='0' y1='2' x2='200' y2='2' stroke='%23ffd100' stroke-width='2'/%3E%3Cpolygon points='2,2 38,2 38,24 20,30 2,24' fill='%23e4007c'/%3E%3Ccircle cx='20' cy='12' r='4' fill='%230d0514'/%3E%3Ccircle cx='18' cy='11' r='1' fill='%23fff'/%3E%3Ccircle cx='22' cy='11' r='1' fill='%23fff'/%3E%3Cline x1='18' y1='18' x2='22' y2='18' stroke='%230d0514' stroke-width='1.5'/%3E%3Cpolygon points='42,2 78,2 78,24 60,30 42,24' fill='%23f29f05'/%3E%3Ccircle cx='60' cy='14' r='4.5' fill='%230d0514'/%3E%3Ccircle cx='60' cy='14' r='2' fill='%23ffd100'/%3E%3Cpolygon points='82,2 118,2 118,24 100,30 82,24' fill='%2300bcd4'/%3E%3Cline x1='94' y1='9' x2='106' y2='19' stroke='%230d0514' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='106' y1='9' x2='94' y2='19' stroke='%230d0514' stroke-width='2' stroke-linecap='round'/%3E%3Cpolygon points='122,2 158,2 158,24 140,30 122,24' fill='%236a2c91'/%3E%3Cline x1='140' y1='8' x2='140' y2='20' stroke='%230d0514' stroke-width='2'/%3E%3Cline x1='134' y1='12' x2='146' y2='12' stroke='%230d0514' stroke-width='2'/%3E%3Cpolygon points='162,2 198,2 198,24 180,30 162,24' fill='%23ffd100'/%3E%3Ccircle cx='180' cy='14' r='5' fill='%230d0514'/%3E%3Ccircle cx='180' cy='14' r='2' fill='%23e4007c'/%3E%3C/svg%3E");
+    background-size: 180px 20px;
+    background-repeat: repeat-x;
+    pointer-events: none;
+    z-index: 20;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+
+/* ---------- 6. La Catrina en el Logo Icon ---------- */
 body.muertos .logo-icon {
     position: relative;
-    background: radial-gradient(circle at 35% 30%, #ffc107, #e11d48 65%, #581c87) !important;
+    background: radial-gradient(circle at 35% 30%, #ffd100, #e4007c 65%, #4a044e) !important;
     color: transparent !important;
-    box-shadow: 0 0 16px rgba(255, 183, 3, 0.85), 0 0 32px rgba(225, 29, 143, 0.45) !important;
+    box-shadow: 0 0 16px rgba(242, 159, 5, 0.90), 0 0 32px rgba(228, 0, 124, 0.50) !important;
 }
 
 body.muertos .logo-icon::after {
-    content: "💀";
+    content: "";
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    filter: drop-shadow(0 0 6px rgba(255, 183, 3, 0.95)) drop-shadow(0 0 10px rgba(225, 29, 143, 0.70));
-    animation: calaveraGlow 3s ease-in-out infinite alternate;
+    inset: -2px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M8,40 Q50,14 92,40 Q50,30 8,40 Z' fill='%236a2c91' stroke='%23ffd100' stroke-width='1.5'/%3E%3Cpath d='M24,34 Q50,4 76,34 Z' fill='%23e4007c'/%3E%3Cpath d='M72,26 Q86,10 94,22 Q82,29 72,26 Z' fill='%2300bcd4'/%3E%3Cpath d='M26,26 Q12,10 4,22 Q16,29 26,26 Z' fill='%2300bcd4'/%3E%3Ccircle cx='50' cy='31' r='6' fill='%23f29f05'/%3E%3Ccircle cx='38' cy='33' r='4.5' fill='%23ffd100'/%3E%3Ccircle cx='62' cy='33' r='4.5' fill='%23ffd100'/%3E%3Cpath d='M32,40 C32,40 27,60 35,70 C38,74 40,80 44,84 L56,84 C60,80 62,74 65,70 C73,60 68,40 68,40 Z' fill='%23fff9f0'/%3E%3Ccircle cx='42' cy='53' r='6.5' fill='%23e4007c'/%3E%3Ccircle cx='42' cy='53' r='3.5' fill='%23111111'/%3E%3Ccircle cx='42' cy='53' r='1.5' fill='%23ffd100'/%3E%3Ccircle cx='58' cy='53' r='6.5' fill='%23e4007c'/%3E%3Ccircle cx='58' cy='53' r='3.5' fill='%23111111'/%3E%3Ccircle cx='58' cy='53' r='1.5' fill='%23ffd100'/%3E%3Cpath d='M50,61 L48,66 L52,66 Z' fill='%23111111'/%3E%3Cpath d='M44,74 Q50,77 56,74' stroke='%23111111' stroke-width='1.5' fill='none'/%3E%3Cline x1='46' y1='72' x2='46' y2='77' stroke='%23111111' stroke-width='1.2'/%3E%3Cline x1='50' y1='73' x2='50' y2='78' stroke='%23111111' stroke-width='1.2'/%3E%3Cline x1='54' y1='72' x2='54' y2='77' stroke='%23111111' stroke-width='1.2'/%3E%3C/svg%3E");
+    background-size: 92% 92%;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 0 6px rgba(255, 209, 0, 0.95));
+    animation: catrinaFlicker 3s ease-in-out infinite alternate;
 }
 
-@keyframes calaveraGlow {
-    0%   { filter: drop-shadow(0 0 4px rgba(255, 140, 0, 0.8)) drop-shadow(0 0 8px rgba(225, 29, 143, 0.5)); transform: scale(1); }
-    50%  { filter: drop-shadow(0 0 10px rgba(255, 210, 0, 1)) drop-shadow(0 0 14px rgba(225, 29, 143, 0.8)); transform: scale(1.08); }
-    100% { filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.9)) drop-shadow(0 0 8px rgba(225, 29, 143, 0.6)); transform: scale(1); }
+@keyframes catrinaFlicker {
+    0%   { filter: drop-shadow(0 0 4px rgba(255, 140, 0, 0.8)) drop-shadow(0 0 8px rgba(228, 0, 124, 0.6)); transform: scale(1); }
+    50%  { filter: drop-shadow(0 0 10px rgba(255, 209, 0, 1)) drop-shadow(0 0 16px rgba(228, 0, 124, 0.9)); transform: scale(1.08); }
+    100% { filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.9)) drop-shadow(0 0 9px rgba(228, 0, 124, 0.7)); transform: scale(1); }
 }
 
-/* Título con degradado Rosa Mexicano y Cempasúchil Dorado */
+/* Título con degradado festivo Cempasúchil y Rosa Mexicano */
 body.muertos .logo-title {
-    background: linear-gradient(135deg, #ffb703 0%, #ff7900 45%, #f43f5e 80%, #c084fc 100%) !important;
+    background: linear-gradient(135deg, #ffd100 0%, #f29f05 35%, #e4007c 70%, #a855f7 100%) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    filter: drop-shadow(0 0 12px rgba(255, 183, 3, 0.45));
+    filter: drop-shadow(0 0 12px rgba(242, 159, 5, 0.55)) drop-shadow(0 0 20px rgba(228, 0, 124, 0.35));
 }
 
 /* Stat items en Header y Tarjetas */
 body.muertos .stat-item,
 body.muertos .epic-stat {
-    background: rgba(38, 16, 54, 0.58) !important;
-    border: 1px solid rgba(255, 159, 0, 0.25) !important;
+    background: rgba(42, 18, 58, 0.62) !important;
+    border: 1px solid rgba(242, 159, 5, 0.30) !important;
 }
 
 /* Badges con temática Cempasúchil y Altar */
 body.muertos .badge-running {
-    background: rgba(34, 197, 94, 0.18) !important;
-    color: #4ade80 !important;
-    border: 1px solid rgba(34, 197, 94, 0.45) !important;
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
+    background: rgba(0, 230, 118, 0.18) !important;
+    color: #69f0ae !important;
+    border: 1px solid rgba(0, 230, 118, 0.50) !important;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
 }
 
 body.muertos .badge-stopped {
-    background: rgba(225, 29, 143, 0.20) !important;
-    color: #fb7185 !important;
-    border: 1px solid rgba(225, 29, 143, 0.50) !important;
-    box-shadow: 0 0 10px rgba(225, 29, 143, 0.35);
+    background: rgba(228, 0, 124, 0.22) !important;
+    color: #ff80ab !important;
+    border: 1px solid rgba(228, 0, 124, 0.55) !important;
+    box-shadow: 0 0 12px rgba(228, 0, 124, 0.40);
 }
 
-/* Barra de disco con degradado de Altar */
+/* Barra de disco con degradado de Papel Picado */
 body.muertos .disk-usage-fill {
-    background: linear-gradient(90deg, #e11d48 0%, #ff7900 50%, #ffb703 100%) !important;
-    box-shadow: 0 0 12px rgba(255, 159, 0, 0.70) !important;
+    background: linear-gradient(90deg, #e4007c 0%, #f29f05 50%, #ffd100 100%) !important;
+    box-shadow: 0 0 14px rgba(242, 159, 5, 0.75) !important;
 }
 
 /* Botones y Controles */
 body.muertos .btn,
 body.muertos .refresh-btn,
 body.muertos .filter-btn {
-    background: rgba(45, 18, 64, 0.65) !important;
-    border: 1px solid rgba(255, 159, 0, 0.32) !important;
+    background: rgba(48, 18, 68, 0.68) !important;
+    border: 1px solid rgba(242, 159, 5, 0.38) !important;
     color: #fff9f2 !important;
     transition: all 0.2s ease;
 }
@@ -2270,19 +2290,19 @@ body.muertos .filter-btn {
 body.muertos .btn:hover,
 body.muertos .refresh-btn:hover,
 body.muertos .filter-btn:hover {
-    background: rgba(255, 159, 0, 0.22) !important;
-    border-color: rgba(255, 183, 3, 0.65) !important;
-    box-shadow: 0 0 14px rgba(255, 159, 0, 0.50) !important;
+    background: rgba(242, 159, 5, 0.25) !important;
+    border-color: rgba(255, 209, 0, 0.70) !important;
+    box-shadow: 0 0 16px rgba(242, 159, 5, 0.55) !important;
 }
 
 body.muertos .filter-btn.active {
-    background: linear-gradient(135deg, #ff7900, #e11d48) !important;
-    border-color: #ffb703 !important;
+    background: linear-gradient(135deg, #e4007c, #f29f05) !important;
+    border-color: #ffd100 !important;
     color: #ffffff !important;
-    box-shadow: 0 0 16px rgba(255, 121, 0, 0.65) !important;
+    box-shadow: 0 0 18px rgba(228, 0, 124, 0.70) !important;
 }
 
-/* Hover de tarjetas: resplandor cálido de veladora y ofrenda */
+/* Hover de tarjetas: iluminación cálida de ofrenda y veladoras */
 @media (hover: hover) {
     body.muertos .agent-card:hover,
     body.muertos .disk-card:hover,
@@ -2290,17 +2310,17 @@ body.muertos .filter-btn.active {
     body.muertos .epic-card:hover {
         background: linear-gradient(
             135deg,
-            rgba(255, 183, 3, 0.15) 0%,
-            rgba(44, 20, 62, 0.84) 45%,
-            rgba(22, 10, 32, 0.94) 100%
+            rgba(255, 209, 0, 0.16) 0%,
+            rgba(48, 20, 68, 0.88) 45%,
+            rgba(24, 8, 36, 0.96) 100%
         ) !important;
-        border-color: rgba(255, 183, 3, 0.60) !important;
+        border-color: rgba(255, 209, 0, 0.65) !important;
         box-shadow:
-            0 24px 55px rgba(0, 0, 0, 0.82),
-            0 0 25px rgba(255, 159, 0, 0.35),
-            0 0 40px rgba(225, 29, 143, 0.25),
-            inset 0 1.5px 0 rgba(255, 215, 60, 0.70),
-            inset 1.5px 0 0 rgba(255, 159, 0, 0.35),
+            0 24px 55px rgba(0, 0, 0, 0.85),
+            0 0 25px rgba(242, 159, 5, 0.40),
+            0 0 45px rgba(228, 0, 124, 0.30),
+            inset 0 1.5px 0 rgba(255, 225, 75, 0.75),
+            inset 1.5px 0 0 rgba(228, 0, 124, 0.40),
             inset 0 -1.5px 0 rgba(0, 0, 0, 0.60) !important;
         transform: translateY(-3px);
         transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2309,11 +2329,11 @@ body.muertos .filter-btn.active {
 
 /* Scrollbar temática Día de Muertos */
 body.muertos ::-webkit-scrollbar-thumb {
-    background: rgba(255, 159, 0, 0.35);
+    background: rgba(242, 159, 5, 0.40);
     border-radius: 999px;
-    border: 1px solid rgba(225, 29, 143, 0.30);
+    border: 1px solid rgba(228, 0, 124, 0.35);
 }
 body.muertos ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 183, 3, 0.60);
-    box-shadow: 0 0 12px rgba(255, 159, 0, 0.55);
+    background: rgba(255, 209, 0, 0.70);
+    box-shadow: 0 0 14px rgba(242, 159, 5, 0.65);
 }

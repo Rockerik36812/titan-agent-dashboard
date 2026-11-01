@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-10-31 01:05 (CST)
-**Estado:** 🟢 en marcha (Aprobado por Erik)
+**Última actualización:** 2026-11-01 01:10 (CST)
+**Estado:** 🟢 en marcha (Tema Halloween listo para probar)
 
 ## Objetivo
 
@@ -10,9 +10,19 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Probar el panel en el **celular** con el tema Ultra Glass (scroll y batería). Si se siente pesado o caliente: bajar el `blur(45px)` del fondo animado y limpiar los ~15 `!important` del bloque nuevo (es mejora de mantenimiento, no cambio de diseño).
+> Desplegar en Coolify (o esperar auto-deploy de `main`) y verificar en el navegador / celular el nuevo tema de **Halloween 🎃** (calabazas, murciélagos animados, telarañas en tarjetas) y la fluidez del switch de 4 posiciones (`Clásico` ➔ `Aurora` ➔ `Ultra Glass` ➔ `Halloween 🎃`).
 
 ## Hecho
+
+**Hecho por Antigravity el 2026-11-01 (Solicitado por Erik):**
+
+- [x] **4º Tema Visual de Halloween 🎃**:
+  - **Calabazas**: Logo icon transformado con emoji `🎃` y resplandor de llama parpadeante; acentos naranja calabaza (`#ff7518` / `#ff5500`) en títulos, barras y bordes.
+  - **Murciélagos**: Siluetas de murciélagos vectoriales revoloteando en el fondo animado con niebla espectral púrpura y naranja.
+  - **Telarañas**: Esquinas de tarjetas (`.agent-card`, `.disk-card`, `.chart-card`, `.epic-card`) decoradas con telarañas translúcidas SVG.
+  - **Vidrio Encantado**: Estilo dark glass ahumado translúcido con filo de luz ámbar, sombras púrpuras y efectos hover mejorados.
+- [x] **Switch ampliado a 4 posiciones**: Track extendido a 56px para acomodar 4 saltos simétricos (`0px`, `14px`, `28px`, `42px`), track temático tricolor animado y persistencia en `localStorage`.
+- [x] **Bumping de caché**: `style.css?v=32` y `app.js?v=28` en `index.html`.
 
 **Verificado por Antigravity el 2026-10-30 (Aprobado por Erik):**
 

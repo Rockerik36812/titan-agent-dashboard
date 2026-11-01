@@ -1749,7 +1749,7 @@ body.glass ::-webkit-scrollbar-thumb:hover {
 
 .theme-track {
     display: block;
-    width: 42px;
+    width: 56px;
     height: 16px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.12);
@@ -1800,6 +1800,25 @@ body.liquid .theme-knob {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.95), 0 2px 6px rgba(0, 0, 0, 0.40);
 }
 
+body.halloween .theme-track {
+    background: linear-gradient(120deg, #ff7518, #9333ea, #22c55e);
+    background-size: 200% 100%;
+    border-color: rgba(255, 117, 24, 0.45);
+    box-shadow: 0 0 14px rgba(255, 117, 24, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    animation: spookyTrack 5s ease-in-out infinite alternate;
+}
+
+@keyframes spookyTrack {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+body.halloween .theme-knob {
+    transform: translateX(42px);
+    background: #ff7518;
+    box-shadow: 0 0 10px rgba(255, 117, 24, 0.95), 0 0 14px rgba(255, 85, 0, 0.70);
+}
+
 .theme-label {
     position: absolute;
     top: 100%;
@@ -1815,7 +1834,11 @@ body.liquid .theme-knob {
 @media (prefers-reduced-motion: reduce) {
     body.glass::before,
     body.glass .theme-track,
-    body.liquid::before { animation: none; }
+    body.liquid::before,
+    body.halloween::before,
+    body.halloween::after,
+    body.halloween .theme-track,
+    body.halloween .logo-icon::after { animation: none; }
     .theme-knob { transition: none; }
 }
 
@@ -2043,4 +2066,254 @@ body.liquid ::-webkit-scrollbar-thumb {
 body.liquid ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.35);
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.30);
+}
+
+/* ==========================================================================
+   TEMA 4: HALLOWEEN 🎃 (Spooky Dark Glass, Calabazas, Murciélagos, Telarañas)
+   ========================================================================== */
+
+body.halloween {
+    --bg-primary:     #08040d;
+    --bg-secondary:   rgba(255, 117, 24, 0.05);
+    --bg-card:        rgba(22, 12, 33, 0.65);
+    --bg-card-hover:  rgba(35, 18, 54, 0.78);
+    --border:         rgba(255, 117, 24, 0.25);
+    --text-primary:   #fff8f0;
+    --text-secondary: #e2d4ea;
+    --text-muted:     #a78bfa;
+    --shadow:         0 18px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(147, 51, 234, 0.18);
+    background-color: #08040d;
+}
+
+/* ---------- 1. Niebla y resplandores encantados (Fog & Ghostly lights) ---------- */
+body.halloween::before {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(55rem 48rem at 15% 15%, rgba(255, 117, 24, 0.28), transparent 60%),
+        radial-gradient(50rem 44rem at 85% 20%, rgba(147, 51, 234, 0.32), transparent 60%),
+        radial-gradient(46rem 40rem at 50% 50%, rgba(34, 197, 94, 0.18), transparent 62%),
+        radial-gradient(48rem 42rem at 20% 85%, rgba(168, 85, 247, 0.25), transparent 60%),
+        radial-gradient(45rem 40rem at 85% 85%, rgba(255, 85, 0, 0.26), transparent 60%);
+    filter: blur(48px);
+    animation: spookyFog 22s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+@keyframes spookyFog {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(-3%, 2%, 0) scale(1.07); }
+    100% { transform: translate3d(2.5%, -2.5%, 0) scale(1.04); }
+}
+
+/* ---------- 2. Murciélagos revoloteando en el fondo ---------- */
+body.halloween::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Cpath d='M35,45 Q42,32 55,37 Q68,26 82,40 Q70,54 66,46 Q61,62 48,56 Q43,59 35,45 Z' fill='%23ff7518'/%3E%3Cpath d='M195,95 Q204,78 220,85 Q235,70 250,88 Q234,108 229,98 Q221,120 206,112 Q200,116 195,95 Z' fill='%23a855f7'/%3E%3Cpath d='M115,150 Q121,139 133,143 Q143,132 154,145 Q142,159 138,152 Q134,166 123,161 Q119,164 115,150 Z' fill='%23ff7518'/%3E%3C/svg%3E");
+    background-size: 320px 220px;
+    animation: batsFlight 35s linear infinite;
+}
+
+@keyframes batsFlight {
+    0%   { background-position: 0 0; }
+    100% { background-position: -640px -440px; }
+}
+
+/* ---------- 3. Vidrio Encantado Ahumado (Haunted Smoked Glass) ---------- */
+body.halloween header,
+body.halloween .agent-card,
+body.halloween .disk-card,
+body.halloween .modal-content,
+body.halloween .chart-card,
+body.halloween .epic-card,
+body.halloween .activity-content,
+body.halloween .history-content,
+body.halloween .gateway-content,
+body.halloween .timeline-item {
+    position: relative;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 117, 24, 0.08) 0%,
+        rgba(26, 14, 38, 0.72) 45%,
+        rgba(15, 7, 24, 0.85) 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 117, 24, 0.28) !important;
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.75),
+        0 4px 15px rgba(147, 51, 234, 0.16),
+        inset 0 1.5px 0 rgba(255, 165, 0, 0.45),
+        inset 1.5px 0 0 rgba(255, 117, 24, 0.20),
+        inset 0 -1.5px 0 rgba(0, 0, 0, 0.60) !important;
+}
+
+/* ---------- 4. Telarañas en las esquinas de las tarjetas ---------- */
+body.halloween .agent-card::before,
+body.halloween .disk-card::before,
+body.halloween .chart-card::before,
+body.halloween .epic-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 65px;
+    height: 65px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.28;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23ff9a3c' stroke-width='1.2'%3E%3Cpath d='M0,0 L100,0 M0,0 L100,25 M0,0 L100,60 M0,0 L100,100 M0,0 L60,100 M0,0 L25,100 M0,0 L0,100'/%3E%3Cpath d='M20,0 Q18,6 15,15 Q6,18 0,20'/%3E%3Cpath d='M40,0 Q36,15 30,30 Q15,36 0,40'/%3E%3Cpath d='M60,0 Q54,24 45,45 Q24,54 0,60'/%3E%3Cpath d='M80,0 Q72,33 60,60 Q33,72 0,80'/%3E%3Cpath d='M100,0 Q90,42 75,75 Q42,90 0,100'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform: scaleX(-1);
+    transition: opacity 0.3s ease;
+}
+
+body.halloween .agent-card:hover::before,
+body.halloween .disk-card:hover::before,
+body.halloween .chart-card:hover::before,
+body.halloween .epic-card:hover::before {
+    opacity: 0.45;
+}
+
+/* Header Halloween */
+body.halloween header {
+    background: linear-gradient(
+        180deg,
+        rgba(30, 14, 45, 0.88) 0%,
+        rgba(15, 7, 24, 0.80) 100%
+    ) !important;
+    border-bottom: 1px solid rgba(255, 117, 24, 0.35) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.70), 0 0 20px rgba(255, 117, 24, 0.15) !important;
+}
+
+/* Calabaza en el Logo Icon */
+body.halloween .logo-icon {
+    position: relative;
+    background: radial-gradient(circle at 35% 30%, #ff9a3c, #ff5500 70%, #992200) !important;
+    color: transparent !important;
+    box-shadow: 0 0 15px rgba(255, 117, 24, 0.8), 0 0 30px rgba(255, 85, 0, 0.4) !important;
+}
+
+body.halloween .logo-icon::after {
+    content: "🎃";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    filter: drop-shadow(0 0 6px rgba(255, 200, 0, 0.9));
+    animation: pumpkinFlicker 3s ease-in-out infinite alternate;
+}
+
+@keyframes pumpkinFlicker {
+    0%   { filter: drop-shadow(0 0 4px rgba(255, 120, 0, 0.8)); transform: scale(1); }
+    50%  { filter: drop-shadow(0 0 9px rgba(255, 220, 0, 1)); transform: scale(1.06); }
+    100% { filter: drop-shadow(0 0 5px rgba(255, 80, 0, 0.9)); transform: scale(1); }
+}
+
+/* Título con resplandor naranja y violeta */
+body.halloween .logo-title {
+    background: linear-gradient(135deg, #ff9a3c 0%, #ff5500 50%, #c084fc 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 0 12px rgba(255, 117, 24, 0.45));
+}
+
+/* Stat items en Header y Tarjetas */
+body.halloween .stat-item,
+body.halloween .epic-stat {
+    background: rgba(35, 16, 52, 0.55) !important;
+    border: 1px solid rgba(255, 117, 24, 0.22) !important;
+}
+
+/* Badges con temática calabaza/pócima */
+body.halloween .badge-running {
+    background: rgba(34, 197, 94, 0.18) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(34, 197, 94, 0.45) !important;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
+}
+
+body.halloween .badge-stopped {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.30);
+}
+
+body.halloween .disk-usage-fill {
+    background: linear-gradient(90deg, #ff7518 0%, #ff5500 50%, #a855f7 100%) !important;
+    box-shadow: 0 0 12px rgba(255, 117, 24, 0.65) !important;
+}
+
+/* Botones y Controles */
+body.halloween .btn,
+body.halloween .refresh-btn,
+body.halloween .filter-btn {
+    background: rgba(40, 18, 60, 0.65) !important;
+    border: 1px solid rgba(255, 117, 24, 0.30) !important;
+    color: #fff8f0 !important;
+    transition: all 0.2s ease;
+}
+
+body.halloween .btn:hover,
+body.halloween .refresh-btn:hover,
+body.halloween .filter-btn:hover {
+    background: rgba(255, 117, 24, 0.22) !important;
+    border-color: rgba(255, 165, 0, 0.60) !important;
+    box-shadow: 0 0 14px rgba(255, 117, 24, 0.45) !important;
+}
+
+body.halloween .filter-btn.active {
+    background: linear-gradient(135deg, #ff7518, #9333ea) !important;
+    border-color: #ff9a3c !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(255, 117, 24, 0.60) !important;
+}
+
+/* Hover de tarjetas: resplandor místico calabaza/púrpura */
+@media (hover: hover) {
+    body.halloween .agent-card:hover,
+    body.halloween .disk-card:hover,
+    body.halloween .chart-card:hover,
+    body.halloween .epic-card:hover {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 117, 24, 0.14) 0%,
+            rgba(38, 18, 58, 0.82) 45%,
+            rgba(22, 10, 34, 0.92) 100%
+        ) !important;
+        border-color: rgba(255, 154, 60, 0.55) !important;
+        box-shadow:
+            0 24px 55px rgba(0, 0, 0, 0.82),
+            0 0 25px rgba(255, 117, 24, 0.30),
+            0 0 40px rgba(147, 51, 234, 0.20),
+            inset 0 1.5px 0 rgba(255, 180, 50, 0.65),
+            inset 1.5px 0 0 rgba(255, 117, 24, 0.30),
+            inset 0 -1.5px 0 rgba(0, 0, 0, 0.60) !important;
+        transform: translateY(-3px);
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+}
+
+/* Scrollbar temática Halloween */
+body.halloween ::-webkit-scrollbar-thumb {
+    background: rgba(255, 117, 24, 0.30);
+    border-radius: 999px;
+    border: 1px solid rgba(147, 51, 234, 0.25);
+}
+body.halloween ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 117, 24, 0.55);
+    box-shadow: 0 0 12px rgba(255, 117, 24, 0.50);
 }

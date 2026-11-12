@@ -5,7 +5,7 @@ description: "Use when continúas un proyecto compartido con otro agente. Protoc
 
 # Relevo entre agentes
 
-Cómo tomar y soltar un proyecto que se trabaja en turnos con otro agente (Titán ↔ Antigravity), sin que ninguno pierda el trabajo del otro.
+Cómo tomar y soltar un proyecto que se trabaja en turnos con otro agente (Titán ↔ Antigravity ↔ OpenCode ↔ Copilot), sin que ninguno pierda el trabajo del otro.
 
 ## Cuándo usarla
 
@@ -26,7 +26,7 @@ Cómo tomar y soltar un proyecto que se trabaja en turnos con otro agente (Titá
 
 1. `HANDOFF.md`: mueve lo terminado a **Hecho**; deja **un solo SIGUIENTE PASO** accionable (comando exacto si aplica); escribe bloqueos y decisiones pendientes; llena "Notas para el otro agente".
 2. Una línea nueva en `.handoff/log.md` (append-only).
-3. Commit con prefijo `[titán]` o `[antigravity]`, luego `push`.
+3. Commit con prefijo `[titán]`, `[antigravity]`, `[opencode]` o `[copilot]`, luego `push`.
 4. `Dueño actual: libre`.
 
 ## Pitfalls que rompen el relevo
@@ -35,5 +35,5 @@ Cómo tomar y soltar un proyecto que se trabaja en turnos con otro agente (Titá
 - **Estado implícito**: "como te comenté antes" no sirve. El otro agente no ve tu conversación. Todo lo que importa va escrito en el repo.
 - **Declarar hecho sin verificar**: si no corriste pruebas, escribe "sin verificar". Un relevo mentiroso cuesta más que uno vacío.
 - **Secretos en el repo**: tokens, contraseñas e IPs privadas se quedan fuera. Se documenta *dónde* vive el secreto, no su valor.
-- **Los dos trabajando a la vez**: si `Dueño actual` no está libre, no se toca. Los conflictos de merge queman más tiempo que esperar el turno.
+- **Dos o más trabajando a la vez**: si `Dueño actual` no está libre, no se toca. Los conflictos de merge queman más tiempo que esperar el turno.
 - **Trabajar fuera del "Siguiente paso"**: si el plan está mal, se propone y se anota; no se cambia en silencio.

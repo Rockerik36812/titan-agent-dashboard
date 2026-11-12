@@ -5,6 +5,7 @@
 **Estado:** 🟢 en marcha (Tema Día de Muertos Aprobado por Erik)
 
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
+> 2026-11-12 — Titán: se suma **Copilot** (CLI de GitHub) como **cuarto agente**. `Dueño actual: copilot` es válido y su prefijo de commit es `[copilot]`. Regla que ahora aplica a tres: Antigravity, OpenCode y Copilot **no comparten carpeta** (un clon/worktree cada uno). Sigue sin tocarse nada del panel: solo el reglamento del relevo.
 
 ## Objetivo
 

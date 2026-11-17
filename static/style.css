@@ -97,8 +97,10 @@ header {
 }
 
 .logo-icon {
-    font-size: 1.5rem;
-    animation: pulse 2s infinite;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-blue);
 }
 
 .logo h1 {
@@ -153,8 +155,28 @@ main {
 }
 
 .section-header h2 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    letter-spacing: -0.01em;
+}
+
+.sec-icon {
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--accent-blue);
+    opacity: 0.85;
+    flex-shrink: 0;
+}
+
+.sub-icon {
+    display: inline-block;
+    vertical-align: -2px;
+    margin-right: 0.25rem;
+    color: currentColor;
+    opacity: 0.85;
 }
 
 .section-badge {
@@ -356,11 +378,33 @@ main {
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--text-muted);
     border-radius: 6px;
-    padding: 0.15rem 0.3rem;
-    font-size: 0.8rem;
-    line-height: 1;
+    padding: 0.25rem 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.25s ease;
+}
+
+.agent-restart svg {
+    display: block;
+}
+
+.status-badge-inline {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+}
+.status-badge-inline.up {
+    color: var(--accent-green);
+    background: rgba(34, 197, 94, 0.12);
+}
+.status-badge-inline.down {
+    color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.12);
 }
 
 .agent-restart:hover {
@@ -589,19 +633,20 @@ main {
 }
 
 .modal-logs {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem;
+    background: #090a0f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
     margin-bottom: 1rem;
-    max-height: 320px;
+    max-height: 340px;
     overflow: auto;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.7rem;
-    line-height: 1.45;
-    color: #b9c6d4;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: #cbd5e1;
     white-space: pre-wrap;
     word-break: break-word;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 @media (max-width: 640px) {
@@ -1475,23 +1520,25 @@ footer a:hover {
 .push-btn {
     background: none;
     border: none;
-    font-size: 1.3rem;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 6px;
     border-radius: 8px;
     transition: all 0.3s;
-    filter: grayscale(1);
-    opacity: 0.5;
-    line-height: 1;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .push-btn.active {
-    filter: grayscale(0);
+    color: var(--accent-green);
     opacity: 1;
     background: rgba(34, 197, 94, 0.15);
     box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
 }
 .push-btn:hover {
-    opacity: 0.8;
+    opacity: 1;
+    color: var(--text-primary);
 }
 
 /* Botón de salir: la puertita sola no dice nada, así que lleva etiqueta visible.
@@ -1514,11 +1561,16 @@ footer a:hover {
     transition: all 0.25s;
 }
 .logout-btn .logout-icon {
-    font-size: 1.65rem;   /* deja el botón en 28px, igual que el "En vivo" */
-    line-height: 1;
-    filter: grayscale(1);
-    opacity: 0.6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    opacity: 0.7;
     transition: all 0.25s;
+}
+.logout-btn:hover .logout-icon {
+    opacity: 1;
+    color: var(--accent-red);
 }
 .logout-btn .logout-label {
     position: absolute;   /* fuera del flujo: no estira el botón */

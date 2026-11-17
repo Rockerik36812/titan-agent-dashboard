@@ -69,18 +69,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bloque de modelo: en uso, principal y fallback
         const modelBox = agent.model ? `
             <div class="modal-model-box">
-                <div class="model-line"><span class="model-label">🧠 En uso</span><code>${agent.model}</code></div>
+                <div class="model-line"><span class="model-label">En uso</span><code>${agent.model}</code></div>
                 ${agent.model_primary ? `<div class="model-line"><span class="model-label">Principal</span><code>${agent.model_primary}</code></div>` : ''}
                 ${agent.model_fallback ? `<div class="model-line"><span class="model-label">Fallback</span><code>${agent.model_fallback}</code></div>` : ''}
-                ${agent.fallback_active ? '<div class="modal-fallback-warn">⚠️ Fallback activo — el modelo principal falló</div>' : ''}
+                ${agent.fallback_active ? '<div class="modal-fallback-warn">Fallback activo — el modelo principal falló</div>' : ''}
             </div>` : '';
 
         // Controles de logs en vivo
         const logControls = `
             <div class="modal-actions">
-                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent')">📜 Logs del agente</button>
-                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','gateway')">🔌 Logs del gateway</button>
-                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent',true)">🔄 Refrescar</button>
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent')">Logs del agente</button>
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','gateway')">Logs del gateway</button>
+                <button class="modal-btn" onclick="loadAgentLogs('${agentId}','agent',true)">Refrescar</button>
             </div>
             <pre id="modal-logs" class="modal-logs">Pulsa un botón para ver los logs…</pre>`;
 
@@ -249,7 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${agent.name}
                     </div>
                     <div class="agent-header-actions">
-                        <button class="agent-restart" onclick="restartAgent(event, '${agent.id}')" title="Reiniciar ${agent.name}">🔄</button>
+                        <button class="agent-restart" onclick="restartAgent(event, '${agent.id}')" title="Reiniciar ${agent.name}">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        </button>
                         <div class="status-dot ${agent.online ? 'online' : 'offline'}"></div>
                     </div>
                 </div>
@@ -271,10 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="agent-detail">
                     <span class="agent-uptime">${agent.uptime || '—'}</span>
-                    <span class="agent-gateway">${agent.online ? '✅ up' : '❌ down'}</span>
+                    <span class="agent-gateway">${agent.online ? '<span class="status-badge-inline up">up</span>' : '<span class="status-badge-inline down">down</span>'}</span>
                 </div>
                 <div class="agent-detail agent-model-row" title="${modelFull}">
-                    <span class="agent-model">🧠 ${modelName}</span>
+                    <span class="agent-model"><svg class="sub-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>${modelName}</span>
                     ${fallbackBadge}
                 </div>
             </div>
@@ -301,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         const total = Math.min(Math.round(filas.reduce((a, f) => a + (f[1] || 0), 0)), 999);
         tip.innerHTML =
-            '<strong>⚡ Cómo se calcula</strong>' +
+            '<strong><svg class="sub-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Cálculo de Puntaje</strong>' +
             filas.map(f => `<span class="titan-tip-row"><span>${f[0]}</span><span>${f[1]}${f[2] ? ' / ' + f[2] : ''}</span></span>`).join('') +
             `<span class="titan-tip-row titan-tip-total"><span>Total</span><span>${total}</span></span>`;
     }

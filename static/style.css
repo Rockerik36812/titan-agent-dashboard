@@ -1381,67 +1381,106 @@ footer a:hover {
    RESPONSIVE — Mobile First
    ═══════════════════════════════════════════════════════ */
 
-/* Base: PHONES (< 480px) — everything stacks 1-col */
+/* Base: PHONES (< 480px) — completely optimized for mobile thumbs and compact viewports */
 @media (max-width: 480px) {
-    header { padding: 0.65rem 1rem; }
-    .header-content { flex-direction: column; gap: 0.5rem; }
-    .logo h1 { font-size: 1.1rem; }
-    .logo-icon { font-size: 1.1rem; }
+    header { padding: 0.65rem 0.85rem; }
+    .header-content { flex-direction: column; gap: 0.65rem; align-items: stretch; }
+    .logo { justify-content: space-between; }
+    .logo h1 { font-size: 1.15rem; }
+    .logo-icon { font-size: 1.15rem; }
+    
     .header-stats {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.25rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem 0.25rem;
         width: 100%;
+        align-items: center;
     }
-    .header-stat .stat-value { font-size: 0.85rem; }
-    .header-stat .stat-label { font-size: 0.6rem; }
+    .header-stat { text-align: center; }
+    .header-stat .stat-value { font-size: 0.82rem; }
+    .header-stat .stat-label { font-size: 0.55rem; }
 
-    main { padding: 0.75rem 0.75rem; }
-    .section { margin-bottom: 1.25rem; }
-    .section-header { flex-wrap: wrap; }
-    .section-header h2 { font-size: 1rem; }
+    .header-stats .push-btn,
+    .header-stats .theme-btn,
+    .header-stats .logout-btn,
+    .header-stats .connection-status {
+        justify-self: center;
+    }
+    .theme-label { display: none; }
+    .logout-btn .logout-label { display: none; }
 
-    /* Credits */
-    .credits-grid {
+    main { padding: 0.65rem 0.6rem; }
+    
+    /* Layout rows en móvil: 1 sola columna fluida con ritmo visual compacto */
+    .dashboard-kpi-row {
         grid-template-columns: 1fr;
-        gap: 0.5rem;
-        padding: 1rem;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
     }
-    .credit-card { padding: 0.6rem; }
-    .credit-value { font-size: 1.1rem; }
+    .dashboard-split-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .dashboard-col {
+        gap: 1.25rem;
+    }
+    .section { margin-bottom: 1.25rem; }
+    .section-header { flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .section-header h2 { font-size: 1.05rem; }
 
-    /* Epic stats */
-    .epic-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-    .epic-card { padding: 0.75rem; }
-    .epic-value { font-size: 1.2rem; }
-    .epic-label { font-size: 0.6rem; }
-
-    /* Agent cards */
+    /* Agentes en móvil: tarjetas compactas con indicadores claros */
     .agents-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-    .agent-card { padding: 1rem; }
-    .agent-name { font-size: 0.95rem; }
-    .agent-detail { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+    .agent-card { padding: 0.9rem; border-radius: 10px; }
+    .agent-name { font-size: 1rem; }
+    .agent-detail { flex-direction: row; justify-content: space-between; align-items: center; }
+
+    /* Epic stats en móvil: 3x2 compacto */
+    .epic-grid { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+    .epic-card { padding: 0.65rem 0.35rem; border-radius: 8px; }
+    .epic-value { font-size: 1.05rem; }
+    .epic-label { font-size: 0.55rem; }
+
+    /* OpenRouter en móvil: 3 columnas compactas en una sola fila */
+    .credits-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding: 0.75rem;
+    }
+    .credit-card { padding: 0.5rem 0.25rem; border-radius: 8px; }
+    .credit-value { font-size: 0.95rem; }
+    .credit-label { font-size: 0.65rem; }
+    .credit-bar-wrapper { grid-column: 1 / -1; }
+
+    /* Recursos del sistema */
+    .sys-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+    .disk-card { padding: 0.85rem; border-radius: 10px; }
 
     /* Charts */
-    .charts-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-    .chart-card { padding: 0.75rem; }
+    .charts-grid { grid-template-columns: 1fr; gap: 0.65rem; }
+    .chart-card { padding: 0.75rem; border-radius: 10px; }
     .chart-card canvas { height: 160px !important; max-height: 160px !important; }
     .chart-title { font-size: 0.8rem; margin-bottom: 0.5rem; }
 
     /* Gateway */
     .gateway-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-    .gateway-content { padding: 1rem; }
-    .gateway-card { padding: 0.75rem; }
+    .gateway-content { padding: 0.85rem; border-radius: 10px; }
 
     /* Activity */
-    .activity-content { padding: 0.75rem; max-height: 300px; }
-    .activity-item { padding: 0.5rem; gap: 0.5rem; flex-wrap: wrap; }
+    .activity-content { padding: 0.75rem; max-height: 280px; border-radius: 10px; }
+    .activity-item { padding: 0.5rem; gap: 0.5rem; font-size: 0.75rem; }
 
     /* Tools */
     .tools-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-    .tool-card { padding: 0.75rem; }
+    .tool-card { padding: 0.75rem; border-radius: 10px; }
 
-    /* History */
+    /* Modal */
+    .modal-content { padding: 1rem; width: 95%; max-width: 95%; }
+    .modal-logs { max-height: 240px; font-size: 0.68rem; }
+    .modal-actions { gap: 0.35rem; }
+    .modal-btn { padding: 0.45rem 0.6rem; font-size: 0.72rem; }
+
+    /* Timeline */
     .history-content { padding: 0.75rem; }
     .timeline-items { padding-left: 0.5rem; gap: 0.35rem; }
     .timeline-item { padding: 0.5rem; }
@@ -1450,38 +1489,29 @@ footer a:hover {
     .timeline-cost { align-self: flex-start; }
     .timeline-meta { flex-wrap: wrap; gap: 0.5rem; }
 
-    /* Version badge */
-    .version-badge { font-size: 0.55rem; }
-
-    /* Alert */
-    .alert-banner { padding: 0.5rem 1rem; font-size: 0.8rem; flex-wrap: wrap; }
-
-    /* Footer */
-    footer { padding: 1rem; font-size: 0.7rem; }
-
-    /* Platform errors in gateway */
-    .gateway-platform .platform-error { max-width: 100px; }
-
-    /* Agent gateway name */
-    .agent-gateway { max-width: 100px; }
+    footer { padding: 1rem 0.5rem; font-size: 0.7rem; }
 }
 
-/* SMALL TABLETS (480 – 768px) */
+/* SMALL TABLETS & LARGE PHONES (481 – 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
-    header { padding: 0.75rem 1.5rem; }
+    header { padding: 0.75rem 1.25rem; }
     .header-content { gap: 0.75rem; }
     .logo h1 { font-size: 1.25rem; }
-    .header-stats { gap: 1rem; }
+    .header-stats { gap: 0.85rem; }
     .header-stat .stat-value { font-size: 0.95rem; }
 
-    main { padding: 1rem 1.25rem; }
+    main { padding: 1rem 1rem; }
+
+    .dashboard-kpi-row { grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .dashboard-split-grid { grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .dashboard-col { gap: 1.25rem; }
 
     .credits-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; padding: 1rem; }
     .credit-value { font-size: 1.2rem; }
 
     .epic-grid { grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
-    .epic-card { padding: 1rem; }
-    .epic-value { font-size: 1.4rem; }
+    .epic-card { padding: 0.85rem; }
+    .epic-value { font-size: 1.3rem; }
 
     .agents-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
 

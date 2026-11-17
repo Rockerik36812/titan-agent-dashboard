@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-11-17 00:10 (CST)
-**Estado:** 🟢 en marcha (Rediseño Macro de Observabilidad implementado; 4 temas preservados)
+**Última actualización:** 2026-11-17 00:20 (CST)
+**Estado:** 🟢 en marcha (Calibración Responsive Mobile First completada; 4 temas preservados)
 
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
 
@@ -12,11 +12,18 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Probar en producción (o hard-refresh `Cmd+Shift+R`) para ver el nuevo layout macro de observabilidad: Agentes al tope, fila dual de KPIs/Sistema y grid dividido de Analíticas/Actividad.
+> Probar en el celular (abrir `https://dash.erikservicios.click` en Safari/Chrome móvil con recarga forzada) y validar que el header, tarjetas de agentes y OpenRouter se adapten fluidamente a la pantalla del teléfono.
 
 ## Hecho
 
 **Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
+
+- [x] **Calibración Responsive Mobile First (Celulares y Tablets)**:
+  - **Header móvil calibrado**: Cuadrícula simétrica para métricas clave y barra de acción compacta para los botones de Push, Tema, Salir y estado de conexión sin desbordes.
+  - **Layout adaptativo móvil**: `.dashboard-kpi-row` y `.dashboard-split-grid` colapsan a 1 sola columna fluida con ritmo visual compacto (`gap: 1rem`).
+  - **OpenRouter móvil optimizado**: 3 columnas en una sola fila para Total/Usado/Restante con la barra debajo, ahorrando espacio en pantalla.
+  - **Epic Stats 3x2**: Números y etiquetas ajustados para que no desborden ni rompan en pantallas pequeñas (< 480px).
+  - **Bumping de caché**: `style.css?v=37` y `app.js?v=33`.
 
 - [x] **Rediseño Macro de Observabilidad (Layout Unslop)**:
   - **Agentes en la cima absoluta (`Hero Command Row`)**: Titán, Hermina y Hermes ahora se ven de inmediato al abrir el panel, sin requerir scroll vertical.

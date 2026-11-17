@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Panel de Agentes</title>
-    <link rel="stylesheet" href="/static/style.css?v=35">
+    <link rel="stylesheet" href="/static/style.css?v=36">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -70,67 +70,121 @@
     </header>
 
     <main>
-        <!-- 🏆 Epic Stats -->
-        <section id="epic-section" class="section fade-in">
+        <!-- 🤖 Agent Cards (Hero Command Row: Inmediato en la parte superior) -->
+        <section id="agents-section" class="section fade-in">
             <div class="section-header">
                 <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    Métricas Globales
+                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8.01" y2="16"></line><line x1="16" y1="16" x2="16.01" y2="16"></line></svg>
+                    Estado de Agentes
                 </h2>
-                <span class="section-badge">Global</span>
+                <span class="section-badge" id="agents-badge">3 en línea</span>
             </div>
-            <div class="epic-grid" id="epicGrid">
-                <div class="epic-card total-sessions">
-                    <span class="epic-value" id="epic-sessions">0</span>
-                    <span class="epic-label">Sesiones totales</span>
-                </div>
-                <div class="epic-card total-messages">
-                    <span class="epic-value" id="epic-messages">0</span>
-                    <span class="epic-label">Mensajes</span>
-                </div>
-                <div class="epic-card total-tokens">
-                    <span class="epic-value" id="epic-tokens">0</span>
-                    <span class="epic-label">Tokens procesados</span>
-                </div>
-                <div class="epic-card total-cost">
-                    <span class="epic-value" id="epic-cost">$0</span>
-                    <span class="epic-label">Gastado en total</span>
-                </div>
-                <div class="epic-card days-active">
-                    <span class="epic-value" id="epic-days">0</span>
-                    <span class="epic-label">Días activo</span>
-                </div>
-                <div class="epic-card titan-score" id="titan-score-card" title="Toca para ver cómo se calcula">
-                    <span class="epic-value" id="epic-score">0</span>
-                    <span class="epic-label">
-                        <svg class="sub-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                        Titan Score
-                    </span>
-                    <div class="titan-tip" id="titan-tip" hidden></div>
-                </div>
-            </div>
+            <div id="agentsGrid" class="agents-grid"></div>
         </section>
 
-        <!-- 📊 Analytics Charts -->
-        <section id="analytics-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                    Analíticas
-                </h2>
-                <span class="section-badge">Costos & Modelos</span>
-            </div>
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <div class="chart-title">Costo por Día (últimos 30 días)</div>
-                    <canvas id="dailyCostChart"></canvas>
+        <!-- 🏆 Métricas Globales y 💾 Recursos del Sistema (Grid 2 columnas en Desktop) -->
+        <div class="dashboard-kpi-row">
+            <section id="epic-section" class="section fade-in">
+                <div class="section-header">
+                    <h2>
+                        <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        Métricas Globales
+                    </h2>
+                    <span class="section-badge">Global</span>
                 </div>
-                <div class="chart-card">
-                    <div class="chart-title">Uso por Modelo</div>
-                    <canvas id="modelChart"></canvas>
+                <div class="epic-grid" id="epicGrid">
+                    <div class="epic-card total-sessions">
+                        <span class="epic-value" id="epic-sessions">0</span>
+                        <span class="epic-label">Sesiones totales</span>
+                    </div>
+                    <div class="epic-card total-messages">
+                        <span class="epic-value" id="epic-messages">0</span>
+                        <span class="epic-label">Mensajes</span>
+                    </div>
+                    <div class="epic-card total-tokens">
+                        <span class="epic-value" id="epic-tokens">0</span>
+                        <span class="epic-label">Tokens procesados</span>
+                    </div>
+                    <div class="epic-card total-cost">
+                        <span class="epic-value" id="epic-cost">$0</span>
+                        <span class="epic-label">Gastado en total</span>
+                    </div>
+                    <div class="epic-card days-active">
+                        <span class="epic-value" id="epic-days">0</span>
+                        <span class="epic-label">Días activo</span>
+                    </div>
+                    <div class="epic-card titan-score" id="titan-score-card" title="Toca para ver cómo se calcula">
+                        <span class="epic-value" id="epic-score">0</span>
+                        <span class="epic-label">
+                            <svg class="sub-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                            Titan Score
+                        </span>
+                        <div class="titan-tip" id="titan-tip" hidden></div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <section id="system-section" class="section fade-in">
+                <div class="section-header">
+                    <h2>
+                        <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        Recursos del Sistema
+                    </h2>
+                    <span class="section-badge">Host & Remoto</span>
+                </div>
+                <div class="sys-grid">
+                    <div class="disk-card">
+                        <div class="disk-top">
+                            <span class="disk-label">
+                                <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                                Almacenamiento
+                            </span>
+                            <span class="disk-pct" id="disk-pct">—</span>
+                        </div>
+                        <div class="disk-bar">
+                            <div class="disk-bar-fill" id="disk-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="disk-info" id="disk-info">Cargando…</div>
+                    </div>
+                    <div class="disk-card">
+                        <div class="disk-top">
+                            <span class="disk-label">
+                                <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                                Memoria RAM
+                            </span>
+                            <span class="disk-pct" id="mem-pct">—</span>
+                        </div>
+                        <div class="disk-bar">
+                            <div class="disk-bar-fill" id="mem-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="disk-info" id="mem-info">Cargando…</div>
+                    </div>
+                    <div class="disk-card remote-card">
+                        <div class="disk-top">
+                            <span class="disk-label">
+                                <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                Servidor de clientes <span class="remote-dot" id="remote-status"></span>
+                            </span>
+                            <span class="disk-pct" id="remote-badge">—</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label-inline">Disco</span>
+                            <span class="stat-value-inline" id="remote-disk-txt">—</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="remote-disk-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label-inline">RAM</span>
+                            <span class="stat-value-inline" id="remote-mem-txt">—</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="remote-mem-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <!-- 💰 OpenRouter Credits -->
         <section id="credits-section" class="section fade-in">
@@ -165,121 +219,75 @@
             <div class="credit-projection" id="credits-projection"></div>
         </section>
 
-        <!-- 💾 Sistema: disco del host -->
-        <section id="system-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-                    Recursos del Sistema
-                </h2>
-                <span class="section-badge">Host & Remoto</span>
-            </div>
-            <div class="sys-grid">
-                <div class="disk-card">
-                    <div class="disk-top">
-                        <span class="disk-label">
-                            <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                            Almacenamiento
-                        </span>
-                        <span class="disk-pct" id="disk-pct">—</span>
+        <!-- 📊 Analíticas + 💬 Telemetría (Grid 2 columnas en Desktop) -->
+        <div class="dashboard-split-grid">
+            <div class="dashboard-col">
+                <!-- 📊 Analytics Charts -->
+                <section id="analytics-section" class="section fade-in">
+                    <div class="section-header">
+                        <h2>
+                            <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            Analíticas
+                        </h2>
+                        <span class="section-badge">Costos & Modelos</span>
                     </div>
-                    <div class="disk-bar">
-                        <div class="disk-bar-fill" id="disk-bar" style="width: 0%"></div>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">Costo por Día (últimos 30 días)</div>
+                            <canvas id="dailyCostChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Uso por Modelo</div>
+                            <canvas id="modelChart"></canvas>
+                        </div>
                     </div>
-                    <div class="disk-info" id="disk-info">Cargando…</div>
-                </div>
-                <div class="disk-card">
-                    <div class="disk-top">
-                        <span class="disk-label">
-                            <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                            Memoria RAM
-                        </span>
-                        <span class="disk-pct" id="mem-pct">—</span>
-                    </div>
-                    <div class="disk-bar">
-                        <div class="disk-bar-fill" id="mem-bar" style="width: 0%"></div>
-                    </div>
-                    <div class="disk-info" id="mem-info">Cargando…</div>
-                </div>
-                <div class="disk-card remote-card">
-                    <div class="disk-top">
-                        <span class="disk-label">
-                            <svg class="sub-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                            Servidor de clientes <span class="remote-dot" id="remote-status"></span>
-                        </span>
-                        <span class="disk-pct" id="remote-badge">—</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label-inline">Disco</span>
-                        <span class="stat-value-inline" id="remote-disk-txt">—</span>
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-fill" id="remote-disk-bar" style="width: 0%"></div>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label-inline">RAM</span>
-                        <span class="stat-value-inline" id="remote-mem-txt">—</span>
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-fill" id="remote-mem-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                </section>
 
-        <!-- 🤖 Agent Cards -->
-        <section id="agents-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8.01" y2="16"></line><line x1="16" y1="16" x2="16.01" y2="16"></line></svg>
-                    Estado de Agentes
-                </h2>
-                <span class="section-badge" id="agents-badge">3 en línea</span>
+                <!-- 🔴 Gateway Health -->
+                <section id="gateway-section" class="section fade-in">
+                    <div class="section-header">
+                        <h2>
+                            <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+                            Salud de Gateways
+                        </h2>
+                        <span class="section-badge">Conexiones</span>
+                    </div>
+                    <div id="gateway-content" class="gateway-content">
+                        <div class="gateway-loading">Cargando gateways...</div>
+                    </div>
+                </section>
             </div>
-            <div id="agentsGrid" class="agents-grid"></div>
-        </section>
 
-        <!-- 💬 Actividad Reciente -->
-        <section id="activity-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                    Actividad Reciente
-                </h2>
-                <span class="section-badge">En vivo</span>
-            </div>
-            <div id="activity-content" class="activity-content">
-                <div class="activity-loading">Cargando actividad...</div>
-            </div>
-        </section>
+            <div class="dashboard-col">
+                <!-- 💬 Actividad Reciente -->
+                <section id="activity-section" class="section fade-in">
+                    <div class="section-header">
+                        <h2>
+                            <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            Actividad Reciente
+                        </h2>
+                        <span class="section-badge">En vivo</span>
+                    </div>
+                    <div id="activity-content" class="activity-content">
+                        <div class="activity-loading">Cargando actividad...</div>
+                    </div>
+                </section>
 
-        <!-- 🔴 Gateway Health -->
-        <section id="gateway-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
-                    Salud de Gateways
-                </h2>
-                <span class="section-badge">Conexiones</span>
+                <!-- 🔧 Tool Usage -->
+                <section id="tools-section" class="section fade-in">
+                    <div class="section-header">
+                        <h2>
+                            <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            Uso de Herramientas
+                        </h2>
+                        <span class="section-badge">Tool calls</span>
+                    </div>
+                    <div id="tools-content" class="tools-content">
+                        <div class="tools-grid" id="toolsGrid"></div>
+                    </div>
+                </section>
             </div>
-            <div id="gateway-content" class="gateway-content">
-                <div class="gateway-loading">Cargando gateways...</div>
-            </div>
-        </section>
-
-        <!-- 🔧 Tool Usage -->
-        <section id="tools-section" class="section fade-in">
-            <div class="section-header">
-                <h2>
-                    <svg class="sec-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                    Uso de Herramientas
-                </h2>
-                <span class="section-badge">Tool calls</span>
-            </div>
-            <div id="tools-content" class="tools-content">
-                <div class="tools-grid" id="toolsGrid"></div>
-            </div>
-        </section>
+        </div>
     </main>
 
     <footer>
@@ -299,6 +307,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=31"></script>
+    <script src="/static/app.js?v=32"></script>
 </body>
 </html>

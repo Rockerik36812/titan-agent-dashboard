@@ -138,9 +138,57 @@ header {
 
 /* Sections */
 main {
-    max-width: 1200px;
+    max-width: 1360px;
     margin: 0 auto;
     padding: 1.5rem 2rem;
+}
+
+.dashboard-kpi-row {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-bottom: 2rem;
+}
+
+.dashboard-kpi-row > .section {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-kpi-row > .section > .epic-grid,
+.dashboard-kpi-row > .section > .sys-grid {
+    flex: 1;
+}
+
+.dashboard-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 2rem;
+}
+
+.dashboard-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.dashboard-col > .section {
+    margin-bottom: 0;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-kpi-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .dashboard-split-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
 }
 
 .section {
@@ -332,6 +380,7 @@ main {
     left: 0;
     right: 0;
     height: 3px;
+    background: var(--color, var(--accent-blue));
     opacity: 0;
     transition: opacity 0.3s ease;
 }

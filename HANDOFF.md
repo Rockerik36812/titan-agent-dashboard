@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-11-16 23:59 (CST)
-**Estado:** 🟢 en marcha (Pase Unslop aplicado; 4 temas preservados)
+**Última actualización:** 2026-11-17 00:10 (CST)
+**Estado:** 🟢 en marcha (Rediseño Macro de Observabilidad implementado; 4 temas preservados)
 
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
 
@@ -12,9 +12,19 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Probar en producción o levantar localmente para validar el nuevo acabado visual Unslop (iconos SVG vectoriales, terminal de logs y copys técnicos) en los 4 temas activos (`Clásico`, `Aurora`, `Ultra Glass`, `Día de Muertos 🏵️`).
+> Probar en producción (o hard-refresh `Cmd+Shift+R`) para ver el nuevo layout macro de observabilidad: Agentes al tope, fila dual de KPIs/Sistema y grid dividido de Analíticas/Actividad.
 
 ## Hecho
+
+**Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
+
+- [x] **Rediseño Macro de Observabilidad (Layout Unslop)**:
+  - **Agentes en la cima absoluta (`Hero Command Row`)**: Titán, Hermina y Hermes ahora se ven de inmediato al abrir el panel, sin requerir scroll vertical.
+  - **Línea de acento distintiva**: Barra superior iluminada con el color único de cada agente activo (`--color`).
+  - **Fila dual de métricas y hardware (`.dashboard-kpi-row`)**: Métricas Globales y Recursos de Sistema (Host + VPS) en dos columnas en desktop/tablet.
+  - **Grid dividido de operaciones (`.dashboard-split-grid`)**: Analíticas + Gateways a la izquierda; Actividad en vivo + Herramientas a la derecha.
+  - **Viewport ampliado a 1360px**: Aprovecha el ancho de pantalla de PC/Mac y colapsa a 1 columna automáticamente en celular.
+  - **Bumping de caché**: `style.css?v=36` y `app.js?v=32`.
 
 **Verificado por Antigravity el 2026-11-16 (Aprobado por Erik):**
 

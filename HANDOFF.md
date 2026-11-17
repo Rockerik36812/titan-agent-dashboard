@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre
-**Última actualización:** 2026-11-17 00:20 (CST)
-**Estado:** 🟢 en marcha (Calibración Responsive Mobile First completada; 4 temas preservados)
+**Última actualización:** 2026-11-17 00:25 (CST)
+**Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
 
@@ -12,12 +12,13 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Probar en el celular (abrir `https://dash.erikservicios.click` en Safari/Chrome móvil con recarga forzada) y validar que el header, tarjetas de agentes y OpenRouter se adapten fluidamente a la pantalla del teléfono.
+> Probar en el celular o PC con recarga forzada para ver el rayo ⚡ original con su animación pulse restaurado junto con el nuevo layout responsivo.
 
 ## Hecho
 
 **Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
 
+- [x] **Rayo `⚡` original restaurado en el logo**: Restituido el emoji de rayo original con animación `pulse 2s` que se integra naturalmente con todos los temas visuales.
 - [x] **Calibración Responsive Mobile First (Celulares y Tablets)**:
   - **Header móvil calibrado**: Cuadrícula simétrica para métricas clave y barra de acción compacta para los botones de Push, Tema, Salir y estado de conexión sin desbordes.
   - **Layout adaptativo móvil**: `.dashboard-kpi-row` y `.dashboard-split-grid` colapsan a 1 sola columna fluida con ritmo visual compacto (`gap: 1rem`).

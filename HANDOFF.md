@@ -1,6 +1,6 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** libre
+**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
 **Última actualización:** 2026-11-19 18:26 (CST)
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
@@ -85,6 +85,14 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 ## En curso (a medias)
 
 - Nada detectado. El nuevo tema Ultra Glass y el switch de 3 estados quedaron probados, desplegados y aprobados.
+
+## Pruebas y revisión
+
+- **Pruebas corridas:** las que cada agente anota en **Hecho** (si no corriste nada, escribe "sin verificar").
+- **Revisión de Muse:** no vista aún — entró como revisor el 2026-11-19.
+- **Repos que Muse puede ver:** `titan-agent-dashboard` (público).
+
+Una revisión **no** sustituye a las pruebas: van en campos separados a propósito.
 
 ## Bloqueos y decisiones pendientes
 

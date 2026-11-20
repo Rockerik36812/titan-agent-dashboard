@@ -30,7 +30,7 @@ Cómo tomar y soltar un proyecto que se trabaja en turnos con otro agente (Titá
 4. Commit con prefijo `[titán]`, `[antigravity]` o `[opencode]`, luego `push`.
 5. `Dueño actual: libre`.
 
-## Revisor externo (Muse)
+## Revisor: Muse (Meta) — revisa y escribe en su buzón
 
 - Muse (Meta) revisa por su **conector de GitHub**: lee el código y dice qué cambia, qué podría romperse y qué hay que verificar antes de mergear. **No es dueño**: no toma el batón ni entra en `Dueño actual:` (solo `titán`, `antigravity`, `opencode` o `libre` — si encuentras otro valor, detente y avisa).
 - **Dónde escribe: su buzón.** La revisión la publica **él mismo** en **`revisiones-muse`** (`https://github.com/Rockerik36812/revisiones-muse`): un archivo por revisión, formato `_plantilla.md`, con el texto citado, veredicto, pendientes y `Estado:`. Es su **único** permiso de escritura; en los repos del relevo es solo lectura (ni archivos, ni commits, ni issues, ni PRs). Así GitHub no le da escritura en todo el repo —que es lo único que GitHub sabe dar— y si escribe algo raro se ensucia **una reseña**, no el protocolo.

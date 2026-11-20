@@ -1,9 +1,11 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** titán
-**Última actualización:** 2026-11-19 18:20 (CST)
+**Dueño actual:** libre
+**Última actualización:** 2026-11-19 18:26 (CST)
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
+> 2026-11-19 — Titán: el protocolo ahora también nombra a **Muse** (Meta) como **revisor de solo lectura** por su conector de GitHub: **no es dueño**, no toma el batón, y sus revisiones entran a la bitácora firmadas `muse (revisor)`. De paso se corrigió la regla de Antigravity, que seguía diciendo "dos agentes" (le faltaba OpenCode). **Nada del panel (UI) se tocó.**
+>
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
 
 ## Objetivo

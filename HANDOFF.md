@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** libre
-**Última actualización:** 2026-11-17 00:25 (CST)
+**Dueño actual:** titán
+**Última actualización:** 2026-11-19 18:20 (CST)
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.

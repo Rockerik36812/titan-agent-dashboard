@@ -1,6 +1,6 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** titán  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
+**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
 **Última actualización:** 2026-11-21 21:48 CST
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 

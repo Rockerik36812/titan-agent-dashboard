@@ -86,6 +86,27 @@ _DATA_DIR = os.environ.get("PANEL_DATA_DIR", "/app/data")
 _AUTH_FILE = os.path.join(_DATA_DIR, "auth.json")
 _SECRET_FILE = os.path.join(_DATA_DIR, "session_secret")
 COOKIE_NAME = "panel_session"
+CSRF_COOKIE = "csrf_token"          # legible por JS (double-submit)
+CSRF_HEADER = "x-csrf-token"
+_UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+_CSRF_EXEMPT = {"/api/auth/login", "/api/auth/setup"}   # puerta de entrada: aún no hay token
+# Headers de seguridad para TODA respuesta. `unsafe-inline` es necesario porque
+# index.html usa onclick="" y estilos en línea; el clickjacking lo cubren
+# frame-ancestors + X-Frame-Options igual.
+_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+    "Content-Security-Policy": (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' data: https://fonts.gstatic.com; "
+        "img-src 'self' data:; connect-src 'self'; "
+        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    ),
+}
 SESSION_TTL_REMEMBER = 7 * 24 * 3600   # 7 días con "recordarme"
 SESSION_TTL_DEFAULT = 12 * 3600        # 12 h si no lo marca
 _PBKDF2_ROUNDS = 200_000
@@ -116,22 +137,50 @@ def _auth_secret() -> bytes:
     return s
 
 
+_AUTH_CACHE: dict = dict(mtime=None, data=None)
+
+
 def _load_auth() -> dict:
+    """Lee auth.json con caché por mtime (el middleware lo llama en cada request)."""
     try:
+        mtime = os.stat(_AUTH_FILE).st_mtime
+        if _AUTH_CACHE["mtime"] == mtime and _AUTH_CACHE["data"]:
+            return _AUTH_CACHE["data"]
         with open(_AUTH_FILE) as f:
-            return json.load(f)
+            d = json.load(f)
+        _AUTH_CACHE["mtime"] = mtime
+        _AUTH_CACHE["data"] = d
+        return d
     except Exception:
         return {}
 
 
+def _write_json_atomic(path, data, mode: int | None = None):
+    """Escribe JSON de forma atómica (tmp + fsync + rename) y con permisos.
+
+    Un corte a media escritura dejaba auth.json / push_subscribers.json /
+    push_vapid.json a medias (JSON inválido ⇒ se perdían las sesiones o los
+    suscriptores). El rename es atómico: o queda el archivo viejo, o el nuevo.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w") as f:
+        json.dump(data, f)
+        f.flush()
+        os.fsync(f.fileno())
+    if mode is not None:
+        try:
+            os.chmod(tmp, mode)
+        except Exception:
+            pass
+    os.replace(tmp, path)
+
+
 def _save_auth(d: dict):
-    os.makedirs(os.path.dirname(_AUTH_FILE), exist_ok=True)
-    with open(_AUTH_FILE, "w") as f:
-        json.dump(d, f)
-    try:
-        os.chmod(_AUTH_FILE, 0o600)
-    except Exception:
-        pass
+    _write_json_atomic(_AUTH_FILE, d, 0o600)
+    _AUTH_CACHE["mtime"] = None   # invalida la caché
+    _AUTH_CACHE["data"] = {}
 
 
 def hash_password(password: str, salt: str) -> str:
@@ -141,11 +190,17 @@ def hash_password(password: str, salt: str) -> str:
     ).hex()
 
 
+def _session_epoch() -> int:
+    """Época de sesiones: al cerrar sesión se sube en auth.json y TODOS los
+    tokens emitidos antes dejan de valer en el servidor (no solo la cookie)."""
+    return int(_load_auth().get("session_epoch", 0))
+
+
 def make_session(ttl: int) -> str:
-    """Token de sesión firmado con HMAC: payload.exp + firma."""
+    """Token de sesión firmado con HMAC: payload (exp + época) + firma."""
     exp = int(time.time()) + ttl
     payload = base64.urlsafe_b64encode(
-        json.dumps({"exp": exp}).encode()
+        json.dumps(dict(exp=exp, e=_session_epoch())).encode()
     ).decode().rstrip("=")
     sig = hmac.new(_auth_secret(), payload.encode(), hashlib.sha256).hexdigest()
     return f"{payload}.{sig}"
@@ -160,6 +215,8 @@ def session_valid(token: str) -> bool:
             return False
         pad = "=" * (-len(payload) % 4)
         data = json.loads(base64.urlsafe_b64decode(payload + pad))
+        if int(data.get("e", 0)) != _session_epoch():
+            return False   # el dueño cerró sesión: este token ya no vale en el servidor
         return int(data.get("exp", 0)) > time.time()
     except Exception:
         return False
@@ -171,6 +228,13 @@ def _set_session_cookie(resp: JSONResponse, remember: bool, secure: bool):
         COOKIE_NAME, make_session(ttl), max_age=ttl,
         httponly=True, secure=secure, samesite="lax", path="/",
     )
+    # Token CSRF (double-submit): legible por JS a propósito, para que el
+    # frontend lo mande en el header X-CSRF-Token en cada POST.
+    csrf = base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip("=")
+    resp.set_cookie(
+        CSRF_COOKIE, csrf, max_age=ttl,
+        httponly=False, secure=secure, samesite="lax", path="/",
+    )
 
 
 def _is_https(request: Request) -> bool:
@@ -179,19 +243,37 @@ def _is_https(request: Request) -> bool:
     return proto.split(",")[0].strip() == "https"
 
 
+def _harden(resp):
+    """Agrega los headers de seguridad a cualquier respuesta."""
+    try:
+        for k, v in _SECURITY_HEADERS.items():
+            resp.headers.setdefault(k, v)
+    except Exception:
+        pass
+    return resp
+
+
 @app.middleware("http")
 async def auth_guard(request: Request, call_next):
     """Protege TODO (página, APIs, logs, SSE) salvo las rutas públicas."""
     path = request.url.path
     if path in _PUBLIC_PATHS or path.startswith("/static/"):
-        return await call_next(request)
+        return _harden(await call_next(request))
     token = request.cookies.get(COOKIE_NAME)
     if token and session_valid(token):
-        return await call_next(request)
+        # CSRF (double submit): en métodos que cambian estado, el header tiene
+        # que coincidir con la cookie legible. SameSite=Lax solo cubre a medias.
+        if request.method in _UNSAFE_METHODS and path.startswith("/api/") \
+                and path not in _CSRF_EXEMPT:
+            sent = request.headers.get(CSRF_HEADER, "")
+            expected = request.cookies.get(CSRF_COOKIE, "")
+            if not (sent and expected and hmac.compare_digest(sent, expected)):
+                return _harden(JSONResponse({"error": "csrf token inválido"}, status_code=403))
+        return _harden(await call_next(request))
     # Sin sesión válida: JSON 401 para las APIs, redirect al login para el resto
     if path.startswith("/api/"):
-        return JSONResponse({"error": "no autenticado"}, status_code=401)
-    return RedirectResponse("/login", status_code=302)
+        return _harden(JSONResponse({"error": "no autenticado"}, status_code=401))
+    return _harden(RedirectResponse("/login", status_code=302))
 
 
 @app.get("/api/auth/status")
@@ -245,8 +327,17 @@ async def auth_login(request: Request):
 
 @app.post("/api/auth/logout")
 async def auth_logout():
+    """Cierra sesión DE VERDAD: sube la época en auth.json, así el token emitido
+    deja de valer en el servidor (antes solo se borraba la cookie y el token
+    seguía sirviendo hasta 7 días si alguien lo tenía)."""
+    a = _load_auth()
+    if a:
+        a["session_epoch"] = int(a.get("session_epoch", 0)) + 1
+        _save_auth(a)
+        print("AUTH: sesión cerrada (época incrementada; tokens viejos invalidados)", flush=True)
     resp = JSONResponse({"ok": True})
     resp.delete_cookie(COOKIE_NAME, path="/")
+    resp.delete_cookie(CSRF_COOKIE, path="/")
     return resp
 
 
@@ -270,6 +361,10 @@ _CACHE = {
     "ts": 0,
 }
 _CACHE_READY = False
+# Clientes SSE conectados: el ciclo del caché usa este número para saber si vale
+# la pena refrescar cada 5 s o puede relajarse a 10 s cuando nadie está viendo.
+_SSE_CLIENTS = 0
+_CYCLE_ERRORS = 0
 # Initialize _PREV_ONLINE with all agents as online so first run detects transitions
 _PREV_ONLINE = {aid: True for aid in AGENTS}
 _PREV_LOW_CREDITS_SENT = set()  # tracks which thresholds we've notified
@@ -646,9 +741,17 @@ async def _update_cache():
                 "ts": time.time(),
             }
             _CACHE_READY = True
-        except Exception:
-            pass
-        await asyncio.sleep(3)
+        except Exception as e:
+            # Antes era `except Exception: pass`: si el ciclo tronaba cada 3 s
+            # no quedaba ni una línea en los logs. Ahora se cuenta y se reporta.
+            global _CYCLE_ERRORS
+            _CYCLE_ERRORS += 1
+            if _CYCLE_ERRORS <= 3 or _CYCLE_ERRORS % 100 == 0:
+                print(f"CACHE: fallo en el ciclo #{_CYCLE_ERRORS}: {type(e).__name__}: {e}", flush=True)
+        # Intervalo adaptativo: con navegador conectado (SSE) refresca cada 5 s;
+        # sin nadie viendo el panel, cada 10 s. Antes era 3 s fijos con docker
+        # stats + docker exec + 256 KB de logs + SQLite por agente, siempre.
+        await asyncio.sleep(5 if _SSE_CLIENTS > 0 else 10)
 
 
 @app.on_event("startup")
@@ -1234,12 +1337,12 @@ def _ensure_vapid():
     _vapid_public_b64 = base64.urlsafe_b64encode(pub_raw).rstrip(b"=").decode()
 
     try:
-        key_file.write_text(_json.dumps({
-            "private": _vapid_private_b64,
-            "public": _vapid_public_b64,
-        }))
-    except Exception:
-        pass
+        # Atómico + 600: antes quedaba legible para cualquiera y un corte a
+        # media escritura dejaba el archivo inválido (había que regenerar llaves
+        # y TODAS las suscripciones viejas dejaban de recibir push).
+        _write_json_atomic(key_file, dict(private=_vapid_private_b64, public=_vapid_public_b64), 0o600)
+    except Exception as e:
+        print(f"PUSH: no se pudo guardar push_vapid.json ({e})", flush=True)
 
     return _vapid_private_b64, _vapid_public_b64
 
@@ -1255,9 +1358,9 @@ def _load_subscribers() -> list:
 
 def _save_subscribers(subs: list):
     try:
-        _SUBSCRIBERS_FILE.write_text(_json.dumps(subs))
-    except Exception:
-        pass
+        _write_json_atomic(_SUBSCRIBERS_FILE, subs, 0o600)
+    except Exception as e:
+        print(f"PUSH: no se pudieron guardar los suscriptores ({e})", flush=True)
 
 
 async def _send_push_notification(title: str, body: str, tag: str = "agent-alert", url: str = "/"):
@@ -1272,7 +1375,7 @@ async def _send_push_notification(title: str, body: str, tag: str = "agent-alert
     try:
         from pywebpush import webpush, WebPushException
 
-        for sub in subs:
+        for sub in list(subs):   # copia: abajo se hace subs.remove() dentro del bucle
             try:
                 webpush(
                     subscription_info=sub,
@@ -1337,7 +1440,7 @@ async def push_test():
         "body": "Notificación de prueba — funciona!",
         "tag": "test", "url": "/"
     })
-    for i, sub in enumerate(subs):
+    for i, sub in enumerate(list(subs)):   # copia: abajo se hace subs.remove()
         try:
             resp = webpush(subscription_info=sub, data=payload,
                           vapid_private_key=priv_b64, vapid_claims=VAPID_CLAIMS, ttl=86400)
@@ -1502,28 +1605,35 @@ async def api_history(limit: int = 8):
     return output
 
 
-# ─── SSE Stream (all data, every 3s) ──────────────────────────────
+# ─── SSE Stream (lee el caché; el caché refresca a 5 s con clientes) ─────
 
 @app.get("/api/stream")
 async def stream_all(request: Request):
     """SSE stream that reads from in-memory cache — instant delivery."""
     async def event_generator():
-        # Send immediate "connected" event
-        yield "data: {\"connected\": true}\n\n"
-        waited = 0
-        # Wait for first cache fill (up to 20s)
-        while not _CACHE_READY and waited < 20:
-            await asyncio.sleep(0.5)
-            waited += 0.5
-        # Yield cached data immediately
-        if _CACHE_READY:
-            yield f"data: {json.dumps(_CACHE)}\n\n"
-        while True:
-            if await request.is_disconnected():
-                break
-            await asyncio.sleep(3)
+        global _SSE_CLIENTS
+        _SSE_CLIENTS += 1
+        try:
+            # Send immediate "connected" event
+            yield 'data: {"connected": true}\n\n'
+            waited = 0
+            # Wait for first cache fill (up to 20s)
+            while not _CACHE_READY and waited < 20:
+                await asyncio.sleep(0.5)
+                waited += 0.5
+            # Yield cached data immediately
             if _CACHE_READY:
                 yield f"data: {json.dumps(_CACHE)}\n\n"
+            while True:
+                if await request.is_disconnected():
+                    break
+                await asyncio.sleep(3)
+                if _CACHE_READY:
+                    yield f"data: {json.dumps(_CACHE)}\n\n"
+        finally:
+            # Se descuenta al cerrar la pestaña/celular: si no, el ciclo se
+            # quedaría refrescando a 5 s para siempre con clientes fantasma.
+            _SSE_CLIENTS = max(0, _SSE_CLIENTS - 1)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

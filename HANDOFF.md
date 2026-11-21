@@ -4,6 +4,8 @@
 **Última actualización:** 2026-11-21 21:48 CST
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
+> 2026-11-21 21:48 CST — Titán: **ronda de seguridad por la revisión de Muse** (`2026-11-21-08476a2.md` del buzón: 14 pendientes, los 14 verificados). Corregido: XSS de `innerHTML`, logout que ahora sí invalida el token en el servidor, CSRF + headers de seguridad, escrituras atómicas con `600`, dependencias al día, ciclo del caché adaptativo, errores del ciclo ya visibles, `subs.remove()` sobre copia, `docker-compose.yml` alineado, `HEALTHCHECK` y smoke test con CI. **El deploy en Coolify queda pendiente**; el panel en producción sigue con la versión anterior hasta entonces.
+>
 > 2026-11-19 — Titán: el protocolo ahora también nombra a **Muse** (Meta) como **revisor de solo lectura** por su conector de GitHub: **no es dueño**, no toma el batón, y sus revisiones entran a la bitácora firmadas `muse (revisor)`. De paso se corrigió la regla de Antigravity, que seguía diciendo "dos agentes" (le faltaba OpenCode). **Nada del panel (UI) se tocó.**
 >
 > 2026-11-12 — Titán: el protocolo ahora contempla **3 agentes** (Titán, Antigravity, OpenCode). `Dueño actual: opencode` es válido; Antigravity y OpenCode no comparten carpeta (un clon/worktree por agente). Nada del panel se tocó: solo el reglamento del relevo.
@@ -14,7 +16,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> Probar en el celular o PC con recarga forzada para ver el rayo ⚡ original con su animación pulse restaurado junto con el nuevo layout responsivo.
+> **Desplegar en Coolify** (el panel no se redeploya solo) y abrir el panel con recarga forzada: verificar que el SSE sigue vivo, que el modal de historial abre con sesiones, y que un POST (reiniciar agente / push) funciona con el header CSRF. Después, cerrar el issue #1 del repo: sus hallazgos ya están corregidos.
 
 ## Hecho
 

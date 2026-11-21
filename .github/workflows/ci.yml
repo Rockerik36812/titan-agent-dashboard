@@ -1,0 +1,23 @@
+name: CI
+
+# Smoke test barato: la app importa, /health y /api/auth/status responden, las
+# APIs exigen sesión y los headers de seguridad van puestos. No toca Docker ni
+# contenedores, así que corre en un runner limpio.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt httpx pytest
+      - name: Smoke test
+        run: python -m pytest tests/ -q

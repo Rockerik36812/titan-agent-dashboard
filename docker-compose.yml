@@ -1,9 +1,19 @@
+# OJO: el despliegue real NO usa este archivo. El panel corre en Coolify
+# (puerto 8999, dominio dash.erikservicios.click) y Coolify genera su propio
+# compose en cada deploy; si editas algo aquí, no llega a producción.
+# Se deja alineado con la realidad (8999 + build local) solo para levantar el
+# panel a mano en una máquina de pruebas.
 services:
   agent-dashboard:
-    image: 'ghcr.io/rockerik36812/titan-dashboard:latest'
+    build: .
     ports:
-      - '8000:8000'
+      - '8999:8999'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'panel-data:/app/data'
     environment:
-      - SERVICE_URL_DASHBOARD_8000
+      - PANEL_DATA_DIR=/app/data
+    restart: unless-stopped
+
+volumes:
+  panel-data:

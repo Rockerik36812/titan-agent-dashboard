@@ -52,6 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let cachedHistory = {};
     let cachedAgents = {};
 
+    // ─── Escapado para innerHTML ──────────────────────────────────
+    // Todo lo que venga de state.db, de los logs o de la config (títulos de
+    // sesión, nombres de herramienta, mensajes de error) se escapa antes de
+    // entrar en innerHTML. Sin esto, un título con `<img onerror=...>` se
+    // ejecutaba al abrir el modal (XSS guardado).
+    function esc(v) {
+        return String(v === null || v === undefined ? '' : v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // ─── Modal ────────────────────────────────────────────────────
     let modalAgentId = null;
     // Cache de logs: el modal se re-renderiza cada 3s (SSE) y borraría lo cargado,
@@ -69,9 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bloque de modelo: en uso, principal y fallback
         const modelBox = agent.model ? `
             <div class="modal-model-box">
-                <div class="model-line"><span class="model-label">En uso</span><code>${agent.model}</code></div>
-                ${agent.model_primary ? `<div class="model-line"><span class="model-label">Principal</span><code>${agent.model_primary}</code></div>` : ''}
-                ${agent.model_fallback ? `<div class="model-line"><span class="model-label">Fallback</span><code>${agent.model_fallback}</code></div>` : ''}
+                <div class="model-line"><span class="model-label">En uso</span><code>${esc(agent.model)}</code></div>
+                ${agent.model_primary ? `<div class="model-line"><span class="model-label">Principal</span><code>${esc(agent.model_primary)}</code></div>` : ''}
+                ${agent.model_fallback ? `<div class="model-line"><span class="model-label">Fallback</span><code>${esc(agent.model_fallback)}</code></div>` : ''}
                 ${agent.fallback_active ? '<div class="modal-fallback-warn">Fallback activo — el modelo principal falló</div>' : ''}
             </div>` : '';
 
@@ -93,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `
                     <div class="timeline-item">
                         <div class="timeline-item-header">
-                            <span class="timeline-title">${s.title || 'Sin título'}</span>
+                            <span class="timeline-title">${esc(s.title || 'Sin título')}</span>
                             <span class="timeline-cost">${cost}</span>
                         </div>
                         <div class="timeline-meta">
@@ -242,14 +256,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="agent-fallback" title="Fallback activo: el modelo principal falló">⚠️ fallback</span>`
             : '';
         return `
-            <div class="agent-card clickable ${agent.online ? 'online' : ''}" data-agent-id="${agent.id}" style="--color: ${agent.color}">
+            <div class="agent-card clickable ${agent.online ? 'online' : ''}" data-agent-id="${esc(agent.id)}" style="--color: ${esc(agent.color)}">
                 <div class="agent-card-header">
                     <div class="agent-name">
-                        <span class="agent-emoji">${agent.emoji}</span>
-                        ${agent.name}
+                        <span class="agent-emoji">${esc(agent.emoji)}</span>
+                        ${esc(agent.name)}
                     </div>
                     <div class="agent-header-actions">
-                        <button class="agent-restart" onclick="restartAgent(event, '${agent.id}')" title="Reiniciar ${agent.name}">
+                        <button class="agent-restart" onclick="restartAgent(event, '${esc(agent.id)}')" title="Reiniciar ${esc(agent.name)}">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                         </button>
                         <div class="status-dot ${agent.online ? 'online' : 'offline'}"></div>
@@ -275,8 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="agent-uptime">${agent.uptime || '—'}</span>
                     <span class="agent-gateway">${agent.online ? '<span class="status-badge-inline up">up</span>' : '<span class="status-badge-inline down">down</span>'}</span>
                 </div>
-                <div class="agent-detail agent-model-row" title="${modelFull}">
-                    <span class="agent-model"><svg class="sub-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>${modelName}</span>
+                <div class="agent-detail agent-model-row" title="${esc(modelFull)}">
+                    <span class="agent-model"><svg class="sub-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>${esc(modelName)}</span>
                     ${fallbackBadge}
                 </div>
             </div>
@@ -391,15 +405,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pct = t.total ? Math.round(((x.count || 0) / t.total) * 100) : 0;
                 return `
                     <div class="tool-row">
-                        <span class="tool-name" title="${x.name}">${x.name}</span>
-                        <div class="tool-bar"><div class="tool-bar-fill" style="width:${w}%; background:${color}"></div></div>
+                        <span class="tool-name" title="${esc(x.name)}">${esc(x.name)}</span>
+                        <div class="tool-bar"><div class="tool-bar-fill" style="width:${w}%; background:${esc(color)}"></div></div>
                         <span class="tool-count">${fmtNumber(x.count || 0)}<em>${pct}%</em></span>
                     </div>`;
             }).join('');
             return `
-                <div class="tool-agent" style="--color:${color}">
+                <div class="tool-agent" style="--color:${esc(color)}">
                     <div class="tool-agent-head">
-                        <span class="tool-agent-name">${a.emoji || ''} ${a.name || id}</span>
+                        <span class="tool-agent-name">${esc(a.emoji || '')} ${esc(a.name || id)}</span>
                         <span class="tool-agent-total">${fmtNumber(t.total || 0)} tool calls</span>
                     </div>
                     <div class="tool-rows">${rows}</div>
@@ -598,10 +612,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 els.activityContent.innerHTML = data.activity.slice(0, 10).map(a => `
                     <div class="activity-item">
-                        <div class="activity-emoji">${a.emoji}</div>
+                        <div class="activity-emoji">${esc(a.emoji)}</div>
                         <div class="activity-body">
-                            <div class="activity-title" style="color:${a.color}">${a.agent_name}</div>
-                            <div class="activity-desc">${a.description || a.title || 'Actividad'}</div>
+                            <div class="activity-title" style="color:${esc(a.color)}">${esc(a.agent_name)}</div>
+                            <div class="activity-desc">${esc(a.description || a.title || 'Actividad')}</div>
                             <div class="activity-meta">
                                 <span>⏱ ${timeAgo(a.timestamp)}</span>
                                 ${a.cost_usd > 0 ? `<span>💰 $${a.cost_usd.toFixed(4)}</span>` : ''}
@@ -621,21 +635,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `
                     <div class="gateway-card ${isOnline ? 'online' : 'offline'}">
                         <div class="gateway-header">
-                            <span>${g.emoji} ${g.name}</span>
+                            <span>${esc(g.emoji)} ${esc(g.name)}</span>
                             <span class="gateway-state-dot ${isOnline ? 'online' : 'offline'}"></span>
                         </div>
                         <div class="gateway-detail">
-                            <span>Estado: <strong>${g.state}</strong></span>
+                            <span>Estado: <strong>${esc(g.state)}</strong></span>
                             ${g.uptime ? `<span>⏱ ${g.uptime}</span>` : ''}
                             <span>🎯 ${g.active_agents} agentes activos</span>
                         </div>
                         <div class="gateway-platforms">
                             ${Object.entries(g.platforms).map(([name, p]) => `
                                 <div class="gateway-platform">
-                                    <span class="platform-name">${name}</span>
+                                    <span class="platform-name">${esc(name)}</span>
                                     <span class="platform-state ${p.state === 'connected' ? 'connected' : 'disconnected'}">
-                                        ${p.state === 'connected' ? '✅' : '❌'} ${p.state}
-                                        ${p.error ? `<span class="platform-error">· ${p.error}</span>` : ''}
+                                        ${p.state === 'connected' ? '✅' : '❌'} ${esc(p.state)}
+                                        ${p.error ? `<span class="platform-error">· ${esc(p.error)}</span>` : ''}
                                     </span>
                                 </div>
                             `).join('')}
@@ -750,6 +764,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ─── Sesión ────────────────────────────────────────────────────
+    // CSRF: se parchea fetch ANTES de `rawFetch` para que todas las llamadas
+    // que cambian estado (logout, reiniciar agente, push) manden el header
+    // X-CSRF-Token igual a la cookie `csrf_token` (double-submit).
+    (function csrfFetch() {
+        const baseFetch = window.fetch.bind(window);
+        const unsafe = ['POST', 'PUT', 'PATCH', 'DELETE'];
+        window.fetch = function (input, init) {
+            const opts = Object.assign({}, init || {});
+            const method = String(opts.method || (input && input.method) || 'GET').toUpperCase();
+            if (unsafe.includes(method)) {
+                const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+                const token = m ? decodeURIComponent(m[1]) : '';
+                if (token) {
+                    if (opts.headers instanceof Headers) opts.headers.set('X-CSRF-Token', token);
+                    else opts.headers = Object.assign({}, opts.headers || {}, {'X-CSRF-Token': token});
+                }
+                opts.credentials = opts.credentials || 'same-origin';
+            }
+            return baseFetch(input, opts);
+        };
+    })();
+
     // fetch sin el guard, para poder comprobar la sesión sin bucles.
     const rawFetch = window.fetch.bind(window);
 

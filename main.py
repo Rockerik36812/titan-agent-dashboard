@@ -222,6 +222,11 @@ def session_valid(token: str) -> bool:
         return False
 
 
+def _new_csrf_token() -> str:
+    """Token del double-submit (legible por JS: no es un secreto de sesión)."""
+    return base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip("=")
+
+
 def _set_session_cookie(resp: JSONResponse, remember: bool, secure: bool):
     ttl = SESSION_TTL_REMEMBER if remember else SESSION_TTL_DEFAULT
     resp.set_cookie(
@@ -230,7 +235,7 @@ def _set_session_cookie(resp: JSONResponse, remember: bool, secure: bool):
     )
     # Token CSRF (double-submit): legible por JS a propósito, para que el
     # frontend lo mande en el header X-CSRF-Token en cada POST.
-    csrf = base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip("=")
+    csrf = _new_csrf_token()
     resp.set_cookie(
         CSRF_COOKIE, csrf, max_age=ttl,
         httponly=False, secure=secure, samesite="lax", path="/",
@@ -268,8 +273,29 @@ async def auth_guard(request: Request, call_next):
             sent = request.headers.get(CSRF_HEADER, "")
             expected = request.cookies.get(CSRF_COOKIE, "")
             if not (sent and expected and hmac.compare_digest(sent, expected)):
-                return _harden(JSONResponse({"error": "csrf token inválido"}, status_code=403))
-        return _harden(await call_next(request))
+                resp = JSONResponse(
+                    {"error": "csrf token inválido o ausente: recarga la página (Ctrl+Shift+R) e intenta otra vez"},
+                    status_code=403,
+                )
+                # Sesión emitida ANTES de que existiera el CSRF (o cookie borrada):
+                # sin cookie el navegador nunca podrá mandar el header. Se la
+                # emitimos aquí para que el siguiente intento ya pase, sin obligar
+                # al dueño a cerrar sesión y volver a entrar.
+                if not expected:
+                    resp.set_cookie(
+                        CSRF_COOKIE, _new_csrf_token(), max_age=SESSION_TTL_REMEMBER,
+                        httponly=False, secure=_is_https(request), samesite="lax", path="/",
+                    )
+                return _harden(resp)
+        resp = _harden(await call_next(request))
+        # Auto-cura: cualquier navegación con sesión válida y sin cookie CSRF
+        # recibe una nueva (sesiones viejas siguen funcionando tras un deploy).
+        if not request.cookies.get(CSRF_COOKIE):
+            resp.set_cookie(
+                CSRF_COOKIE, _new_csrf_token(), max_age=SESSION_TTL_REMEMBER,
+                httponly=False, secure=_is_https(request), samesite="lax", path="/",
+            )
+        return resp
     # Sin sesión válida: JSON 401 para las APIs, redirect al login para el resto
     if path.startswith("/api/"):
         return _harden(JSONResponse({"error": "no autenticado"}, status_code=401))

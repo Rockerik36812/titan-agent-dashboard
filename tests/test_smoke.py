@@ -52,3 +52,27 @@ def test_index_redirige_al_login():
     r = cliente.get("/", follow_redirects=False)
     assert r.status_code == 302
     assert r.headers["location"] == "/login"
+
+
+def test_sesion_vieja_recibe_csrf_nueva():
+    """Sesión emitida antes del CSRF: el servidor le repone la cookie.
+
+    Regresión real: al desplegar el CSRF, las sesiones ya abiertas se quedaron
+    sin cookie `csrf_token` y todo POST (reiniciar agente, push) daba 403 hasta
+    cerrar sesión a mano.
+    """
+    r = cliente.post("/api/auth/setup", json={"user": "prueba", "password": "PruebaSegura123"})
+    if r.status_code == 400:      # ya hay contraseña en este directorio de datos
+        r = cliente.post("/api/auth/login", json={"user": "prueba", "password": "PruebaSegura123"})
+    assert r.status_code == 200, r.text
+    assert "csrf_token" in cliente.cookies
+
+    # simular navegador viejo: sesión válida pero sin la cookie CSRF
+    cliente.cookies.delete("csrf_token")
+    r = cliente.get("/", follow_redirects=False)
+    assert "csrf_token" in r.headers.get("set-cookie", ""), "el servidor debe reponer la cookie"
+
+    token = cliente.cookies.get("csrf_token")
+    assert token
+    r = cliente.post("/api/auth/logout", headers={"X-CSRF-Token": token})
+    assert r.status_code == 200, r.text

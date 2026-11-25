@@ -91,7 +91,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 ## Pruebas y revisión
 
 - **Pruebas corridas:** las que cada agente anota en **Hecho** (si no corriste nada, escribe "sin verificar").
-- **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **en curso** (regla del aviso por correo unificada en 5 de 6 archivos y deriva de las copias alineada; falta el `AGENTS.md` del panel, pendiente de la aprobación de Erik). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
+- **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **atendida** (regla del aviso por correo unificada en los 6 archivos y deriva de las copias alineada; la única diferencia que queda entre copias es la lista blanca de cada proyecto, y es a propósito). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
 - **Repos que Muse puede ver:** `titan-agent-dashboard` (público).
 
 Una revisión **no** sustituye a las pruebas: van en campos separados a propósito.

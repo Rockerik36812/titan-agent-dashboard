@@ -1,6 +1,6 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** opencode  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
+**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
 **Última actualización:** 2026-11-25 00:16 CST (2026-11-25 06:16 UTC)
 **Estado:** 🟢 en marcha (4º tema reemplazado por Navideño 🎄❄️; listo para deploy en Coolify)
 
@@ -85,7 +85,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 **Hecho por Titán el 2026-10-31:**
 
 - [x] **README.md al día**: reescrito con las features reales (agentes, épicas, OpenRouter, sistema + 2º VPS, gateways, herramientas, actividad, analíticas, Web Push, los 3 temas y el auth), **la tabla de los 28 endpoints**, requisitos, despliegue y cómo verificar el deploy por md5.
-- [x] **Tamaños reales** en "Archivos clave" (`style.css` 52 KB, `app.js` 49 KB, `main.py` 61 KB).
+- [x] **Tamaños reales en ese momento** en "Archivos clave" (`style.css` 52 KB, `app.js` 49 KB, `main.py` 61 KB) — actualizados el 2026-11-25 por OpenCode; ver la lista "Archivos clave" al final de este archivo para los valores vigentes.
 - [x] **Bitácora**: nota de zona horaria en el encabezado — de aquí en adelante todo en hora de México.
 - [x] Detectado y documentado: `docker-compose.yml` está desalineado con el despliegue real.
 

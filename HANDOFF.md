@@ -1,6 +1,6 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** opencode  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
+**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
 **Última actualización:** 2026-11-25 00:21 CST (2026-11-25 06:21 UTC)
 **Estado:** 🟢 en marcha (4º tema reemplazado por Navideño 🎄❄️; listo para deploy en Coolify)
 
@@ -34,7 +34,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 - [x] **Código del tema**: leído el diff completo; en `style.css` y `app.js` **no queda ninguna regla del tema viejo** (`body.muertos`, `catrinaFlicker`, `cempasuchilPath`) — solo las 2 líneas de migración intencional `halloween`/`muertos` → `navidad` en `localStorage`. Llaves y paréntesis balanceados en CSS y JS; los 4 keyframes nuevos (`christmasTrack`, `christmasAura`, `snowfall`, `christmasTwinkle`) existen; `index.html` sirve `style.css?v=39` y `app.js?v=35`. **`node --check` no disponible en la Mac**: se validó balance, no ejecución del JS.
 - [x] **Documentación corregida**: `README.md` pasa de 3 a **4 temas** (incluido Navidad); aquí se corrige el estado "En curso", los tamaños reales de los archivos y se apunta la revisión pendiente del buzón.
-- [ ] **Sin verificar visualmente**: el tema nuevo no se vio en producción (el deploy en Coolify sigue pendiente y es el SIGUIENTE PASO). No se piden credenciales del panel por chat.
+- [x] **Render local verificado el 2026-11-25**: serví el panel con los `/static/` del repo y APIs simuladas. Con `panelTheme=navidad`: `--bg-primary: #060d1a`, pino en el logo, guirnalda en el header, nieve en el fondo y acebo en las 3 tarjetas (SVG presente, opacidad 0.42). El switch cicla `clásico → glass → liquid → navidad → clásico` con label y `localStorage` sincronizados. Captura mostrada a Erik. **Falta verlo en producción tras el deploy en Coolify** (SIGUIENTE PASO); no se piden credenciales del panel por chat.
 
 **Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
 
@@ -107,7 +107,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## Pruebas y revisión
 
-- **Pruebas corridas:** `python3 -m py_compile main.py` (OK); revisión de diffs en CSS/JS/HTML; balance de llaves y paréntesis en CSS/JS verificado por OpenCode. (`node --check` y `pytest` no disponibles en la Mac sin venv; el CI de GitHub valida el smoke test). **Sin prueba visual en producción.**
+- **Pruebas corridas:** `python3 -m py_compile main.py` (OK); revisión de diffs en CSS/JS/HTML; balance de llaves y paréntesis en CSS/JS verificado por OpenCode, y **render local del tema navideño con 3 tarjetas y ciclo del switch probados**. (`node --check` y `pytest` no disponibles en la Mac sin venv; el CI de GitHub valida el smoke test). **Sin prueba visual en producción.**
 - **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **atendida** (regla del aviso por correo unificada en los 6 archivos y deriva de las copias alineada; la única diferencia que queda entre copias es la lista blanca de cada proyecto, y es a propósito). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
 - **Revisión de Muse pendiente:** `2026-11-25-dbec54f-7c21a06.md` (buzón `revisiones-muse`, publicada el 2026-11-24 22:01 CST): verificó la regla del aviso por correo (6/6 archivos) y dejó **1 pendiente abierto** — aclarar si los commits que solo tocan `.handoff/log.md` también quedan fuera del aviso. **Sin atender**: no corresponde a este relevo; se atiende en su turno.
 - **Repos que Muse puede ver:** `titan-agent-dashboard` (público).

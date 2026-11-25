@@ -1039,18 +1039,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   Tema visual: clásico <-> glass (aurora) <-> liquid (cobalto) <-> muertos (Día de Muertos).
-   Cambia las clases .glass, .liquid o .muertos en <body>; el CSS hace el resto.
+   Tema visual: clásico <-> glass (aurora) <-> liquid (cobalto) <-> navidad (Navideño).
+   Cambia las clases .glass, .liquid o .navidad en <body>; el CSS hace el resto.
    La elección se recuerda en localStorage.
    ========================================================================== */
 (function () {
     var KEY = 'panelTheme';
-    var THEMES = ['classic', 'glass', 'liquid', 'muertos'];
+    var THEMES = ['classic', 'glass', 'liquid', 'navidad'];
 
     function leer() {
         try {
             var guardado = localStorage.getItem(KEY);
-            if (guardado === 'halloween') guardado = 'muertos';
+            if (guardado === 'halloween' || guardado === 'muertos') guardado = 'navidad';
             return THEMES.indexOf(guardado) !== -1 ? guardado : 'classic';
         } catch (e) {
             return 'classic';
@@ -1058,24 +1058,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aplicar(modo) {
-        document.body.classList.remove('glass', 'liquid', 'halloween', 'muertos');
+        document.body.classList.remove('glass', 'liquid', 'halloween', 'muertos', 'navidad');
         if (modo === 'glass') document.body.classList.add('glass');
         if (modo === 'liquid') document.body.classList.add('liquid');
-        if (modo === 'muertos') document.body.classList.add('muertos');
+        if (modo === 'navidad') document.body.classList.add('navidad');
 
         var btn = document.getElementById('themeBtn');
         if (btn) {
             var titles = {
                 classic: 'Estilo clásico — clic para activar Glass Aurora',
                 glass: 'Estilo Glass Aurora — clic para activar Ultra Glass',
-                liquid: 'Estilo Ultra Glass — clic para activar Día de Muertos 💀🏵️',
-                muertos: 'Estilo Día de Muertos 💀🏵️ — clic para volver al clásico'
+                liquid: 'Estilo Ultra Glass — clic para activar Navidad 🎄❄️',
+                navidad: 'Estilo Navidad 🎄❄️ — clic para volver al clásico'
             };
             var labels = {
                 classic: 'Clásico',
                 glass: 'Aurora',
                 liquid: 'Ultra Glass',
-                muertos: 'Día de Muertos 🏵️'
+                navidad: 'Navidad 🎄'
             };
             btn.title = titles[modo] || titles.classic;
             var lbl = btn.querySelector('.theme-label');
@@ -1085,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleTheme = function () {
         var actual = 'classic';
-        if (document.body.classList.contains('muertos')) actual = 'muertos';
+        if (document.body.classList.contains('navidad')) actual = 'navidad';
         else if (document.body.classList.contains('liquid')) actual = 'liquid';
         else if (document.body.classList.contains('glass')) actual = 'glass';
 

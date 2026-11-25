@@ -1,8 +1,8 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
-**Última actualización:** 2026-11-24 20:56 CST
-**Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
+**Última actualización:** 2026-11-25 00:10 CST
+**Estado:** 🟢 en marcha (4º tema reemplazado por Navideño 🎄❄️; listo para deploy en Coolify)
 
 > 2026-11-21 21:48 CST — Titán: **ronda de seguridad por la revisión de Muse** (`2026-11-21-08476a2.md` del buzón: 14 pendientes, los 14 verificados). Corregido: XSS de `innerHTML`, logout que ahora sí invalida el token en el servidor, CSRF + headers de seguridad, escrituras atómicas con `600`, dependencias al día, ciclo del caché adaptativo, errores del ciclo ya visibles, `subs.remove()` sobre copia, `docker-compose.yml` alineado, `HEALTHCHECK` y smoke test con CI. **El deploy en Coolify queda pendiente**; el panel en producción sigue con la versión anterior hasta entonces.
 >
@@ -16,9 +16,19 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## SIGUIENTE PASO
 
-> **Desplegar en Coolify** (el panel no se redeploya solo) y abrir el panel con recarga forzada: verificar que el SSE sigue vivo, que el modal de historial abre con sesiones, y que un POST (reiniciar agente / push) funciona con el header CSRF. Después, cerrar el issue #1 del repo: sus hallazgos ya están corregidos.
+> **Desplegar en Coolify** (el panel no se redeploya solo) y abrir el panel con recarga forzada: verificar el nuevo tema **Navidad 🎄❄️** (pino en el logo, guirnalda de luces en el header, nevada y acebo en tarjetas), confirmar que el SSE sigue vivo, que el modal de historial abre con sesiones, y que un POST (reiniciar agente / push) funciona con el header CSRF. Después, cerrar el issue #1 del repo: sus hallazgos ya están corregidos.
 
 ## Hecho
+
+**Hecho por Antigravity el 2026-11-25 (Solicitado por Erik):**
+
+- [x] **4º Tema Visual: Navideño 🎄❄️ (reemplaza Día de Muertos)**:
+  - **Pino Navideño Iluminado en el Logo**: Icono SVG con árbol de Navidad, estrella dorada y esferas con animación `christmasTwinkle`.
+  - **Guirnalda de Pino y Luces en Header**: Cenefa festiva colgante bajo el header con guirnalda de pino y focos de colores brillantes (rojo, oro, azul cielo, verde).
+  - **Nevada Mágica**: Fondo animado continuo con copos de nieve vectoriales, estrellas doradas y esferas navideñas (`snowfall`).
+  - **Vidrio Escarchado con Ramo de Acebo**: Tarjetas Frosted Winter Glass con bisel de hielo y acebo/muérdago con cerezas rojas y nieve en la esquina superior derecha.
+- [x] **Switch de 4 posiciones actualizado**: `Clásico` ➔ `Aurora` ➔ `Ultra Glass` ➔ `Navidad 🎄`, con track navideño animado y migración automática desde `muertos`/`halloween` en `localStorage`.
+- [x] **Bumping de caché**: `style.css?v=39` y `app.js?v=35` en `index.html`.
 
 **Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
 
@@ -90,7 +100,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## Pruebas y revisión
 
-- **Pruebas corridas:** las que cada agente anota en **Hecho** (si no corriste nada, escribe "sin verificar").
+- **Pruebas corridas:** `python3 -m py_compile main.py` (OK); revisión de diffs en CSS/JS/HTML. (`pytest` no disponible en entorno local sin venv; el CI de GitHub valida el smoke test).
 - **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **atendida** (regla del aviso por correo unificada en los 6 archivos y deriva de las copias alineada; la única diferencia que queda entre copias es la lista blanca de cada proyecto, y es a propósito). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
 - **Repos que Muse puede ver:** `titan-agent-dashboard` (público).
 

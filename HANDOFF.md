@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
-**Última actualización:** 2026-11-25 00:16 CST (2026-11-25 06:16 UTC)
+**Dueño actual:** opencode  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
+**Última actualización:** 2026-11-25 00:21 CST (2026-11-25 06:21 UTC)
 **Estado:** 🟢 en marcha (4º tema reemplazado por Navideño 🎄❄️; listo para deploy en Coolify)
 
 > 2026-11-21 21:48 CST — Titán: **ronda de seguridad por la revisión de Muse** (`2026-11-21-08476a2.md` del buzón: 14 pendientes, los 14 verificados). Corregido: XSS de `innerHTML`, logout que ahora sí invalida el token en el servidor, CSRF + headers de seguridad, escrituras atómicas con `600`, dependencias al día, ciclo del caché adaptativo, errores del ciclo ya visibles, `subs.remove()` sobre copia, `docker-compose.yml` alineado, `HEALTHCHECK` y smoke test con CI. **El deploy en Coolify queda pendiente**; el panel en producción sigue con la versión anterior hasta entonces.

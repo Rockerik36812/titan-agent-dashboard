@@ -1,7 +1,7 @@
 # HANDOFF — Panel de Agentes
 
 **Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
-**Última actualización:** 2026-11-21 21:48 CST
+**Última actualización:** 2026-11-24 20:56 CST
 **Estado:** 🟢 en marcha (Rayo ⚡ animado restaurado a gusto de Erik; 4 temas preservados)
 
 > 2026-11-21 21:48 CST — Titán: **ronda de seguridad por la revisión de Muse** (`2026-11-21-08476a2.md` del buzón: 14 pendientes, los 14 verificados). Corregido: XSS de `innerHTML`, logout que ahora sí invalida el token en el servidor, CSRF + headers de seguridad, escrituras atómicas con `600`, dependencias al día, ciclo del caché adaptativo, errores del ciclo ya visibles, `subs.remove()` sobre copia, `docker-compose.yml` alineado, `HEALTHCHECK` y smoke test con CI. **El deploy en Coolify queda pendiente**; el panel en producción sigue con la versión anterior hasta entonces.
@@ -91,7 +91,7 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 ## Pruebas y revisión
 
 - **Pruebas corridas:** las que cada agente anota en **Hecho** (si no corriste nada, escribe "sin verificar").
-- **Revisión de Muse:** ninguna en este proyecto; la del repo de relevo quedó atendida el 2026-11-20 (buzón `revisiones-muse`: `2026-11-20-97337ef.md`).
+- **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **en curso** (regla del aviso por correo unificada en 5 de 6 archivos y deriva de las copias alineada; falta el `AGENTS.md` del panel, pendiente de la aprobación de Erik). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
 - **Repos que Muse puede ver:** `titan-agent-dashboard` (público).
 
 Una revisión **no** sustituye a las pruebas: van en campos separados a propósito.

@@ -1,6 +1,6 @@
 # HANDOFF — Panel de Agentes
 
-**Dueño actual:** opencode  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
+**Dueño actual:** libre  ·  válidos: `titán`, `antigravity`, `opencode`, `libre` (Muse **nunca** va aquí)
 **Última actualización:** 2026-11-25 00:15 CST (2026-11-25 06:15 UTC)
 **Estado:** 🟢 en marcha (4º tema reemplazado por Navideño 🎄❄️; listo para deploy en Coolify)
 
@@ -29,6 +29,12 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
   - **Vidrio Escarchado con Ramo de Acebo**: Tarjetas Frosted Winter Glass con bisel de hielo y acebo/muérdago con cerezas rojas y nieve en la esquina superior derecha.
 - [x] **Switch de 4 posiciones actualizado**: `Clásico` ➔ `Aurora` ➔ `Ultra Glass` ➔ `Navidad 🎄`, con track navideño animado y migración automática desde `muertos`/`halloween` en `localStorage`.
 - [x] **Bumping de caché**: `style.css?v=39` y `app.js?v=35` en `index.html`.
+
+**Verificado por OpenCode el 2026-11-25 (revisión del commit `53e592a` de Antigravity; sin cambios de UI):**
+
+- [x] **Código del tema**: leído el diff completo; en `style.css` y `app.js` **no queda ninguna regla del tema viejo** (`body.muertos`, `catrinaFlicker`, `cempasuchilPath`) — solo las 2 líneas de migración intencional `halloween`/`muertos` → `navidad` en `localStorage`. Llaves y paréntesis balanceados en CSS y JS; los 4 keyframes nuevos (`christmasTrack`, `christmasAura`, `snowfall`, `christmasTwinkle`) existen; `index.html` sirve `style.css?v=39` y `app.js?v=35`. **`node --check` no disponible en la Mac**: se validó balance, no ejecución del JS.
+- [x] **Documentación corregida**: `README.md` pasa de 3 a **4 temas** (incluido Navidad); aquí se corrige el estado "En curso", los tamaños reales de los archivos y se apunta la revisión pendiente del buzón.
+- [ ] **Sin verificar visualmente**: el tema nuevo no se vio en producción (el deploy en Coolify sigue pendiente y es el SIGUIENTE PASO). No se piden credenciales del panel por chat.
 
 **Verificado por Antigravity el 2026-11-17 (Aprobado por Erik):**
 
@@ -96,12 +102,14 @@ Que Erik pueda ver el estado de sus 3 Hermes (**Titán, Hermina y Hermes**) desd
 
 ## En curso (a medias)
 
-- Nada detectado. El nuevo tema Ultra Glass y el switch de 3 estados quedaron probados, desplegados y aprobados.
+- Nada roto en el repo: el 4º tema (Navidad 🎄❄️) ya está en `main`, pero **sin desplegar ni verificado en producción** — es el SIGUIENTE PASO.
+- Revisión del buzón `2026-11-25-dbec54f-7c21a06.md`: **sin atender** (1 pendiente, ver "Pruebas y revisión").
 
 ## Pruebas y revisión
 
-- **Pruebas corridas:** `python3 -m py_compile main.py` (OK); revisión de diffs en CSS/JS/HTML. (`pytest` no disponible en entorno local sin venv; el CI de GitHub valida el smoke test).
+- **Pruebas corridas:** `python3 -m py_compile main.py` (OK); revisión de diffs en CSS/JS/HTML; balance de llaves y paréntesis en CSS/JS verificado por OpenCode. (`node --check` y `pytest` no disponibles en la Mac sin venv; el CI de GitHub valida el smoke test). **Sin prueba visual en producción.**
 - **Revisión de Muse:** `2026-11-25-518518f-64fc510.md` → **atendida** (regla del aviso por correo unificada en los 6 archivos y deriva de las copias alineada; la única diferencia que queda entre copias es la lista blanca de cada proyecto, y es a propósito). Atendida antes: `2026-11-21-08476a2.md` (14 pendientes, corregidos el 2026-11-21) y, en el repo de relevo, `2026-11-20-97337ef.md`.
+- **Revisión de Muse pendiente:** `2026-11-25-dbec54f-7c21a06.md` (buzón `revisiones-muse`, publicada el 2026-11-24 22:01 CST): verificó la regla del aviso por correo (6/6 archivos) y dejó **1 pendiente abierto** — aclarar si los commits que solo tocan `.handoff/log.md` también quedan fuera del aviso. **Sin atender**: no corresponde a este relevo; se atiende en su turno.
 - **Repos que Muse puede ver:** `titan-agent-dashboard` (público).
 
 Una revisión **no** sustituye a las pruebas: van en campos separados a propósito.
@@ -127,9 +135,9 @@ curl -s -o /dev/null -w '%{http_code}\n' https://dash.erikservicios.click/health
 
 ## Archivos clave
 
-- `main.py` (61 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
-- `static/app.js` (49 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
-- `static/style.css` (52 KB) — estilos + 3 temas visuales (Clásico, Aurora y Ultra Glass)
+- `main.py` (68 KB) — backend completo: auth/login, APIs, SSE, `docker exec` a los agentes, Web Push
+- `static/app.js` (53 KB) — frontend: SSE, tarjetas de agentes, tema, notificaciones
+- `static/style.css` (70 KB) — estilos + 4 temas visuales (Clásico, Aurora, Ultra Glass y Navidad 🎄❄️)
 - `README.md` (6 KB) — features reales, los 28 endpoints, despliegue y verificación por md5
 - `sw.js` — service worker de las notificaciones push
 - `Dockerfile` / `docker-compose.yml` — despliegue; el contenedor necesita el **docker socket** montado

@@ -36,7 +36,7 @@ Panel en tiempo real para ver el estado de mis 3 agentes de Hermes (**Titán**, 
 ### 🔔 Web Push
 - Notificaciones al celular/navegador (service worker `sw.js` + VAPID), suscripción por dispositivo y botón de prueba.
 
-### 🎨 Tema visual (3 estados)
+### 🎨 Tema visual (4 estados)
 Un solo botón en el header cicla los temas; la elección se recuerda en `localStorage`.
 
 | Tema | Cómo se ve |
@@ -44,8 +44,9 @@ Un solo botón en el header cicla los temas; la elección se recuerda en `localS
 | **Clásico** | Fondo plano y tarjetas sólidas |
 | **Aurora** | Aurora animada de fondo, tarjetas de vidrio con refracción |
 | **Ultra Glass** | Base casi negra, auroras nocturnas suaves y tarjetas de cristal ahumado con bisel de luz especular |
+| **Navidad 🎄❄️** | Pino iluminado en el logo, guirnalda de luces en el header, nevada y tarjetas de vidrio escarchado con acebo |
 
-Los tres respetan `prefers-reduced-motion` (sin animaciones si el sistema lo pide).
+Los cuatro respetan `prefers-reduced-motion` (sin animaciones si el sistema lo pide).
 
 ### 🔐 Acceso
 - Login propio (un solo usuario dueño) con cookie de sesión firmada: **12 h**, o **7 días** con "recordarme".
@@ -118,7 +119,7 @@ md5sum static/style.css                  # deben coincidir
 ## 🗂️ Estructura
 
 - `main.py` — backend completo: auth, APIs, SSE, `docker exec` a los agentes y Web Push.
-- `static/index.html` — el panel · `static/login.html` — el login · `static/style.css` — los 3 temas · `static/app.js` — SSE, tarjetas, tema y notificaciones.
+- `static/index.html` — el panel · `static/login.html` — el login · `static/style.css` — los 4 temas · `static/app.js` — SSE, tarjetas, tema y notificaciones.
 - `sw.js` — service worker de las notificaciones push.
 - `Dockerfile` / `docker-compose.yml` — despliegue.
 - `HANDOFF.md` — estado del proyecto y siguiente paso · `.handoff/log.md` — bitácora de relevos · `AGENTS.md` — protocolo para cuando otro agente trabaja aquí.
